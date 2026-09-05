@@ -1,0 +1,898 @@
+{
+  "hospitals": [
+    {
+      "id": "hosp-grh-01",
+      "name": "Government Rajaji General Hospital",
+      "location": "Madurai, Tamil Nadu",
+      "state": "Tamil Nadu",
+      "totalBeds": 1450,
+      "icuBedsAvailable": 4,
+      "emergencyBedsAvailable": 8,
+      "contactPhone": "+91 452 2532535",
+      "emergencyStatus": "normal",
+      "createdAt": "2026-09-04T19:20:54.963Z"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "blk-a",
+      "hospitalId": "hosp-grh-01",
+      "name": "Block A",
+      "description": "Main Administration, Entrance & Emergency Care"
+    },
+    {
+      "id": "blk-b",
+      "hospitalId": "hosp-grh-01",
+      "name": "Block B",
+      "description": "Outpatient Specialty Clinics (OPD)"
+    },
+    {
+      "id": "blk-c",
+      "hospitalId": "hosp-grh-01",
+      "name": "Block C",
+      "description": "Radiology, Diagnostics & Imaging Wing"
+    }
+  ],
+  "floors": [
+    {
+      "id": "flr-a-g",
+      "blockId": "blk-a",
+      "level": 0,
+      "name": "Ground Floor"
+    },
+    {
+      "id": "flr-b-g",
+      "blockId": "blk-b",
+      "level": 0,
+      "name": "Ground Floor"
+    },
+    {
+      "id": "flr-b-1",
+      "blockId": "blk-b",
+      "level": 1,
+      "name": "1st Floor"
+    },
+    {
+      "id": "flr-c-g",
+      "blockId": "blk-c",
+      "level": 0,
+      "name": "Ground Floor"
+    },
+    {
+      "id": "flr-c-1",
+      "blockId": "blk-c",
+      "level": 1,
+      "name": "1st Floor"
+    }
+  ],
+  "rooms": [
+    {
+      "id": "rm-reg",
+      "blockId": "blk-a",
+      "floorId": "flr-a-g",
+      "roomNumber": "Counters 1-6",
+      "name": "Central Registration",
+      "category": "Registration",
+      "color": "yellow"
+    },
+    {
+      "id": "rm-pharm",
+      "blockId": "blk-a",
+      "floorId": "flr-a-g",
+      "roomNumber": "Counter 3",
+      "name": "Central Pharmacy",
+      "category": "Pharmacy",
+      "color": "purple"
+    },
+    {
+      "id": "rm-emerg",
+      "blockId": "blk-a",
+      "floorId": "flr-a-g",
+      "roomNumber": "Triage 1-4",
+      "name": "Emergency Trauma Ward",
+      "category": "Emergency",
+      "color": "red"
+    },
+    {
+      "id": "rm-cardio",
+      "blockId": "blk-b",
+      "floorId": "flr-b-1",
+      "roomNumber": "Room 12",
+      "name": "Cardiology OPD Suite",
+      "category": "OPD",
+      "color": "blue"
+    },
+    {
+      "id": "rm-genmed",
+      "blockId": "blk-b",
+      "floorId": "flr-b-g",
+      "roomNumber": "Rooms 4-8",
+      "name": "General Medicine OPD",
+      "category": "OPD",
+      "color": "blue"
+    },
+    {
+      "id": "rm-ortho",
+      "blockId": "blk-b",
+      "floorId": "flr-b-1",
+      "roomNumber": "Rooms 14-16",
+      "name": "Orthopedics Clinic",
+      "category": "OPD",
+      "color": "blue"
+    },
+    {
+      "id": "rm-xray",
+      "blockId": "blk-c",
+      "floorId": "flr-c-g",
+      "roomNumber": "Room 18",
+      "name": "Digital Chest X-Ray Suite",
+      "category": "Diagnostic",
+      "color": "orange"
+    },
+    {
+      "id": "rm-lab",
+      "blockId": "blk-c",
+      "floorId": "flr-c-1",
+      "roomNumber": "Lab 101",
+      "name": "Biochemistry & Pathology Lab",
+      "category": "Diagnostic",
+      "color": "green"
+    },
+    {
+      "id": "rm-ct",
+      "blockId": "blk-c",
+      "floorId": "flr-c-g",
+      "roomNumber": "CT Suite 2",
+      "name": "128-Slice CT Scanner",
+      "category": "Diagnostic",
+      "color": "orange"
+    }
+  ],
+  "departments": [
+    {
+      "id": "dept-reg",
+      "hospitalId": "hosp-grh-01",
+      "code": "REG",
+      "name": "Central Registration & Triage",
+      "nameTa": "மைய பதிவு மற்றும் வரிசை எண் பிரிவு",
+      "category": "registration",
+      "color": "yellow",
+      "blockName": "Block A",
+      "floorName": "Ground Floor",
+      "roomNumber": "Counters 1-6",
+      "activeCounters": 5,
+      "totalCounters": 6,
+      "avgServiceMinutes": 2.2,
+      "isBottleneck": false
+    },
+    {
+      "id": "dept-cardio",
+      "hospitalId": "hosp-grh-01",
+      "code": "CARDIO",
+      "name": "Cardiology (OPD)",
+      "nameTa": "இதயவியல் பிரிவு (கார்டியாலஜி)",
+      "category": "opd",
+      "color": "blue",
+      "blockName": "Block B",
+      "floorName": "1st Floor",
+      "roomNumber": "Room 12",
+      "activeCounters": 2,
+      "totalCounters": 3,
+      "avgServiceMinutes": 6.5,
+      "isBottleneck": false
+    },
+    {
+      "id": "dept-genmed",
+      "hospitalId": "hosp-grh-01",
+      "code": "GENMED",
+      "name": "General Medicine (OPD)",
+      "nameTa": "பொது மருத்துவ பிரிவு (OPD)",
+      "category": "opd",
+      "color": "blue",
+      "blockName": "Block B",
+      "floorName": "Ground Floor",
+      "roomNumber": "Rooms 4-8",
+      "activeCounters": 4,
+      "totalCounters": 5,
+      "avgServiceMinutes": 5,
+      "isBottleneck": false
+    },
+    {
+      "id": "dept-ortho",
+      "hospitalId": "hosp-grh-01",
+      "code": "ORTHO",
+      "name": "Orthopedics (OPD)",
+      "nameTa": "எலும்பு மூட்டு சிகிச்சை பிரிவு",
+      "category": "opd",
+      "color": "blue",
+      "blockName": "Block B",
+      "floorName": "1st Floor",
+      "roomNumber": "Rooms 14-16",
+      "activeCounters": 3,
+      "totalCounters": 3,
+      "avgServiceMinutes": 7.2,
+      "isBottleneck": false
+    },
+    {
+      "id": "dept-xray",
+      "hospitalId": "hosp-grh-01",
+      "code": "X-RAY",
+      "name": "Digital X-Ray Department",
+      "nameTa": "டிஜிட்டல் எக்ஸ்-ரே பிரிவு",
+      "category": "diagnostic",
+      "color": "orange",
+      "blockName": "Block C (Diagnostic)",
+      "floorName": "Ground Floor",
+      "roomNumber": "Room 18",
+      "activeCounters": 1,
+      "totalCounters": 2,
+      "avgServiceMinutes": 8.5,
+      "isBottleneck": true,
+      "bottleneckReason": "Queue surged by 38% after Morning OPD rush. Only Counter 1 is currently active."
+    },
+    {
+      "id": "dept-lab",
+      "hospitalId": "hosp-grh-01",
+      "code": "LAB",
+      "name": "Central Biochemistry Lab",
+      "nameTa": "மைய உயிர்வேதியியல் ஆய்வகம்",
+      "category": "diagnostic",
+      "color": "green",
+      "blockName": "Block C",
+      "floorName": "1st Floor",
+      "roomNumber": "Lab 101",
+      "activeCounters": 3,
+      "totalCounters": 4,
+      "avgServiceMinutes": 4,
+      "isBottleneck": false
+    },
+    {
+      "id": "dept-ct",
+      "hospitalId": "hosp-grh-01",
+      "code": "CT",
+      "name": "128-Slice CT Scan Unit",
+      "nameTa": "சி.டி. ஸ்கேன் பிரிவு",
+      "category": "diagnostic",
+      "color": "orange",
+      "blockName": "Block C",
+      "floorName": "Ground Floor",
+      "roomNumber": "CT Suite 2",
+      "activeCounters": 1,
+      "totalCounters": 1,
+      "avgServiceMinutes": 12,
+      "isBottleneck": false
+    },
+    {
+      "id": "dept-pharm",
+      "hospitalId": "hosp-grh-01",
+      "code": "PHARM",
+      "name": "Central Pharmacy Dispensing",
+      "nameTa": "மைய மருந்தகம் மற்றும் மருந்துகள் வழங்கும் பிரிவு",
+      "category": "pharmacy",
+      "color": "purple",
+      "blockName": "Block A",
+      "floorName": "Ground Floor",
+      "roomNumber": "Counter 3",
+      "activeCounters": 4,
+      "totalCounters": 5,
+      "avgServiceMinutes": 2.8,
+      "isBottleneck": false
+    },
+    {
+      "id": "dept-emerg",
+      "hospitalId": "hosp-grh-01",
+      "code": "EMERG",
+      "name": "Emergency & Trauma Care (24x7)",
+      "nameTa": "அவசர சிகிச்சை மற்றும் விபத்து பிரிவு",
+      "category": "emergency",
+      "color": "red",
+      "blockName": "Block A (Emergency Wing)",
+      "floorName": "Ground Floor",
+      "roomNumber": "Triage 1-4",
+      "activeCounters": 6,
+      "totalCounters": 6,
+      "avgServiceMinutes": 15,
+      "isBottleneck": false
+    }
+  ],
+  "users": [
+    {
+      "id": "usr-doc-1",
+      "username": "dr_priya",
+      "role": "doctor",
+      "fullName": "Dr. Priya Kumar, MD, DM",
+      "departmentId": "dept-cardio",
+      "hospitalId": "hosp-grh-01",
+      "isActive": true
+    },
+    {
+      "id": "usr-doc-2",
+      "username": "dr_senthil",
+      "role": "doctor",
+      "fullName": "Dr. M. Senthil Nathan, MD",
+      "departmentId": "dept-genmed",
+      "hospitalId": "hosp-grh-01",
+      "isActive": true
+    },
+    {
+      "id": "usr-diag-1",
+      "username": "tech_murugan",
+      "role": "diagnostic",
+      "fullName": "K. Murugan (Senior Radiographer)",
+      "departmentId": "dept-xray",
+      "hospitalId": "hosp-grh-01",
+      "isActive": true
+    },
+    {
+      "id": "usr-pharm-1",
+      "username": "pharm_radha",
+      "role": "pharmacy",
+      "fullName": "S. Radha (Chief Pharmacist)",
+      "departmentId": "dept-pharm",
+      "hospitalId": "hosp-grh-01",
+      "isActive": true
+    },
+    {
+      "id": "usr-phc-1",
+      "username": "phc_alanganallur",
+      "role": "phc",
+      "fullName": "Dr. V. Rajesh (MO Alanganallur PHC)",
+      "hospitalId": "hosp-grh-01",
+      "isActive": true
+    },
+    {
+      "id": "usr-admin-1",
+      "username": "admin_dean",
+      "role": "admin",
+      "fullName": "Medical Superintendent / Dean Console",
+      "hospitalId": "hosp-grh-01",
+      "isActive": true
+    }
+  ],
+  "patients": [
+    {
+      "id": "GH-P-00945",
+      "name": "Murugesan K.",
+      "nameTa": "Murugesan K.",
+      "age": 52,
+      "gender": "Male",
+      "phone": "9840199887",
+      "abhaId": "91-5578-3649-2450",
+      "bloodGroup": "B+ve",
+      "allergies": [
+        "Dust"
+      ],
+      "preferredLanguage": "ta",
+      "isSynthetic": false,
+      "role": "patient",
+      "createdAt": "2026-09-04T20:01:05.901Z"
+    },
+    {
+      "id": "GH-P-00127",
+      "name": "Anitha Kumar",
+      "nameTa": "அனிதா குமார்",
+      "age": 46,
+      "gender": "Female",
+      "phone": "9876543210",
+      "abhaId": "91-4829-1029-4821",
+      "bloodGroup": "O+ve",
+      "allergies": [
+        "Penicillin"
+      ],
+      "role": "patient",
+      "preferredLanguage": "ta",
+      "isSynthetic": true,
+      "createdAt": "2026-09-04T08:45:00.000Z"
+    },
+    {
+      "name": "Ganesan S.",
+      "nameTa": "கணேசன் எஸ்.",
+      "age": 63,
+      "gender": "Male",
+      "phone": "98401 11223",
+      "abhaId": "91-7788-9900-1122",
+      "preferredLanguage": "ta",
+      "isSynthetic": true,
+      "id": "P-496611",
+      "createdAt": "2026-09-04T19:20:54.966Z"
+    },
+    {
+      "id": "GH-2026-004281",
+      "name": "Anitha Kumar",
+      "nameTa": "அனிதா குமார்",
+      "age": 46,
+      "gender": "Female",
+      "phone": "9840123456",
+      "abhaId": "91-4829-1029-4821",
+      "bloodGroup": "O+ve",
+      "allergies": [
+        "Penicillin"
+      ],
+      "role": "patient",
+      "preferredLanguage": "ta",
+      "isSynthetic": true,
+      "createdAt": "2026-09-04T08:45:00.000Z"
+    },
+    {
+      "id": "P-8942",
+      "name": "Ravi Kumar",
+      "nameTa": "ரவி குமார்",
+      "age": 58,
+      "gender": "Male",
+      "phone": "98401 23456",
+      "abhaId": "91-4829-1029-4821",
+      "preferredLanguage": "ta",
+      "isSynthetic": true,
+      "createdAt": "2026-09-04T18:20:54.964Z"
+    },
+    {
+      "id": "P-8939",
+      "name": "Meenakshi Sundaram",
+      "nameTa": "மீனாட்சி சுந்தரம்",
+      "age": 64,
+      "gender": "Female",
+      "phone": "94432 98112",
+      "abhaId": "91-3312-8871-9920",
+      "preferredLanguage": "ta",
+      "isSynthetic": true,
+      "createdAt": "2026-09-04T18:14:14.964Z"
+    },
+    {
+      "id": "P-8940",
+      "name": "K. Balaji",
+      "nameTa": "கே. பாலாஜி",
+      "age": 42,
+      "gender": "Male",
+      "phone": "97890 54321",
+      "abhaId": "91-9941-2234-5511",
+      "preferredLanguage": "en",
+      "isSynthetic": true,
+      "createdAt": "2026-09-04T18:17:34.964Z"
+    },
+    {
+      "id": "P-8931",
+      "name": "S. Shanmugam",
+      "nameTa": "எஸ். சண்முகம்",
+      "age": 51,
+      "gender": "Male",
+      "phone": "98411 90234",
+      "abhaId": "91-1123-9988-4432",
+      "preferredLanguage": "ta",
+      "isSynthetic": true,
+      "createdAt": "2026-09-04T18:05:54.964Z"
+    },
+    {
+      "id": "P-8915",
+      "name": "Anjalai Ammal",
+      "nameTa": "அஞ்சலை அம்மாள்",
+      "age": 69,
+      "gender": "Female",
+      "phone": "94440 12890",
+      "abhaId": "91-8876-5544-2210",
+      "preferredLanguage": "ta",
+      "isSynthetic": true,
+      "createdAt": "2026-09-04T17:57:34.964Z"
+    }
+  ],
+  "journeys": [
+    {
+      "patientId": "GH-P-00945",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-genmed",
+      "currentStage": "doctor",
+      "currentToken": "GENMED-086",
+      "status": "active",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260904-00044",
+      "createdAt": "2026-09-04T20:01:05.905Z"
+    },
+    {
+      "patientId": "P-496611",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-cardio",
+      "currentDepartmentId": "dept-pharm",
+      "currentStage": "completed",
+      "currentToken": "PHARM-016",
+      "status": "completed",
+      "priority": "senior",
+      "vitals": {
+        "bp": "142/90 mmHg",
+        "pulse": "80 bpm",
+        "temp": "98.6 °F",
+        "spo2": "98%"
+      },
+      "id": "JNY-20260904-00043",
+      "createdAt": "2026-09-04T19:20:54.976Z",
+      "completedAt": "2026-09-04T19:20:54.995Z"
+    },
+    {
+      "id": "JNY-20260902-00042",
+      "patientId": "P-8942",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-cardio",
+      "currentDepartmentId": "dept-cardio",
+      "currentStage": "doctor",
+      "currentToken": "CARDIO-042",
+      "status": "active",
+      "priority": "senior",
+      "vitals": {
+        "bp": "148/94 mmHg",
+        "pulse": "84 bpm",
+        "temp": "98.4 °F",
+        "spo2": "98%"
+      },
+      "createdAt": "2026-09-04T18:20:54.964Z"
+    },
+    {
+      "id": "JNY-20260902-00039",
+      "patientId": "P-8939",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-cardio",
+      "currentDepartmentId": "dept-cardio",
+      "currentStage": "doctor",
+      "currentToken": "CARDIO-039",
+      "status": "active",
+      "priority": "senior",
+      "vitals": {
+        "bp": "135/85 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.6 °F",
+        "spo2": "99%"
+      },
+      "createdAt": "2026-09-04T18:14:14.964Z"
+    },
+    {
+      "id": "JNY-20260902-00040",
+      "patientId": "P-8940",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-cardio",
+      "currentDepartmentId": "dept-cardio",
+      "currentStage": "doctor",
+      "currentToken": "CARDIO-040",
+      "status": "active",
+      "priority": "normal",
+      "vitals": {
+        "bp": "128/82 mmHg",
+        "pulse": "72 bpm",
+        "temp": "98.2 °F",
+        "spo2": "99%"
+      },
+      "createdAt": "2026-09-04T18:17:34.964Z"
+    },
+    {
+      "id": "JNY-20260902-00031",
+      "patientId": "P-8931",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-xray",
+      "currentDepartmentId": "dept-xray",
+      "currentStage": "diagnostic",
+      "currentToken": "X-RAY-031",
+      "status": "active",
+      "priority": "normal",
+      "vitals": {
+        "bp": "130/80 mmHg",
+        "pulse": "78 bpm",
+        "temp": "98.6 °F",
+        "spo2": "98%"
+      },
+      "createdAt": "2026-09-04T18:05:54.964Z"
+    },
+    {
+      "id": "JNY-20260902-00015",
+      "patientId": "P-8915",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-pharm",
+      "currentDepartmentId": "dept-pharm",
+      "currentStage": "pharmacy",
+      "currentToken": "PHARM-015",
+      "status": "active",
+      "priority": "senior",
+      "vitals": {
+        "bp": "140/88 mmHg",
+        "pulse": "80 bpm",
+        "temp": "98.4 °F",
+        "spo2": "97%"
+      },
+      "createdAt": "2026-09-04T17:57:34.964Z"
+    }
+  ],
+  "journeyStages": [
+    {
+      "id": "STG-42-1",
+      "journeyId": "JNY-20260902-00042",
+      "stageType": "registration",
+      "departmentId": "dept-reg",
+      "tokenNumber": "REG-8942",
+      "sequenceNum": 1,
+      "status": "completed",
+      "roomNumber": "Counters 1-6",
+      "blockName": "Block A",
+      "floorName": "Ground Floor",
+      "color": "yellow",
+      "notes": "Initial registration and triage vitals checked",
+      "createdAt": "2026-09-04T18:20:54.964Z",
+      "completedAt": "2026-09-04T18:25:54.964Z"
+    },
+    {
+      "id": "STG-42-2",
+      "journeyId": "JNY-20260902-00042",
+      "stageType": "doctor",
+      "departmentId": "dept-cardio",
+      "tokenNumber": "CARDIO-042",
+      "sequenceNum": 2,
+      "status": "waiting",
+      "roomNumber": "Room 12",
+      "blockName": "Block B",
+      "floorName": "1st Floor",
+      "color": "blue",
+      "notes": "Waiting for Dr. Priya Kumar",
+      "createdAt": "2026-09-04T18:25:54.965Z"
+    },
+    {
+      "journeyId": "JNY-20260904-00043",
+      "stageType": "doctor",
+      "departmentId": "dept-cardio",
+      "tokenNumber": "CARDIO-043",
+      "sequenceNum": 1,
+      "status": "waiting",
+      "roomNumber": "Room 12",
+      "blockName": "Block B",
+      "floorName": "1st Floor",
+      "color": "blue",
+      "id": "STG-65497724",
+      "createdAt": "2026-09-04T19:20:54.977Z"
+    }
+  ],
+  "queueEntries": [
+    {
+      "id": "QE-39",
+      "departmentId": "dept-cardio",
+      "journeyId": "JNY-20260902-00039",
+      "journeyStageId": "STG-39-2",
+      "patientId": "P-8939",
+      "tokenNumber": "CARDIO-039",
+      "sequenceNum": 39,
+      "status": "called",
+      "priority": "senior",
+      "calledAt": "2026-09-04T19:18:54.965Z",
+      "createdAt": "2026-09-04T18:14:14.965Z"
+    },
+    {
+      "id": "QE-40",
+      "departmentId": "dept-cardio",
+      "journeyId": "JNY-20260902-00040",
+      "journeyStageId": "STG-40-2",
+      "patientId": "P-8940",
+      "tokenNumber": "CARDIO-040",
+      "sequenceNum": 40,
+      "status": "waiting",
+      "priority": "normal",
+      "createdAt": "2026-09-04T18:17:34.965Z"
+    },
+    {
+      "id": "QE-42",
+      "departmentId": "dept-cardio",
+      "journeyId": "JNY-20260902-00042",
+      "journeyStageId": "STG-42-2",
+      "patientId": "P-8942",
+      "tokenNumber": "CARDIO-042",
+      "sequenceNum": 42,
+      "status": "waiting",
+      "priority": "senior",
+      "createdAt": "2026-09-04T18:25:54.965Z"
+    },
+    {
+      "id": "QE-XRAY-31",
+      "departmentId": "dept-xray",
+      "journeyId": "JNY-20260902-00031",
+      "journeyStageId": "STG-31-1",
+      "patientId": "P-8931",
+      "tokenNumber": "X-RAY-031",
+      "sequenceNum": 31,
+      "status": "waiting",
+      "priority": "normal",
+      "createdAt": "2026-09-04T18:05:54.965Z"
+    },
+    {
+      "id": "QE-PHARM-15",
+      "departmentId": "dept-pharm",
+      "journeyId": "JNY-20260902-00015",
+      "journeyStageId": "STG-15-1",
+      "patientId": "P-8915",
+      "tokenNumber": "PHARM-015",
+      "sequenceNum": 15,
+      "status": "waiting",
+      "priority": "senior",
+      "createdAt": "2026-09-04T17:57:34.965Z"
+    },
+    {
+      "departmentId": "dept-cardio",
+      "journeyId": "JNY-20260904-00043",
+      "journeyStageId": "STG-65497724",
+      "patientId": "P-496611",
+      "tokenNumber": "CARDIO-043",
+      "sequenceNum": 99,
+      "status": "called",
+      "priority": "senior",
+      "id": "QE-65497849",
+      "createdAt": "2026-09-04T19:20:54.978Z",
+      "calledAt": "2026-09-04T19:20:54.980Z"
+    }
+  ],
+  "consultations": [
+    {
+      "journeyId": "JNY-20260904-00043",
+      "doctorId": "usr-doc-1",
+      "doctorName": "Dr. Priya Kumar",
+      "departmentId": "dept-cardio",
+      "symptoms": "Exertional dyspnea and hypertension",
+      "observations": "BP 142/90. S1/S2 normal.",
+      "diagnosis": "Hypertensive Heart Disease",
+      "clinicalNotes": "Order Chest X-Ray. Prescribe Amlodipine 5mg.",
+      "medications": [
+        {
+          "id": "1",
+          "name": "Tab Amlodipine",
+          "dosage": "5mg",
+          "frequency": "1-0-0",
+          "duration": "30 Days",
+          "instructions": "After breakfast",
+          "isDispensed": false
+        }
+      ],
+      "investigations": [
+        "Digital Chest X-Ray (PA View)"
+      ],
+      "followUpDays": 14,
+      "id": "CNS-654981",
+      "createdAt": "2026-09-04T19:20:54.981Z"
+    }
+  ],
+  "diagnosticOrders": [
+    {
+      "consultationId": "CNS-654981",
+      "journeyId": "JNY-20260904-00043",
+      "modality": "x-ray",
+      "testName": "Digital Chest X-Ray (PA View)",
+      "tokenNumber": "X-RAY-032",
+      "status": "completed",
+      "roomNumber": "Room 18",
+      "id": "DXO-654985",
+      "orderedAt": "2026-09-04T19:20:54.985Z",
+      "findingsSummary": "Cardiac silhouette mildly enlarged. Lung fields clear.",
+      "completedAt": "2026-09-04T19:20:54.988Z"
+    }
+  ],
+  "pharmacyOrders": [
+    {
+      "consultationId": "CNS-654981",
+      "journeyId": "JNY-20260904-00043",
+      "tokenNumber": "PHARM-016",
+      "status": "dispensed",
+      "counterNumber": "Counter 3",
+      "medications": [
+        {
+          "id": "1",
+          "name": "Tab Amlodipine",
+          "dosage": "5mg",
+          "frequency": "1-0-0",
+          "duration": "30 Days",
+          "instructions": "After breakfast",
+          "isDispensed": false
+        }
+      ],
+      "id": "PHO-654991",
+      "createdAt": "2026-09-04T19:20:54.991Z",
+      "dispensedAt": "2026-09-04T19:20:54.994Z"
+    }
+  ],
+  "phcReferrals": [
+    {
+      "patientName": "Subramanian K.",
+      "patientAge": 65,
+      "patientGender": "Male",
+      "fromPhcName": "Alanganallur PHC",
+      "targetHospitalId": "hosp-grh-01",
+      "targetHospitalName": "Government Rajaji General Hospital",
+      "specialty": "Cardiology",
+      "clinicalReason": "Unstable Angina",
+      "urgency": "emergency",
+      "status": "accepted",
+      "assignedToken": "CARDIO-EMERG-099",
+      "distanceKm": 18,
+      "travelMinutes": 32,
+      "icuBedsAvailable": 4,
+      "hospitalLoadPercent": 62,
+      "id": "REF-TN-2026-361",
+      "createdAt": "2026-09-04T19:20:54.997Z",
+      "updatedAt": "2026-09-04T19:20:54.997Z"
+    },
+    {
+      "id": "REF-TN-2026-091",
+      "patientName": "Kuppusamy M.",
+      "patientAge": 62,
+      "patientGender": "Male",
+      "fromPhcName": "Alanganallur Primary Health Centre (PHC)",
+      "targetHospitalId": "hosp-grh-01",
+      "targetHospitalName": "Government Rajaji General Hospital",
+      "specialty": "Cardiology",
+      "clinicalReason": "Acute Chest Pain, ST elevation noted in Lead II, III, aVF. Suspected Inferior Wall MI.",
+      "urgency": "emergency",
+      "status": "accepted",
+      "assignedToken": "CARDIO-EMERG-003",
+      "distanceKm": 18,
+      "travelMinutes": 32,
+      "icuBedsAvailable": 4,
+      "hospitalLoadPercent": 62,
+      "createdAt": "2026-09-04T18:50:54.965Z",
+      "updatedAt": "2026-09-04T19:00:54.965Z"
+    },
+    {
+      "id": "REF-TN-2026-088",
+      "patientName": "Kavitha R.",
+      "patientAge": 34,
+      "patientGender": "Female",
+      "fromPhcName": "Vadipatti Upgraded PHC",
+      "targetHospitalId": "hosp-grh-01",
+      "targetHospitalName": "Government Rajaji General Hospital",
+      "specialty": "Orthopedics",
+      "clinicalReason": "Compound fracture tibia fibula right leg following road traffic accident.",
+      "urgency": "urgent",
+      "status": "en_route",
+      "assignedToken": "ORTHO-EMERG-007",
+      "distanceKm": 24,
+      "travelMinutes": 38,
+      "icuBedsAvailable": 4,
+      "hospitalLoadPercent": 62,
+      "createdAt": "2026-09-04T18:20:54.965Z",
+      "updatedAt": "2026-09-04T18:40:54.965Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif-1",
+      "targetRole": "admin",
+      "title": "Digital X-Ray Bottleneck Warning",
+      "titleTa": "எக்ஸ்-ரே பிரிவு காத்திருப்பு எச்சரிக்கை",
+      "message": "Queue exceeded 90% load threshold (67 waiting, ETA 95m). Recommended: Open Counter 2.",
+      "messageTa": "எக்ஸ்-ரே பிரிவில் கூட்டம் அதிகரித்துள்ளது. கவுண்டர் 2-ஐ திறக்கவும்.",
+      "type": "critical",
+      "isRead": false,
+      "createdAt": "2026-09-04T19:05:54.965Z"
+    },
+    {
+      "id": "notif-2",
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260902-00042",
+      "title": "Queue Position Update",
+      "titleTa": "வரிசை எண் நிலை மாற்றம்",
+      "message": "Token CARDIO-042: 2 patients ahead (~7 min wait). Please wait near Room 12.",
+      "messageTa": "டோக்கன் CARDIO-042: உங்களுக்கு முன் 2 நபர்கள் உள்ளனர். அறை 12 அருகில் இருக்கவும்.",
+      "type": "info",
+      "isRead": false,
+      "createdAt": "2026-09-04T19:15:54.965Z"
+    }
+  ],
+  "serviceCounters": [],
+  "auditLogs": [],
+  "sequences": {
+    "journeyCount": 44,
+    "tokens": {
+      "CARDIO": 43,
+      "GENMED": 86,
+      "ORTHO": 28,
+      "X-RAY": 32,
+      "LAB": 45,
+      "CT": 12,
+      "PHARM": 16,
+      "REG": 184
+    }
+  }
+}

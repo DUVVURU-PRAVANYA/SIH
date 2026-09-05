@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-tamil: 'Mukta Malar', 'Noto Sans Tamil', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --gov-blue-900: #0B2545;
+    --gov-blue-800: #134074;
+    --gov-blue-700: #1D4ED8;
+    --gov-teal-600: #0D9488;
+    --gov-teal-700: #0F766E;
+  }
+
+  body {
+    font-family: var(--font-heading);
+    color: #1e293b;
+    background-color: #f8fafc;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Tamil font optimization when in Tamil mode */
+  [lang="ta"], .font-tamil {
+    font-family: var(--font-tamil);
+  }
+}
+
+/* Accessibility Modes */
+.text-scale-large {
+  font-size: 1.15rem;
+}
+.text-scale-large h1 { font-size: 2.5rem; }
+.text-scale-large h2 { font-size: 2rem; }
+.text-scale-large h3 { font-size: 1.6rem; }
+.text-scale-large p, .text-scale-large span, .text-scale-large button { font-size: 1.25rem; }
+
+.text-scale-extra-large {
+  font-size: 1.35rem;
+}
+.text-scale-extra-large h1 { font-size: 3rem; }
+.text-scale-extra-large h2 { font-size: 2.4rem; }
+.text-scale-extra-large h3 { font-size: 1.9rem; }
+.text-scale-extra-large p, .text-scale-extra-large span, .text-scale-extra-large button { font-size: 1.45rem; }
+
+/* High-Contrast Mode for Visually Impaired */
+.high-contrast-mode {
+  --tw-bg-opacity: 1;
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+}
+.high-contrast-mode .bg-white,
+.high-contrast-mode .bg-slate-50,
+.high-contrast-mode .bg-slate-100 {
+  background-color: #121212 !important;
+  color: #FFFFFF !important;
+  border-color: #FFFF00 !important;
+}
+.high-contrast-mode button,
+.high-contrast-mode .btn-high-contrast {
+  border: 3px solid #FFFF00 !important;
+  color: #FFFFFF !important;
+}
+.high-contrast-mode .text-slate-500,
+.high-contrast-mode .text-slate-600,
+.high-contrast-mode .text-slate-700 {
+  color: #F8FAFC !important;
+}
+.high-contrast-mode .text-blue-600,
+.high-contrast-mode .text-teal-600 {
+  color: #00FFFF !important;
+}
+
+/* Reduced Motion Mode */
+.reduced-motion * {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Custom Pulsing and Glows */
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.88; transform: scale(1.02); }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2.5s infinite ease-in-out;
+}
+
+@keyframes radar-ping {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  70% { transform: scale(1.8); opacity: 0; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+.animate-radar {
+  animation: radar-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Print Styles for Token Slip & Reports */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}
