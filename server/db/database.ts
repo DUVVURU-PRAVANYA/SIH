@@ -179,6 +179,28 @@ export class DatabaseEngine {
     throw new Error(`Department ${id} not found`);
   }
 
+  // Users & Staff
+  public getUsers(): User[] {
+    return this.data.users;
+  }
+
+  public getUserById(id: string): User | undefined {
+    return this.data.users.find((u) => u.id === id);
+  }
+
+  public getUserByUsername(username: string): User | undefined {
+    return this.data.users.find((u) => u.username.toLowerCase() === username.toLowerCase());
+  }
+
+  public getDoctors(): (User & { department?: Department })[] {
+    return this.data.users
+      .filter((u) => u.role === 'doctor' && u.isActive)
+      .map((doc) => ({
+        ...doc,
+        department: this.data.departments.find((d) => d.id === doc.departmentId),
+      }));
+  }
+
   public getPatients(): Patient[] {
     return this.data.patients;
   }
@@ -207,6 +229,16 @@ export class DatabaseEngine {
     this.data.patients.unshift(newPatient);
     this.save();
     return newPatient;
+  }
+
+  public updatePatient(id: string, updates: Partial<Patient>): Patient {
+    const idx = this.data.patients.findIndex((p) => p.id === id);
+    if (idx >= 0) {
+      this.data.patients[idx] = { ...this.data.patients[idx], ...updates };
+      this.save();
+      return this.data.patients[idx];
+    }
+    throw new Error(`Patient ${id} not found`);
   }
 
   public getJourneys(): Journey[] {
@@ -319,6 +351,193 @@ export class DatabaseEngine {
     const estimatedWaitMinutes = Math.max(1, Math.round((peopleAhead * avgMins) / counters));
 
     return { peopleAhead, position, estimatedWaitMinutes };
+  }
+
+  public getActiveJourneyForPatient(patientId: string): Journey | undefined {
+    return this.data.journeys.find((j) => j.patientId === patientId && j.status === 'active');
+  }
+
+  public getQueueMetricsForPatient(journeyId: string): {
+    peopleAhead: number;
+    position: number;
+    estimatedWaitMinutes: number;
+    nowServingToken: string;
+    queueStatus: string;
+    tokenNumber: string;
+    doctorName: string;
+    departmentName: string;
+    departmentNameTa: string;
+    queueAhead: Array<{ tokenNumber: string; status: string }>;
+  } {
+    const journey = this.getJourneyById(journeyId);
+    if (!journey) {
+      return {
+        peopleAhead: 0,
+        position: 0,
+        estimatedWaitMinutes: 0,
+        nowServingToken: '-',
+        queueStatus: 'none',
+        tokenNumber: '',
+        doctorName: '',
+        departmentName: '',
+        departmentNameTa: '',
+        queueAhead: [],
+      };
+    }
+
+    const deptId = journey.currentDepartmentId;
+    const dept = this.getDepartmentById(deptId);
+    const doctor = journey.doctorId ? this.getUserById(journey.doctorId) : this.getDoctors().find(d => d.departmentId === deptId);
+    const queue = this.getDepartmentQueue(deptId);
+    const myEntry = queue.find((q) => q.journeyId === journeyId);
+
+    // Find currently serving token for this department queue
+    const inServiceEntry = queue.find((q) => q.status === 'in_service') || queue.find((q) => q.status === 'called');
+    const nowServingToken = inServiceEntry ? inServiceEntry.tokenNumber : (queue[0]?.tokenNumber || '-');
+
+    if (!myEntry) {
+      const allEntries = this.data.queueEntries.filter((q) => q.journeyId === journeyId);
+      const latest = allEntries[allEntries.length - 1];
+      return {
+        peopleAhead: 0,
+        position: 0,
+        estimatedWaitMinutes: 0,
+        nowServingToken,
+        queueStatus: latest ? latest.status : journey.status,
+        tokenNumber: journey.currentToken,
+        doctorName: doctor?.fullName || 'Dr. Priya Kumar, MD',
+        departmentName: dept?.name || 'General Medicine',
+        departmentNameTa: dept?.nameTa || 'பொது மருத்துவம்',
+        queueAhead: [],
+      };
+    }
+
+    const targetIdx = queue.findIndex((q) => q.id === myEntry.id);
+    const avgMins = dept ? dept.avgServiceMinutes : 5;
+    const counters = dept ? Math.max(1, dept.activeCounters) : 1;
+
+    // Entries ahead of current patient who are actively waiting in queue line (excluding currently serving entry)
+    const entriesAhead = targetIdx > 0
+      ? queue.slice(0, targetIdx).filter((e) => e.id !== inServiceEntry?.id && e.status === 'waiting')
+      : [];
+    const peopleAhead = entriesAhead.length;
+    const position = peopleAhead + 1;
+    const estimatedWaitMinutes = Math.max(0, Math.round((peopleAhead * avgMins) / counters));
+
+    // Privacy-Safe Queue: ONLY tokenNumber and clean queue status. Absolutely NO personal medical or demographic data.
+    const queueAhead = entriesAhead.map((e) => ({
+      tokenNumber: e.tokenNumber,
+      status: 'Waiting',
+    }));
+
+    return {
+      peopleAhead,
+      position,
+      estimatedWaitMinutes,
+      nowServingToken,
+      queueStatus: myEntry.status,
+      tokenNumber: myEntry.tokenNumber,
+      doctorName: doctor?.fullName || 'Dr. Priya Kumar, MD',
+      departmentName: dept?.name || 'General Medicine',
+      departmentNameTa: dept?.nameTa || 'பொது மருத்துவம்',
+      queueAhead,
+    };
+  }
+
+  public createVisit(params: {
+    patientId: string;
+    doctorId?: string;
+    departmentId: string;
+    symptoms?: string;
+    priority?: PatientPriority;
+  }) {
+    const patient = this.getPatientById(params.patientId);
+    if (!patient) throw new Error(`Patient ${params.patientId} not found`);
+
+    const dept = this.getDepartmentById(params.departmentId);
+    if (!dept) throw new Error(`Department ${params.departmentId} not found`);
+
+    const doctor = params.doctorId ? this.getUserById(params.doctorId) : this.getDoctors().find(d => d.departmentId === dept.id);
+    const priority = params.priority || (patient.age >= 60 ? 'senior' : 'normal');
+
+    // Archive / complete any prior active journeys and waiting queue entries for this patient
+    const priorActive = this.data.journeys.filter((j) => j.patientId === patient.id && j.status === 'active');
+    for (const pj of priorActive) {
+      pj.status = 'completed';
+      pj.completedAt = new Date().toISOString();
+      const priorQueue = this.data.queueEntries.filter(
+        (q) => q.journeyId === pj.id && (q.status === 'waiting' || q.status === 'called' || q.status === 'in_service')
+      );
+      for (const pq of priorQueue) {
+        pq.status = 'completed';
+        pq.completedAt = new Date().toISOString();
+      }
+    }
+
+    // Generate unique sequential token from department code
+    const tokenNumber = this.getNextTokenNumber(dept.code);
+
+    // 1. Create Journey
+    const journey = this.createJourney({
+      patientId: patient.id,
+      doctorId: doctor?.id,
+      hospitalId: dept.hospitalId,
+      initialDepartmentId: dept.id,
+      currentDepartmentId: dept.id,
+      currentStage: 'doctor',
+      currentToken: tokenNumber,
+      symptoms: params.symptoms,
+      status: 'active',
+      priority,
+      vitals: {
+        bp: '120/80 mmHg',
+        pulse: '76 bpm',
+        temp: '98.4 °F',
+        spo2: '99%',
+      },
+    });
+
+    // 2. Create Doctor Stage
+    const doctorStage = this.createJourneyStage({
+      journeyId: journey.id,
+      stageType: 'doctor',
+      departmentId: dept.id,
+      tokenNumber,
+      sequenceNum: 1,
+      status: 'waiting',
+      roomNumber: dept.roomNumber,
+      blockName: dept.blockName,
+      floorName: dept.floorName,
+      color: dept.color,
+      notes: params.symptoms ? `Chief complaint: ${params.symptoms}` : `Consultation with ${doctor?.fullName || dept.name}`,
+    });
+
+    // 3. Create Queue Entry
+    const queueSeq = this.getDepartmentQueue(dept.id).length + 1;
+    const queueEntry = this.createQueueEntry({
+      departmentId: dept.id,
+      doctorId: doctor?.id,
+      journeyId: journey.id,
+      journeyStageId: doctorStage.id,
+      patientId: patient.id,
+      tokenNumber,
+      sequenceNum: queueSeq,
+      status: 'waiting',
+      priority,
+    });
+
+    const metrics = this.getQueueMetricsForPatient(journey.id);
+
+    return {
+      journey,
+      doctorStage,
+      queueEntry,
+      tokenNumber,
+      department: dept,
+      doctor,
+      patient,
+      metrics,
+    };
   }
 
   // Consultations

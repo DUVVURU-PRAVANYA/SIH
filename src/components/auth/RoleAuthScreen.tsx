@@ -20,21 +20,24 @@ import {
 import { useQueueFlow } from '../../context/QueueFlowContext';
 
 export const RoleAuthScreen: React.FC = () => {
-  const { lang, setLang, loginWithPhone, verifyPatientOtp, loginStaff, registerPatientWithPhone } = useQueueFlow();
-
-  // Screen modes: 'identify' | 'patient_otp' | 'staff_password' | 'register'
-  const [authStep, setAuthStep] = useState<'identify' | 'patient_otp' | 'staff_password' | 'register'>('identify');
+  const {
+    lang,
+    setLang,
+    authStatus,
+    pendingOtpSession,
+    currentPath,
+    navigate,
+    requestPatientOtp,
+    cancelOtpSession,
+    verifyPatientOtp,
+    loginStaff,
+    registerPatientWithPhone,
+  } = useQueueFlow();
 
   // Input states
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
-  const [demoOtpCode, setDemoOtpCode] = useState('123456');
-
-  // Active patient session pending OTP
-  const [pendingPhone, setPendingPhone] = useState('');
-  const [maskedPhoneDisplay, setMaskedPhoneDisplay] = useState('');
-  const [detectedPatientName, setDetectedPatientName] = useState('');
 
   // Active staff pending password
   const [detectedStaff, setDetectedStaff] = useState<{ username: string; fullName: string; role: string } | null>(null);
@@ -46,6 +49,7 @@ export const RoleAuthScreen: React.FC = () => {
     gender: 'Female' as 'Male' | 'Female' | 'Other',
     bloodGroup: 'O+ve',
     allergies: 'Penicillin',
+    chronicConditions: 'None Reported',
     phone: '',
   });
 
@@ -54,11 +58,30 @@ export const RoleAuthScreen: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Clear messages on step transition
+  // Determine active view based on persistent authStatus, route, and staff selection
+  const isOtpView = currentPath === '/verify-otp' || authStatus === 'OTP_PENDING';
+  const isRegisterView = currentPath === '/patient/register' || currentPath === '/register';
+  const isOtpExpired = isOtpView && (!pendingOtpSession || (pendingOtpSession.expiresAt && pendingOtpSession.expiresAt < Date.now()));
+
+  const activeStep: 'identify' | 'patient_otp' | 'staff_password' | 'register' = isOtpView
+    ? 'patient_otp'
+    : detectedStaff
+    ? 'staff_password'
+    : isRegisterView
+    ? 'register'
+    : 'identify';
+
   const switchStep = (step: 'identify' | 'patient_otp' | 'staff_password' | 'register') => {
     setErrorMessage('');
     setSuccessMessage('');
-    setAuthStep(step);
+    if (step === 'register') {
+      navigate('/patient/register');
+    } else if (step === 'identify') {
+      setDetectedStaff(null);
+      navigate('/login');
+    } else if (step === 'patient_otp') {
+      navigate('/verify-otp');
+    }
   };
 
   // STEP 1: Handle Common Identifier Submission (Auto-detects Patient Mobile or Staff Username)
@@ -80,21 +103,16 @@ export const RoleAuthScreen: React.FC = () => {
     if (cleanDigits.length >= 10) {
       const phoneToUse = cleanDigits.slice(-10);
       try {
-        const res = await loginWithPhone(phoneToUse);
+        const res = await requestPatientOtp(phoneToUse);
         if (res.success) {
-          setPendingPhone(phoneToUse);
-          setDemoOtpCode(res.demoOtp || '123456');
-          setDetectedPatientName(res.patientName || 'Patient');
-          setMaskedPhoneDisplay(res.maskedPhone || `+91 ${phoneToUse.slice(0, 2)}*** ***${phoneToUse.slice(-2)}`);
           setOtpDigits(['', '', '', '', '', '']);
           setSuccessMessage(
             lang === 'ta'
               ? `OTP +91 ${phoneToUse}-க்கு அனுப்பப்பட்டது. மாதிரி OTP: ${res.demoOtp || '123456'}`
               : `Demo OTP dispatched to +91 ${phoneToUse}. Demo OTP: ${res.demoOtp || '123456'}`
           );
-          switchStep('patient_otp');
         } else {
-          setErrorMessage(res.error || 'Mobile number not found. Please register as a new patient.');
+          setErrorMessage(res.error || 'Patient account not found. Please register as a new patient.');
         }
       } catch (err: any) {
         setErrorMessage(err.message || 'Error communicating with server');
@@ -172,13 +190,19 @@ export const RoleAuthScreen: React.FC = () => {
       return;
     }
 
+    const phoneToVerify = pendingOtpSession?.phone;
+    if (!phoneToVerify) {
+      setErrorMessage(lang === 'ta' ? 'மொபைல் அமர்வு இல்லை. தயவுசெய்து மீண்டும் முயற்சிக்கவும்.' : 'Mobile session not found. Please enter your mobile number again.');
+      return;
+    }
+
     setLoading(true);
     try {
-      const res = await verifyPatientOtp(pendingPhone, enteredOtp);
+      const res = await verifyPatientOtp(phoneToVerify, enteredOtp);
       if (!res.success) {
         setErrorMessage(res.error || 'Invalid OTP. Please try again.');
       }
-      // On success, QueueFlowContext automatically switches role to 'patient' and loads session
+      // On success, QueueFlowContext automatically switches authStatus to 'AUTHENTICATED' and navigates
     } catch (err: any) {
       setErrorMessage(err.message || 'OTP verification failed');
     } finally {
@@ -235,6 +259,7 @@ export const RoleAuthScreen: React.FC = () => {
         gender: regForm.gender,
         bloodGroup: regForm.bloodGroup,
         allergies: regForm.allergies ? [regForm.allergies] : ['None Reported'],
+        chronicConditions: regForm.chronicConditions ? [regForm.chronicConditions] : ['None Reported'],
         phone: cleanPhone,
       });
 
@@ -244,18 +269,12 @@ export const RoleAuthScreen: React.FC = () => {
         return;
       }
 
-      // Registration created: Transition to OTP verification step
-      setPendingPhone(cleanPhone);
-      setDemoOtpCode(res.demoOtp || '123456');
-      setDetectedPatientName(regForm.name.trim());
-      setMaskedPhoneDisplay(`+91 ${cleanPhone.slice(0, 2)}*** ***${cleanPhone.slice(-2)}`);
       setOtpDigits(['', '', '', '', '', '']);
       setSuccessMessage(
         lang === 'ta'
           ? `பதிவு முடிந்தது. OTP அனுப்பப்பட்டது. மாதிரி OTP: ${res.demoOtp || '123456'}`
           : `Account created! OTP dispatched. Demo OTP: ${res.demoOtp || '123456'}`
       );
-      switchStep('patient_otp');
     } catch (err: any) {
       setErrorMessage(err.message || 'Registration error');
     } finally {
@@ -351,7 +370,7 @@ export const RoleAuthScreen: React.FC = () => {
         {/* ================================================================ */}
         {/* VIEW 1: COMMON LOGIN PAGE (Mobile or Staff Username) */}
         {/* ================================================================ */}
-        {authStep === 'identify' && (
+        {activeStep === 'identify' && (
           <div className="w-full bg-slate-900/95 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
             <div className="text-center space-y-1.5">
               <span className="text-[11px] uppercase font-bold tracking-wider text-teal-400 bg-teal-950/80 px-2.5 py-0.5 rounded-full border border-teal-800">
@@ -435,113 +454,138 @@ export const RoleAuthScreen: React.FC = () => {
         {/* ================================================================ */}
         {/* VIEW 2A: PATIENT OTP VERIFICATION */}
         {/* ================================================================ */}
-        {authStep === 'patient_otp' && (
+        {activeStep === 'patient_otp' && (
           <div className="w-full bg-slate-900/95 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
             <button
-              onClick={() => switchStep('identify')}
+              type="button"
+              onClick={cancelOtpSession}
               className="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1 cursor-pointer transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>{lang === 'ta' ? 'எண்ணை மாற்றவும்' : 'Change Mobile Number'}</span>
+              <span>{lang === 'ta' ? 'எண்ணை மாற்றவும் / உள்நுழைவுக்குச் செல்லவும்' : 'Change Mobile Number / Back to Login'}</span>
             </button>
 
-            <div className="text-center space-y-1">
-              <div className="w-12 h-12 rounded-full bg-blue-900/40 border border-blue-500/30 text-blue-400 flex items-center justify-center mx-auto mb-2">
-                <Phone className="w-6 h-6" />
-              </div>
-              <h2 className="text-lg sm:text-xl font-bold font-serif text-white">
-                {lang === 'ta' ? 'OTP சரிபார்ப்பு' : 'Patient OTP Verification'}
-              </h2>
-              <p className="text-xs text-slate-300">
-                {lang === 'ta' ? 'அனுப்பப்பட்ட எண்:' : 'OTP sent to:'}{' '}
-                <strong className="text-teal-300 font-mono font-bold">{maskedPhoneDisplay}</strong>
-              </p>
-              {detectedPatientName && (
-                <div className="text-xs text-slate-400">
-                  Patient Account: <strong className="text-slate-200">{detectedPatientName}</strong>
-                </div>
-              )}
-            </div>
-
-            {/* Clear Demo Mode Indicator */}
-            <div className="p-3 bg-amber-950/40 border border-amber-500/40 rounded-xl text-center space-y-1">
-              <div className="flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-300">
-                <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
-                <span>Demo Mode Active</span>
-              </div>
-              <p className="text-xs text-amber-200">
-                Demo OTP Code:{' '}
-                <span className="font-mono text-sm font-extrabold text-amber-300 bg-amber-900/60 px-2 py-0.5 rounded border border-amber-600">
-                  {demoOtpCode}
-                </span>
-              </p>
-              <p className="text-[10px] text-amber-400/80">
-                Backend strictly verifies this OTP before granting access to patient records.
-              </p>
-            </div>
-
-            {/* 6-Digit OTP Inputs */}
-            <form onSubmit={handleVerifyOtp} className="space-y-5">
-              <div>
-                <label className="block text-xs font-medium text-slate-300 text-center mb-2.5">
-                  {lang === 'ta' ? '6 இலக்க OTP குறியீட்டை உள்ளிடவும்' : 'Enter 6-digit OTP'}
-                </label>
-                <div className="flex justify-center gap-2 sm:gap-3">
-                  {otpDigits.map((digit, index) => (
-                    <input
-                      key={index}
-                      id={`otp-input-${index}`}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      onPaste={handleOtpPaste}
-                      className="w-10 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-mono font-bold bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/50 transition-all"
-                      autoFocus={index === 0}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="space-y-2">
-                <button
-                  type="submit"
-                  disabled={loading || otpDigits.join('').length !== 6}
-                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  {loading ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <>
-                      <ShieldCheck className="w-4 h-4" />
-                      <span>{lang === 'ta' ? 'OTP சரிபார்க்கவும்' : 'Verify OTP & Open Dashboard'}</span>
-                    </>
-                  )}
-                </button>
-
-                {/* Quick Auto-fill button for demo convenience */}
+            {isOtpExpired ? (
+              <div className="p-4 bg-amber-950/60 border-2 border-amber-500/50 rounded-xl text-center space-y-3">
+                <AlertCircle className="w-8 h-8 text-amber-400 mx-auto" />
+                <h3 className="text-base font-bold text-white">
+                  {lang === 'ta' ? 'OTP காலம் முடிந்துவிட்டது' : 'Your OTP session has expired. Please request a new OTP.'}
+                </h3>
+                <p className="text-xs text-amber-200">
+                  {lang === 'ta' ? '10 நிமிட கால அவகாசம் முடிந்தது.' : 'The OTP verification window has lapsed.'}
+                </p>
                 <button
                   type="button"
-                  onClick={() => {
-                    const code = demoOtpCode || '123456';
-                    setOtpDigits(code.split('').slice(0, 6));
-                  }}
-                  className="w-full py-1 text-center text-xs text-slate-400 hover:text-teal-300 transition-colors cursor-pointer"
+                  onClick={cancelOtpSession}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-xs transition-all cursor-pointer shadow-md inline-flex items-center gap-1.5 mx-auto"
                 >
-                  [ Auto-fill Demo OTP: {demoOtpCode} ]
+                  <RefreshCw className="w-4 h-4" />
+                  <span>{lang === 'ta' ? 'புதிய OTP கோரவும்' : 'Request New OTP'}</span>
                 </button>
               </div>
-            </form>
+            ) : (
+              <>
+                <div className="text-center space-y-1">
+                  <div className="w-12 h-12 rounded-full bg-blue-900/40 border border-blue-500/30 text-blue-400 flex items-center justify-center mx-auto mb-2">
+                    <Phone className="w-6 h-6" />
+                  </div>
+                  <h2 className="text-lg sm:text-xl font-bold font-serif text-white">
+                    {lang === 'ta' ? 'OTP சரிபார்ப்பு' : 'Patient OTP Verification'}
+                  </h2>
+                  <p className="text-xs text-slate-300">
+                    {lang === 'ta' ? 'அனுப்பப்பட்ட எண்:' : 'OTP sent to:'}{' '}
+                    <strong className="text-teal-300 font-mono font-bold">
+                      {pendingOtpSession?.maskedPhone || `+91 ${pendingOtpSession?.phone || ''}`}
+                    </strong>
+                  </p>
+                  {pendingOtpSession?.patientName && (
+                    <div className="text-xs text-slate-400">
+                      Patient Account: <strong className="text-slate-200">{pendingOtpSession.patientName}</strong>
+                    </div>
+                  )}
+                </div>
+
+                {/* Clear Demo Mode Indicator */}
+                <div className="p-3 bg-amber-950/40 border border-amber-500/40 rounded-xl text-center space-y-1">
+                  <div className="flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-300">
+                    <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+                    <span>Demo Mode Active</span>
+                  </div>
+                  <p className="text-xs text-amber-200">
+                    Demo OTP Code:{' '}
+                    <span className="font-mono text-sm font-extrabold text-amber-300 bg-amber-900/60 px-2 py-0.5 rounded border border-amber-600">
+                      {pendingOtpSession?.demoOtp || '123456'}
+                    </span>
+                  </p>
+                  <p className="text-[10px] text-amber-400/80">
+                    Backend strictly verifies this OTP before granting access to patient records.
+                  </p>
+                </div>
+
+                {/* 6-Digit OTP Inputs */}
+                <form onSubmit={handleVerifyOtp} className="space-y-5">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 text-center mb-2.5">
+                      {lang === 'ta' ? '6 இலக்க OTP குறியீட்டை உள்ளிடவும்' : 'Enter 6-digit OTP'}
+                    </label>
+                    <div className="flex justify-center gap-2 sm:gap-3">
+                      {otpDigits.map((digit, index) => (
+                        <input
+                          key={index}
+                          id={`otp-input-${index}`}
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={1}
+                          value={digit}
+                          onChange={(e) => handleOtpChange(index, e.target.value)}
+                          onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                          onPaste={handleOtpPaste}
+                          className="w-10 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-mono font-bold bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/50 transition-all"
+                          autoFocus={index === 0}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="space-y-2">
+                    <button
+                      type="submit"
+                      disabled={loading || otpDigits.join('').length !== 6}
+                      className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    >
+                      {loading ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <ShieldCheck className="w-4 h-4" />
+                          <span>{lang === 'ta' ? 'OTP சரிபார்க்கவும்' : 'Verify OTP & Continue'}</span>
+                        </>
+                      )}
+                    </button>
+
+                    {/* Quick Auto-fill button for demo convenience */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const code = pendingOtpSession?.demoOtp || '123456';
+                        setOtpDigits(code.split('').slice(0, 6));
+                      }}
+                      className="w-full py-1 text-center text-xs text-slate-400 hover:text-teal-300 transition-colors cursor-pointer"
+                    >
+                      [ Auto-fill Demo OTP: {pendingOtpSession?.demoOtp || '123456'} ]
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
           </div>
         )}
 
         {/* ================================================================ */}
         {/* VIEW 2B: STAFF PASSWORD AUTHENTICATION */}
         {/* ================================================================ */}
-        {authStep === 'staff_password' && detectedStaff && (
+        {activeStep === 'staff_password' && detectedStaff && (
           <div className="w-full bg-slate-900/95 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
             <button
               onClick={() => switchStep('identify')}
@@ -612,7 +656,7 @@ export const RoleAuthScreen: React.FC = () => {
         {/* ================================================================ */}
         {/* VIEW 3: NEW PATIENT REGISTRATION */}
         {/* ================================================================ */}
-        {authStep === 'register' && (
+        {activeStep === 'register' && (
           <div className="w-full bg-slate-900/95 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-5">
             <button
               onClick={() => switchStep('identify')}
@@ -709,6 +753,19 @@ export const RoleAuthScreen: React.FC = () => {
                     className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md text-white focus:outline-none focus:border-teal-500"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block font-medium text-slate-300 mb-1">
+                  {lang === 'ta' ? 'நீண்டகால நோய்கள் (Chronic Conditions)' : 'Chronic Conditions'}
+                </label>
+                <input
+                  type="text"
+                  value={regForm.chronicConditions}
+                  onChange={(e) => setRegForm({ ...regForm, chronicConditions: e.target.value })}
+                  placeholder="e.g. Diabetes, Hypertension, Asthma / None Reported"
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md text-white focus:outline-none focus:border-teal-500"
+                />
               </div>
 
               <div>

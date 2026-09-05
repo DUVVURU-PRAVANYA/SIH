@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import confetti from 'canvas-confetti';
 import {
   UserRole,
+  AuthStatus,
+  PendingOtpSession,
   Language,
   AccessibilitySettings,
   Patient,
@@ -34,6 +36,7 @@ import {
 } from '../data/initialData';
 import { voiceService } from '../utils/voice';
 import { getT } from '../utils/translations';
+import { apiClient } from '../services/api';
 
 interface QueueFlowContextType {
   // Navigation & Preferences
@@ -44,6 +47,19 @@ interface QueueFlowContextType {
   t: (keyPath: string, vars?: Record<string, string | number>) => string;
   accessibility: AccessibilitySettings;
   updateAccessibility: (settings: Partial<AccessibilitySettings>) => void;
+
+  // Real Database Active Visit & Current Patient
+  currentPatient: Patient | null;
+  hasActiveVisit: boolean;
+  activeVisitData: any | null;
+  loadActiveVisit: (patientId?: string) => Promise<void>;
+  createPatientVisit: (data: {
+    patientId: string;
+    doctorId?: string;
+    departmentId: string;
+    symptoms?: string;
+    priority?: string;
+  }) => Promise<any>;
 
   // Hospital & Data
   hospitalConfig: {
@@ -174,16 +190,88 @@ interface QueueFlowContextType {
   stopVoice: () => void;
 
   // Authentication & Session Persistence
+  authStatus: AuthStatus;
+  pendingOtpSession: PendingOtpSession | null;
+  currentPath: string;
+  navigate: (to: string) => void;
+  requestPatientOtp: (phone: string) => Promise<{ success: boolean; next?: string; mobile?: string; demoOtp?: string; patientName?: string; maskedPhone?: string; error?: string }>;
+  cancelOtpSession: () => void;
   loginWithPhone: (phone: string) => Promise<{ success: boolean; demoOtp?: string; error?: string; patientName?: string; maskedPhone?: string }>;
-  verifyPatientOtp: (phone: string, otp: string) => Promise<{ success: boolean; error?: string }>;
+  verifyPatientOtp: (phone: string, otp: string) => Promise<{ success: boolean; hasActiveVisit?: boolean; error?: string; patient?: any }>;
   loginStaff: (username: string, password?: string) => Promise<{ success: boolean; role?: UserRole; error?: string }>;
-  registerPatientWithPhone: (data: { name: string; age: number; gender: 'Male' | 'Female' | 'Other'; phone: string; bloodGroup?: string; allergies?: string[] }) => Promise<{ success: boolean; demoOtp?: string; error?: string; patient?: Patient }>;
+  registerPatientWithPhone: (data: { name: string; age: number; gender: 'Male' | 'Female' | 'Other'; phone: string; bloodGroup?: string; allergies?: string[]; chronicConditions?: string[] }) => Promise<{ success: boolean; demoOtp?: string; error?: string; patient?: any }>;
+  updatePatientProfile: (patientId: string, data: { name?: string; nameTa?: string; age?: number; gender?: string; bloodGroup?: string; allergies?: string[] | string; chronicConditions?: string[] | string }) => Promise<{ success: boolean; data?: any; error?: string }>;
   logout: () => void;
 }
 
 const QueueFlowContext = createContext<QueueFlowContextType | undefined>(undefined);
 
 export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Pending OTP Session state (Restored on refresh)
+  const [pendingOtpSession, setPendingOtpSession] = useState<PendingOtpSession | null>(() => {
+    try {
+      const savedOtp = sessionStorage.getItem('gh_pending_otp') || localStorage.getItem('gh_pending_otp');
+      if (savedOtp) {
+        const parsed = JSON.parse(savedOtp);
+        return parsed;
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  });
+
+  // Explicit Auth Status: 'NOT_AUTHENTICATED' | 'OTP_PENDING' | 'AUTHENTICATED'
+  const [authStatus, setAuthStatus] = useState<AuthStatus>(() => {
+    try {
+      const savedOtp = sessionStorage.getItem('gh_pending_otp') || localStorage.getItem('gh_pending_otp');
+      if (savedOtp) {
+        const parsed = JSON.parse(savedOtp);
+        if (parsed.expiresAt && parsed.expiresAt > Date.now()) {
+          return 'OTP_PENDING';
+        }
+      }
+      const saved = localStorage.getItem('gh_session');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.role && ['patient', 'doctor', 'scan_lab', 'pharmacy'].includes(parsed.role)) {
+          return 'AUTHENTICATED';
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return 'NOT_AUTHENTICATED';
+  });
+
+  // URL / Route synchronization
+  const [currentPath, setCurrentPath] = useState<string>(() => {
+    const hash = window.location.hash.replace(/^#/, '');
+    if (hash) return hash.startsWith('/') ? hash : `/${hash}`;
+    return window.location.pathname || '/login';
+  });
+
+  const navigate = useCallback((to: string) => {
+    const normalized = to.startsWith('/') ? to : `/${to}`;
+    setCurrentPath(normalized);
+    try {
+      window.location.hash = normalized;
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace(/^#/, '');
+      if (hash) {
+        setCurrentPath(hash.startsWith('/') ? hash : `/${hash}`);
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
   // Restore persisted session if available
   const [role, setRoleState] = useState<UserRole>(() => {
     try {
@@ -200,6 +288,22 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return 'auth';
   });
 
+  const [hasActiveVisit, setHasActiveVisit] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('gh_session');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return Boolean(parsed.hasActiveVisit);
+      }
+    } catch {
+      // ignore
+    }
+    return false;
+  });
+
+  const [currentPatient, setCurrentPatient] = useState<Patient | null>(null);
+  const [activeVisitData, setActiveVisitData] = useState<any | null>(null);
+
   const [activePatientId, setActivePatientIdState] = useState<string>(() => {
     try {
       const saved = localStorage.getItem('gh_session');
@@ -210,7 +314,7 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     } catch {
       // ignore
     }
-    return 'GH-P-00127';
+    return '';
   });
 
   const setRole = (newRole: UserRole) => {
@@ -293,8 +397,184 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const t = useCallback(getT(lang), [lang]);
 
-  // Active Patient lookup
-  const activePatient = patients.find((p) => p.id === activePatientId) || patients[0] || null;
+  // Real Database Active Visit Loader
+  const loadActiveVisit = useCallback(async (targetPatientId?: string) => {
+    const idToUse = targetPatientId || activePatientId;
+    if (!idToUse) return;
+
+    try {
+      const res: any = await apiClient.getActiveVisit(idToUse);
+      if (res.success && res.hasActiveVisit && res.data) {
+        setHasActiveVisit(true);
+        setActiveVisitData(res.data);
+        if (res.patient) {
+          setCurrentPatient(res.patient as any);
+        }
+      } else {
+        setHasActiveVisit(false);
+        setActiveVisitData(null);
+        if (res.patient) {
+          setCurrentPatient(res.patient as any);
+        }
+      }
+    } catch (err) {
+      console.warn('Could not load active visit:', err);
+    }
+  }, [activePatientId]);
+
+  const createPatientVisit = async (data: {
+    patientId: string;
+    doctorId?: string;
+    departmentId: string;
+    symptoms?: string;
+    priority?: string;
+    forceNew?: boolean;
+  }) => {
+    const res = await apiClient.createVisit(data);
+    if (!res.success || !res.data) {
+      throw new Error(res.error || 'Failed to create visit');
+    }
+
+    setHasActiveVisit(true);
+    await loadActiveVisit(data.patientId);
+
+    const pat = currentPatient || (activePatientId ? patients.find((p) => p.id === activePatientId) : null);
+    const patName = pat?.name || 'Patient';
+    const dept = departments.find((d) => d.id === data.departmentId);
+
+    const newPat: Patient = {
+      id: data.patientId,
+      token: res.data.tokenNumber,
+      name: patName,
+      nameTa: pat?.nameTa || patName,
+      age: pat?.age || 35,
+      gender: pat?.gender || 'Female',
+      phone: pat?.phone || '',
+      bloodGroup: pat?.bloodGroup || 'B+',
+      allergies: pat?.allergies || [],
+      existingConditions: pat?.existingConditions || [],
+      priority: (pat?.priority || 'normal') as any,
+      abhaId: pat?.abhaId || `91-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`,
+      departmentId: data.departmentId,
+      departmentName: res.data.department?.name || dept?.name || 'General Medicine OPD',
+      departmentNameTa: res.data.department?.nameTa || dept?.nameTa || 'பொது மருத்துவம்',
+      queuePosition: res.data.queueMetrics?.peopleAhead || 1,
+      estimatedWaitMinutes: res.data.queueMetrics?.estimatedWaitMinutes || 15,
+      status: 'normal',
+      currentStage: 'doctor',
+      vitals: {
+        bp: '120/80 mmHg',
+        pulse: '72 bpm',
+        temp: '98.6 °F',
+        weight: '60 kg',
+        spo2: '99%',
+      },
+      stagesHistory: [
+        {
+          stage: 'registration',
+          title: 'Central Registration & Token Triage',
+          titleTa: 'மைய பதிவு மற்றும் டோக்கன் பிரிவு',
+          departmentCode: 'REG',
+          tokenNumber: `REG-${data.patientId.slice(-4)}`,
+          status: 'completed',
+          room: 'Counter 2',
+          block: 'Block A',
+          floor: 'Ground Floor',
+          color: 'yellow',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        },
+        {
+          stage: 'doctor',
+          title: `${res.data.department?.name || 'General Medicine'} Consultation`,
+          titleTa: `${res.data.department?.nameTa || 'பொது மருத்துவம்'} ஆலோசனை`,
+          departmentCode: res.data.department?.code || 'GM',
+          tokenNumber: res.data.tokenNumber,
+          status: 'current',
+          room: res.data.department?.roomNumber || 'Room 12',
+          block: res.data.department?.blockName || 'Block B',
+          floor: res.data.department?.floorName || 'Ground Floor',
+          color: res.data.department?.color || 'blue',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        },
+      ],
+      location: {
+        block: res.data.department?.blockName || 'Block B',
+        floor: res.data.department?.floorName || 'Ground Floor',
+        room: res.data.department?.roomNumber || 'Room 12',
+        pathColor: res.data.department?.color || 'blue',
+        pathName: `Follow Blue Path → Room 12`,
+        pathNameTa: `நீல வழியைப் பின்பற்றவும் → அறை 12`,
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    setPatients((prev) => {
+      const idx = prev.findIndex((p) => p.id === data.patientId);
+      if (idx >= 0) {
+        const copy = [...prev];
+        copy[idx] = { ...copy[idx], ...newPat };
+        return copy;
+      }
+      return [newPat, ...prev];
+    });
+
+    setCurrentPatient(newPat);
+
+    try {
+      const existing = JSON.parse(localStorage.getItem('gh_session') || '{}');
+      localStorage.setItem('gh_session', JSON.stringify({ ...existing, hasActiveVisit: true }));
+    } catch {
+      // ignore
+    }
+
+    return res.data;
+  };
+
+  // Sync active visit on mount & periodic polling
+  useEffect(() => {
+    if (activePatientId && role === 'patient') {
+      loadActiveVisit(activePatientId);
+    }
+  }, [activePatientId, role, loadActiveVisit]);
+
+  // Dynamic real-time polling every 3 seconds for active visit & doctor queues
+  useEffect(() => {
+    if (role !== 'patient' && role !== 'doctor') return;
+
+    const interval = setInterval(() => {
+      if (role === 'patient' && activePatientId && hasActiveVisit) {
+        loadActiveVisit(activePatientId);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [role, activePatientId, hasActiveVisit, loadActiveVisit]);
+
+  // Active Patient lookup: derived from real database visit
+  const basePatient = currentPatient || (activePatientId ? patients.find((p) => p.id === activePatientId) : null) || null;
+
+  const activePatient: Patient | null = basePatient
+    ? {
+        ...basePatient,
+        ...(activeVisitData
+          ? {
+              token: activeVisitData.journey?.currentToken || activeVisitData.queueMetrics?.tokenNumber || basePatient.token,
+              departmentId: activeVisitData.department?.id || basePatient.departmentId,
+              departmentName: activeVisitData.department?.name || basePatient.departmentName,
+              departmentNameTa: activeVisitData.department?.nameTa || basePatient.departmentNameTa,
+              currentStage: activeVisitData.journey?.currentStage || 'doctor',
+              queuePosition: activeVisitData.queueMetrics?.peopleAhead !== undefined ? activeVisitData.queueMetrics.peopleAhead : basePatient.queuePosition,
+              estimatedWaitMinutes: activeVisitData.queueMetrics?.estimatedWaitMinutes !== undefined ? activeVisitData.queueMetrics.estimatedWaitMinutes : basePatient.estimatedWaitMinutes,
+              status: activeVisitData.queueMetrics?.queueStatus === 'in_service'
+                ? 'in_consultation'
+                : activeVisitData.queueMetrics?.queueStatus === 'called'
+                ? 'your_turn'
+                : 'normal',
+            }
+          : {}),
+      }
+    : null;
 
   // Sync voice settings
   useEffect(() => {
@@ -494,22 +774,32 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return newPat;
   };
 
-  // 2. Doctor OPD Queue Advance
+  // 2. Doctor OPD Queue Advance (Connects to Real Database Queue)
   const callNextOPDPatient = (deptId: string = 'dept-genmed') => {
+    // 1. Call Backend API to advance queue in database
+    apiClient.callPatient({ departmentId: deptId }).then((res) => {
+      if (res.success) {
+        if (activePatientId) {
+          loadActiveVisit(activePatientId);
+        }
+      }
+    }).catch((err) => {
+      console.warn('Backend call patient notification:', err);
+    });
+
+    // 2. Update local state as well
     setPatients((prev) => {
       const deptPatients = prev.filter((p) => p.departmentId === deptId && p.currentStage === 'doctor');
       if (deptPatients.length === 0) return prev;
 
       return prev.map((p) => {
         if (p.departmentId === deptId && p.currentStage === 'doctor') {
-          const newPos = Math.max(1, p.queuePosition - 1);
-          let newStatus = p.status;
-          if (newPos === 1) newStatus = 'approaching';
-          if (p.token === 'OP-047' && newPos === 1) newStatus = 'approaching';
+          const newPos = Math.max(0, p.queuePosition - 1);
+          const newStatus = newPos === 0 ? 'in_consultation' : newPos === 1 ? 'approaching' : p.status;
           return {
             ...p,
             queuePosition: newPos,
-            estimatedWaitMinutes: Math.max(2, newPos * 3),
+            estimatedWaitMinutes: Math.max(1, newPos * 3),
             status: newStatus,
           };
         }
@@ -520,8 +810,8 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     addNotification({
       title: 'OPD Queue Advanced',
       titleTa: 'OPD வரிசை நகர்த்தப்பட்டது',
-      message: 'Next patient called to Room 204.',
-      messageTa: 'அடுத்த நோயாளி அறை 204-க்கு அழைக்கப்பட்டார்.',
+      message: 'Next patient called into Consultation Room.',
+      messageTa: 'அடுத்த நோயாளி அறைக்குள் அழைக்கப்பட்டார்.',
       type: 'info',
       targetRole: 'doctor',
     });
@@ -570,6 +860,34 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   ) => {
     const targetPatient = patients.find((p) => p.id === patientId);
+
+    // Call Backend API to save Consultation, Prescription, and Diagnostic Orders to database
+    const targetJourneyId = activeVisitData?.journey?.id || `JNY-${patientId}`;
+    apiClient.completeConsultation({
+      journeyId: targetJourneyId,
+      patientId,
+      doctorId: 'usr-doc-1',
+      doctorName: 'Dr. Priya Kumar, MD, DM',
+      diagnosis: notes.diagnosis,
+      clinicalNotes: notes.clinicalNotes || (notes as any).notes || '',
+      medications: orders.prescriptions?.map((p, idx) => ({
+        id: `med-${idx + 1}`,
+        name: p.name,
+        dosage: p.dosage,
+        frequency: p.frequency,
+        duration: p.duration,
+        instructions: p.instructions,
+        quantity: p.quantity || 10,
+        isDispensed: false,
+      })),
+      investigations: orders.labTests || (orders.diagnosticTestName ? [orders.diagnosticTestName] : []),
+      routeTo: orders.labTests && orders.labTests.length > 0 ? 'lab' : (orders.diagnosticTestName ? 'x-ray' : (orders.prescriptions && orders.prescriptions.length > 0 ? 'pharmacy' : 'complete')),
+    }).then(() => {
+      if (activePatientId) loadActiveVisit(activePatientId);
+    }).catch((err) => {
+      console.warn('Backend complete consultation notification:', err);
+    });
+
     if (!targetPatient) return;
 
     // Handle Lab Order
@@ -983,6 +1301,11 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
               type: 'success',
               targetRole: 'doctor',
             });
+
+            // Sync with backend persistent database
+            apiClient.completeDiagnostic(orderId, results?.map((r) => `${r.testName}: ${r.value} ${r.unit}`).join(', ')).then(() => {
+              if (activePatientId) loadActiveVisit(activePatientId);
+            }).catch((err) => console.warn('Sync lab result to backend:', err));
           }
           return updated;
         }
@@ -1047,6 +1370,11 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
               type: 'info',
               targetRole: 'doctor',
             });
+
+            // Sync with backend persistent database
+            apiClient.completeDiagnostic(orderId, report?.findingsSummary).then(() => {
+              if (activePatientId) loadActiveVisit(activePatientId);
+            }).catch((err) => console.warn('Sync diagnostic scan to backend:', err));
           }
           return updated;
         }
@@ -1127,6 +1455,11 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
               type: 'success',
               targetRole: 'patient',
             });
+
+            // Sync with backend persistent database
+            apiClient.dispensePharmacyOrder(orderId).then(() => {
+              if (activePatientId) loadActiveVisit(activePatientId);
+            }).catch((err) => console.warn('Sync pharmacy dispense to backend:', err));
           }
 
           return updated;
@@ -1426,38 +1759,93 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // ==========================================
   // AUTHENTICATION & PATIENT OTP WORKFLOW
   // ==========================================
-  const loginWithPhone = async (rawPhone: string) => {
+  const requestPatientOtp = async (rawPhone: string) => {
+    const cleanPhone = (rawPhone || '').replace(/[^0-9]/g, '').slice(-10);
+    if (cleanPhone.length !== 10) {
+      return { success: false, error: 'Please enter a valid 10-digit mobile number' };
+    }
+
     try {
       const res = await fetch('http://localhost:4000/api/auth/identify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier: rawPhone }),
+        body: JSON.stringify({ identifier: cleanPhone }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        return { success: false, error: data.error || 'Failed to identify mobile number' };
+        return {
+          success: false,
+          error: data.error || 'Patient account not found. Please register as a new patient.',
+        };
       }
+
+      const session: PendingOtpSession = {
+        phone: cleanPhone,
+        patientName: data.patientName || 'Patient',
+        maskedPhone: data.maskedPhone || `+91 ${cleanPhone.slice(0, 2)}*** ***${cleanPhone.slice(-2)}`,
+        demoOtp: data.demoOtp || '123456',
+        expiresAt: Date.now() + 10 * 60 * 1000,
+        isNewPatient: false,
+      };
+
+      setPendingOtpSession(session);
+      setAuthStatus('OTP_PENDING');
+      try {
+        sessionStorage.setItem('gh_pending_otp', JSON.stringify(session));
+        localStorage.setItem('gh_pending_otp', JSON.stringify(session));
+      } catch {
+        // ignore
+      }
+
+      navigate('/verify-otp');
+
       return {
         success: true,
-        demoOtp: data.demoOtp || '123456',
-        patientName: data.patientName,
-        maskedPhone: data.maskedPhone,
+        next: 'OTP_VERIFICATION',
+        mobile: cleanPhone,
+        demoOtp: session.demoOtp,
+        patientName: session.patientName,
+        maskedPhone: session.maskedPhone,
       };
     } catch {
       // Offline fallback: check local patients
-      const clean = (rawPhone || '').replace(/[^0-9]/g, '').slice(-10);
-      const matched = patients.find((p) => p.phone.replace(/[^0-9]/g, '').slice(-10) === clean);
-      if (!matched && clean !== '9876543210' && clean !== '9840123456') {
+      const matched = patients.find((p) => p.phone.replace(/[^0-9]/g, '').slice(-10) === cleanPhone);
+      if (!matched && cleanPhone !== '9876543210' && cleanPhone !== '9840123456') {
         return { success: false, error: 'This mobile number is not registered. Please register first.' };
       }
+
+      const session: PendingOtpSession = {
+        phone: cleanPhone,
+        patientName: matched?.name || 'Anitha Kumar',
+        maskedPhone: `+91 ${cleanPhone.slice(0, 2)}*** ***${cleanPhone.slice(-2)}`,
+        demoOtp: '123456',
+        expiresAt: Date.now() + 10 * 60 * 1000,
+        isNewPatient: false,
+      };
+
+      setPendingOtpSession(session);
+      setAuthStatus('OTP_PENDING');
+      try {
+        sessionStorage.setItem('gh_pending_otp', JSON.stringify(session));
+        localStorage.setItem('gh_pending_otp', JSON.stringify(session));
+      } catch {
+        // ignore
+      }
+
+      navigate('/verify-otp');
+
       return {
         success: true,
+        next: 'OTP_VERIFICATION',
+        mobile: cleanPhone,
         demoOtp: '123456',
-        patientName: matched?.name || 'Anitha Kumar',
-        maskedPhone: `+91 ${clean.slice(0, 2)}*** ***${clean.slice(-2)}`,
+        patientName: session.patientName,
+        maskedPhone: session.maskedPhone,
       };
     }
   };
+
+  const loginWithPhone = requestPatientOtp;
 
   const verifyPatientOtp = async (rawPhone: string, otp: string) => {
     const cleanPhone = (rawPhone || '').replace(/[^0-9]/g, '').slice(-10);
@@ -1472,74 +1860,71 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         return { success: false, error: data.error || 'Invalid OTP. Please try again.' };
       }
 
-      // Successful verification
-      const patId = data.patient?.id || 'GH-2026-004281';
-      // Ensure patient is in local state
-      if (data.patient) {
-        setPatients((prev) => {
-          const exists = prev.find((p) => p.id === patId || p.phone.replace(/[^0-9]/g, '').slice(-10) === cleanPhone);
-          if (exists) return prev;
-          const newP: Patient = {
-            id: patId,
-            name: data.patient.name,
-            nameTa: data.patient.nameTa || data.patient.name,
-            age: data.patient.age || 46,
-            gender: data.patient.gender || 'Female',
-            phone: cleanPhone,
-            abhaId: '91-4829-1029-4821',
-            token: data.token || 'GM-038',
-            departmentId: 'dept-genmed',
-            departmentName: 'General Medicine (OPD)',
-            departmentNameTa: 'பொது மருத்துவ பிரிவு (OPD)',
-            currentStage: 'doctor',
-            queuePosition: 16,
-            estimatedWaitMinutes: 42,
-            status: 'normal',
-            priority: 'normal',
-            bloodGroup: data.patient.bloodGroup || 'O+ve',
-            allergies: data.patient.allergies || ['Penicillin'],
-            existingConditions: ['None Reported'],
-            address: 'District Government Hospital Jurisdiction',
-            emergencyContact: 'Family Member',
-            vitals: { bp: '120/80 mmHg', pulse: '76 bpm', temp: '98.4 °F', weight: '60 kg', spo2: '99%' },
-            stagesHistory: initialPatients[0]?.stagesHistory || [],
-            location: initialPatients[0]?.location || {
-              block: 'Block B',
-              floor: '2nd Floor',
-              room: 'Room 204',
-              pathColor: 'blue',
-              pathName: 'Follow Blue Path → Block B → 2nd Floor → Room 204',
-              pathNameTa: 'நீல வழித்தடத்தை பின்தொடரவும் → பிளாக் B → 2-ம் தளம் → அறை 204',
-            },
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
-          return [newP, ...prev];
-        });
+      // Successful verification: clear OTP pending state
+      setPendingOtpSession(null);
+      try {
+        sessionStorage.removeItem('gh_pending_otp');
+        localStorage.removeItem('gh_pending_otp');
+      } catch {
+        // ignore
       }
 
+      const pat = data.patient;
+      const patId = pat?.id || `GH-P-${cleanPhone.slice(-5)}`;
+      const hasVisit = Boolean(data.hasActiveVisit);
+
+      setCurrentPatient(pat);
       setActivePatientId(patId);
+      setHasActiveVisit(hasVisit);
+      setAuthStatus('AUTHENTICATED');
       setRole('patient');
-      localStorage.setItem('gh_session', JSON.stringify({ role: 'patient', patientId: patId }));
+
+      if (hasVisit) {
+        await loadActiveVisit(patId);
+        navigate('/patient/dashboard');
+      } else {
+        setActiveVisitData(null);
+        navigate('/patient/select-doctor');
+      }
+
+      localStorage.setItem('gh_session', JSON.stringify({
+        role: 'patient',
+        patientId: patId,
+        hasActiveVisit: hasVisit,
+      }));
 
       addNotification({
         title: 'Authentication Successful',
         titleTa: 'உள்நுழைவு வெற்றிகரமாக முடிந்தது',
-        message: `Welcome back, ${data.patient?.name || 'Patient'}. Connected to Hospital Queue.`,
-        messageTa: `வணக்கம், ${data.patient?.name || 'நோயாளி'}. மருத்துவமனை வரிசையில் இணைக்கப்பட்டுள்ளீர்கள்.`,
+        message: `Welcome, ${pat?.name || 'Patient'}. Session verified.`,
+        messageTa: `வணக்கம், ${pat?.name || 'நோயாளி'}. உங்கள் சுயவிவரம் திறக்கப்பட்டது.`,
         type: 'success',
         targetRole: 'patient',
       });
 
-      return { success: true };
+      return { success: true, hasActiveVisit: hasVisit, patient: pat };
     } catch {
       // Local fallback verification
       if (otp.trim() === '123456') {
-        const matched = patients.find((p) => p.phone.replace(/[^0-9]/g, '').slice(-10) === cleanPhone) || patients[0];
-        setActivePatientId(matched.id);
+        const matched = patients.find((p) => p.phone.replace(/[^0-9]/g, '').slice(-10) === cleanPhone);
+        const patId = matched ? matched.id : `GH-P-${cleanPhone.slice(-5)}`;
+
+        setPendingOtpSession(null);
+        try {
+          sessionStorage.removeItem('gh_pending_otp');
+          localStorage.removeItem('gh_pending_otp');
+        } catch {
+          // ignore
+        }
+
+        setActivePatientId(patId);
+        setHasActiveVisit(false);
+        setActiveVisitData(null);
+        setAuthStatus('AUTHENTICATED');
         setRole('patient');
-        localStorage.setItem('gh_session', JSON.stringify({ role: 'patient', patientId: matched.id }));
-        return { success: true };
+        navigate('/patient/select-doctor');
+        localStorage.setItem('gh_session', JSON.stringify({ role: 'patient', patientId: patId, hasActiveVisit: false }));
+        return { success: true, hasActiveVisit: false, patient: matched };
       }
       return { success: false, error: 'Invalid OTP. Please try again.' };
     }
@@ -1558,7 +1943,9 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }
 
       const assignedRole = data.role as UserRole;
+      setAuthStatus('AUTHENTICATED');
       setRole(assignedRole);
+      navigate(`/${assignedRole}/dashboard`);
       localStorage.setItem('gh_session', JSON.stringify({ role: assignedRole, username: data.user?.username }));
 
       addNotification({
@@ -1579,7 +1966,9 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       else if (norm === 'pharmacy' || norm === 'pharm_radha') assignedRole = 'pharmacy';
       else assignedRole = 'doctor';
 
+      setAuthStatus('AUTHENTICATED');
       setRole(assignedRole);
+      navigate(`/${assignedRole}/dashboard`);
       localStorage.setItem('gh_session', JSON.stringify({ role: assignedRole, username }));
       return { success: true, role: assignedRole };
     }
@@ -1592,17 +1981,9 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     phone: string;
     bloodGroup?: string;
     allergies?: string[];
+    chronicConditions?: string[];
   }) => {
     const cleanPhone = data.phone.replace(/[^0-9]/g, '').slice(-10);
-
-    // Frontend duplicate check across local patients state
-    const localExisting = patients.find((p) => p.phone.replace(/[^0-9]/g, '').slice(-10) === cleanPhone);
-    if (localExisting) {
-      return {
-        success: false,
-        error: 'This mobile number is already registered. Please login using OTP.',
-      };
-    }
 
     try {
       const res = await fetch('http://localhost:4000/api/auth/register-patient', {
@@ -1621,49 +2002,39 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         };
       }
 
-      // Add to local state
-      const newPat: Patient = {
-        id: resData.patient?.id || `GH-P-${Math.floor(10000 + Math.random() * 90000)}`,
-        name: data.name,
-        nameTa: data.name,
-        age: data.age,
-        gender: data.gender,
+      // Profile created in DB. Store pending OTP session & transition to /verify-otp
+      const registeredPatient = resData.patient;
+      setCurrentPatient(registeredPatient);
+      setHasActiveVisit(false);
+      setActiveVisitData(null);
+
+      const session: PendingOtpSession = {
         phone: cleanPhone,
-        abhaId: `91-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`,
-        token: resData.token || 'GM-089',
-        departmentId: 'dept-genmed',
-        departmentName: 'General Medicine (OPD)',
-        departmentNameTa: 'பொது மருத்துவ பிரிவு (OPD)',
-        currentStage: 'doctor',
-        queuePosition: 12,
-        estimatedWaitMinutes: 36,
-        status: 'normal',
-        priority: data.age >= 60 ? 'senior' : 'normal',
-        bloodGroup: data.bloodGroup || 'B+ve',
-        allergies: data.allergies || ['None Reported'],
-        existingConditions: ['None Reported'],
-        address: 'District Government Hospital Jurisdiction',
-        emergencyContact: 'Family Member',
-        vitals: { bp: '120/80 mmHg', pulse: '76 bpm', temp: '98.4 °F', weight: '62 kg', spo2: '99%' },
-        stagesHistory: initialPatients[0]?.stagesHistory || [],
-        location: initialPatients[0]?.location || {
-          block: 'Block B',
-          floor: '2nd Floor',
-          room: 'Room 204',
-          pathColor: 'blue',
-          pathName: 'Follow Blue Path → Block B → 2nd Floor → Room 204',
-          pathNameTa: 'நீல வழித்தடத்தை பின்தொடரவும் → பிளாக் B → 2-ம் தளம் → அறை 204',
-        },
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        patientName: registeredPatient.name,
+        maskedPhone: `+91 ${cleanPhone.slice(0, 2)}*** ***${cleanPhone.slice(-2)}`,
+        demoOtp: resData.demoOtp || '123456',
+        expiresAt: Date.now() + 10 * 60 * 1000,
+        isNewPatient: true,
       };
 
-      setPatients((prev) => [newPat, ...prev]);
+      setPendingOtpSession(session);
+      setAuthStatus('OTP_PENDING');
+      try {
+        sessionStorage.setItem('gh_pending_otp', JSON.stringify(session));
+        localStorage.setItem('gh_pending_otp', JSON.stringify(session));
+      } catch {
+        // ignore
+      }
+
+      navigate('/verify-otp');
 
       return {
         success: true,
-        demoOtp: resData.demoOtp || '123456',
-        patient: newPat,
+        next: 'OTP_VERIFICATION',
+        mobile: cleanPhone,
+        demoOtp: session.demoOtp,
+        patient: registeredPatient,
+        hasActiveVisit: false,
       };
     } catch {
       // Local fallback creation
@@ -1676,45 +2047,116 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         gender: data.gender,
         phone: cleanPhone,
         abhaId: `91-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`,
-        token: 'GM-099',
-        departmentId: 'dept-genmed',
-        departmentName: 'General Medicine (OPD)',
-        departmentNameTa: 'பொது மருத்துவ பிரிவு (OPD)',
-        currentStage: 'doctor',
-        queuePosition: 14,
-        estimatedWaitMinutes: 42,
+        token: '',
+        departmentId: '',
+        departmentName: '',
+        departmentNameTa: '',
+        currentStage: 'registration',
+        queuePosition: 0,
+        estimatedWaitMinutes: 0,
         status: 'normal',
         priority: data.age >= 60 ? 'senior' : 'normal',
-        bloodGroup: data.bloodGroup || 'B+ve',
+        bloodGroup: data.bloodGroup || 'O+ve',
         allergies: data.allergies || ['None Reported'],
-        existingConditions: ['None Reported'],
+        existingConditions: data.chronicConditions || ['None Reported'],
         address: 'District Government Hospital Jurisdiction',
         emergencyContact: 'Family Member',
         vitals: { bp: '120/80 mmHg', pulse: '76 bpm', temp: '98.4 °F', weight: '62 kg', spo2: '99%' },
-        stagesHistory: initialPatients[0]?.stagesHistory || [],
-        location: initialPatients[0]?.location || {
+        stagesHistory: [],
+        location: {
           block: 'Block B',
-          floor: '2nd Floor',
-          room: 'Room 204',
+          floor: 'Ground Floor',
+          room: 'Rooms 4-8',
           pathColor: 'blue',
-          pathName: 'Follow Blue Path → Block B → 2nd Floor → Room 204',
-          pathNameTa: 'நீல வழித்தடத்தை பின்தொடரவும் → பிளாக் B → 2-ம் தளம் → அறை 204',
+          pathName: 'Follow Blue Path',
+          pathNameTa: 'நீல வழித்தடம்',
         },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      setPatients((prev) => [newPat, ...prev]);
-      return { success: true, demoOtp: '123456', patient: newPat };
+      setCurrentPatient(newPat);
+      setHasActiveVisit(false);
+      setActiveVisitData(null);
+
+      const session: PendingOtpSession = {
+        phone: cleanPhone,
+        patientName: data.name,
+        maskedPhone: `+91 ${cleanPhone.slice(0, 2)}*** ***${cleanPhone.slice(-2)}`,
+        demoOtp: '123456',
+        expiresAt: Date.now() + 10 * 60 * 1000,
+        isNewPatient: true,
+      };
+
+      setPendingOtpSession(session);
+      setAuthStatus('OTP_PENDING');
+      try {
+        sessionStorage.setItem('gh_pending_otp', JSON.stringify(session));
+        localStorage.setItem('gh_pending_otp', JSON.stringify(session));
+      } catch {
+        // ignore
+      }
+
+      navigate('/verify-otp');
+
+      return { success: true, next: 'OTP_VERIFICATION', mobile: cleanPhone, demoOtp: '123456', patient: newPat, hasActiveVisit: false };
+    }
+  };
+
+  const cancelOtpSession = () => {
+    setPendingOtpSession(null);
+    setAuthStatus('NOT_AUTHENTICATED');
+    try {
+      sessionStorage.removeItem('gh_pending_otp');
+      localStorage.removeItem('gh_pending_otp');
+    } catch {
+      // ignore
+    }
+    navigate('/login');
+  };
+
+  const updatePatientProfile = async (
+    patientId: string,
+    data: {
+      name?: string;
+      nameTa?: string;
+      age?: number;
+      gender?: string;
+      bloodGroup?: string;
+      allergies?: string[] | string;
+      chronicConditions?: string[] | string;
+    }
+  ) => {
+    try {
+      const res = await apiClient.updatePatientProfile(patientId, data);
+      if (res.success && res.data) {
+        const updated = res.data;
+        setCurrentPatient((prev) => (prev ? { ...prev, ...updated } : updated));
+        setPatients((prev) =>
+          prev.map((p) => (p.id === patientId ? { ...p, ...updated } : p))
+        );
+        return { success: true, data: updated };
+      }
+      return { success: false, error: res.error || 'Failed to update profile' };
+    } catch (err: any) {
+      return { success: false, error: err.message };
     }
   };
 
   const logout = () => {
     try {
       localStorage.removeItem('gh_session');
+      localStorage.removeItem('gh_pending_otp');
+      sessionStorage.removeItem('gh_pending_otp');
     } catch {
       // ignore
     }
+    setPendingOtpSession(null);
+    setAuthStatus('NOT_AUTHENTICATED');
     setRole('auth');
+    setActivePatientId('');
+    setCurrentPatient(null);
+    setActiveVisitData(null);
+    navigate('/login');
   };
 
   return (
@@ -1722,6 +2164,12 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       value={{
         role,
         setRole,
+        authStatus,
+        pendingOtpSession,
+        currentPath,
+        navigate,
+        requestPatientOtp,
+        cancelOtpSession,
         lang,
         setLang,
         t,
@@ -1777,10 +2225,16 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         addNotification,
         speakPatientGuidance,
         stopVoice,
+        hasActiveVisit,
+        currentPatient,
+        activeVisitData,
+        loadActiveVisit,
+        createPatientVisit,
         loginWithPhone,
         verifyPatientOtp,
         loginStaff,
         registerPatientWithPhone,
+        updatePatientProfile,
         logout,
       }}
     >

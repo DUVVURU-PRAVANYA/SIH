@@ -51,8 +51,10 @@ apiRouter.post('/auth/identify', (req: Request, res: Response) => {
 
       return res.json({
         success: true,
+        next: 'OTP_VERIFICATION',
         type: 'patient',
         role: 'patient',
+        mobile: phone,
         phone,
         maskedPhone: `+91 ${phone.slice(0, 2)}*** ***${phone.slice(-2)}`,
         patientName: patient.name,
@@ -127,9 +129,10 @@ apiRouter.post('/auth/verify-otp', (req: Request, res: Response) => {
       });
     }
 
-    // Find active journey/token if available
-    const journeys = db.getJourneys().filter((j) => j.patientId === patient.id);
-    const activeJourney = journeys.find((j) => j.status === 'active') || journeys[0];
+    // Check if patient has a real active visit in the database
+    const activeJourney = db.getActiveJourneyForPatient(patient.id);
+    const hasActiveVisit = !!activeJourney;
+    const token = activeJourney ? activeJourney.currentToken : null;
 
     return res.json({
       success: true,
@@ -143,10 +146,12 @@ apiRouter.post('/auth/verify-otp', (req: Request, res: Response) => {
         gender: patient.gender,
         bloodGroup: patient.bloodGroup || 'O+ve',
         allergies: patient.allergies || ['None Reported'],
+        chronicConditions: patient.chronicConditions || ['None Reported'],
         role: 'patient',
       },
-      token: activeJourney?.currentToken || 'GM-038',
-      journeyId: activeJourney?.id,
+      hasActiveVisit,
+      token,
+      journeyId: activeJourney?.id || null,
       sessionToken: `gh-pat-sess-${patient.id}-${Date.now()}`,
     });
   } catch (err: any) {
@@ -154,10 +159,10 @@ apiRouter.post('/auth/verify-otp', (req: Request, res: Response) => {
   }
 });
 
-// New Patient Registration with Mobile Number
+// New Patient Registration with Mobile Number (Profile only, NO auto-visit / token)
 apiRouter.post('/auth/register-patient', (req: Request, res: Response) => {
   try {
-    const { name, age, gender, bloodGroup, allergies, phone } = req.body;
+    const { name, age, gender, bloodGroup, allergies, chronicConditions, phone } = req.body;
 
     if (!name || !name.trim()) {
       return res.status(400).json({ success: false, error: 'Full name is required' });
@@ -186,7 +191,7 @@ apiRouter.post('/auth/register-patient', (req: Request, res: Response) => {
     const nextSeq = Math.floor(100 + Math.random() * 900);
     const patientId = `GH-P-${nextSeq.toString().padStart(5, '0')}`;
 
-    // Create Patient Record in database
+    // Create Patient Record in database (NO visit / token yet)
     const patient = db.createPatient({
       id: patientId,
       name: name.trim(),
@@ -197,6 +202,7 @@ apiRouter.post('/auth/register-patient', (req: Request, res: Response) => {
       abhaId: `91-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`,
       bloodGroup: bloodGroup || 'B+ve',
       allergies: Array.isArray(allergies) ? allergies : allergies ? [allergies] : ['None Reported'],
+      chronicConditions: Array.isArray(chronicConditions) ? chronicConditions : chronicConditions ? [chronicConditions] : ['None Reported'],
       preferredLanguage: 'ta',
       isSynthetic: false,
     });
@@ -205,23 +211,10 @@ apiRouter.post('/auth/register-patient', (req: Request, res: Response) => {
     const otp = DEFAULT_DEMO_OTP;
     otpStore.set(cleanPhone, { otp, expiresAt: Date.now() + 10 * 60 * 1000 });
 
-    // Also auto-create an initial General Medicine OPD visit token
-    const dept = db.getDepartmentByCode('GENMED') || db.getDepartments()[0];
-    const tokenNumber = db.getNextTokenNumber(dept.code);
-    const journey = db.createJourney({
-      patientId: patient.id,
-      hospitalId: dept.hospitalId,
-      initialDepartmentId: dept.id,
-      currentDepartmentId: dept.id,
-      currentStage: 'doctor',
-      currentToken: tokenNumber,
-      status: 'active',
-      priority: patient.age >= 60 ? 'senior' : 'normal',
-      vitals: { bp: '120/80 mmHg', pulse: '76 bpm', temp: '98.4 °F', spo2: '99%' },
-    });
-
     res.status(201).json({
       success: true,
+      next: 'OTP_VERIFICATION',
+      mobile: cleanPhone,
       message: 'Patient registered successfully. Please verify mobile with OTP.',
       patient: {
         id: patient.id,
@@ -230,16 +223,35 @@ apiRouter.post('/auth/register-patient', (req: Request, res: Response) => {
         age: patient.age,
         gender: patient.gender,
         bloodGroup: patient.bloodGroup,
+        allergies: patient.allergies,
+        chronicConditions: patient.chronicConditions,
         role: 'patient',
       },
-      token: tokenNumber,
-      journeyId: journey.id,
+      hasActiveVisit: false,
+      token: null,
+      journeyId: null,
       demoOtp: otp,
       demoMode: true,
     });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }
+});
+
+// Explicit Aliases requested: POST /patient/login/request-otp, /patient/register/request-otp, /patient/verify-otp
+apiRouter.post('/patient/login/request-otp', (req: Request, res: Response) => {
+  if (!req.body.identifier && (req.body.mobile || req.body.phone)) {
+    req.body.identifier = req.body.mobile || req.body.phone;
+  }
+  return (apiRouter as any).handle({ ...req, url: '/auth/identify', originalUrl: '/api/auth/identify' }, res);
+});
+
+apiRouter.post('/patient/register/request-otp', (req: Request, res: Response) => {
+  return (apiRouter as any).handle({ ...req, url: '/auth/register-patient', originalUrl: '/api/auth/register-patient' }, res);
+});
+
+apiRouter.post('/patient/verify-otp', (req: Request, res: Response) => {
+  return (apiRouter as any).handle({ ...req, url: '/auth/verify-otp', originalUrl: '/api/auth/verify-otp' }, res);
 });
 
 // Staff Authentication with Username + Password
@@ -369,6 +381,224 @@ apiRouter.post('/departments/:id/counter', (req: Request, res: Response) => {
 
     broadcastEvent('QUEUE_UPDATED', { departmentId: id });
     res.json({ success: true, data: updated });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ==========================================
+// 2.1 DOCTORS LIST
+// ==========================================
+apiRouter.get('/doctors', (req: Request, res: Response) => {
+  try {
+    const doctors = db.getDoctors();
+    res.json({ success: true, data: doctors });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ==========================================
+// 2.2 CREATE VISIT ONLY AFTER DOCTOR CONFIRMATION
+// ==========================================
+apiRouter.post('/visits/create', async (req: Request, res: Response) => {
+  try {
+    const { patientId, doctorId, departmentId, symptoms, priority, forceNew } = req.body;
+
+    if (!patientId || !departmentId) {
+      return res.status(400).json({ success: false, error: 'Patient ID and Department ID are required' });
+    }
+
+    const patient = db.getPatientById(patientId);
+    if (!patient) {
+      return res.status(404).json({ success: false, error: 'Patient account not found' });
+    }
+
+    const dept = db.getDepartmentById(departmentId);
+    if (!dept) {
+      return res.status(404).json({ success: false, error: 'Department not found' });
+    }
+
+    // Check if there is already an active journey for this patient (unless explicitly forcing new visit)
+    const existingActive = db.getActiveJourneyForPatient(patientId);
+    if (existingActive && !forceNew) {
+      const metrics = db.getQueueMetricsForPatient(existingActive.id);
+      return res.json({
+        success: true,
+        message: 'Active visit already exists for this patient',
+        data: {
+          journey: existingActive,
+          tokenNumber: existingActive.currentToken,
+          department: dept,
+          queueMetrics: metrics,
+        },
+      });
+    }
+
+    // Create real visit, queue entry and token in database
+    const result = db.createVisit({
+      patientId,
+      doctorId,
+      departmentId,
+      symptoms,
+      priority,
+    });
+
+    // Broadcast Realtime Event
+    broadcastEvent('TOKEN_CREATED', {
+      journeyId: result.journey.id,
+      tokenNumber: result.tokenNumber,
+      patientName: patient.name,
+      departmentId: result.department.id,
+      departmentName: result.department.name,
+      peopleAhead: result.metrics.peopleAhead,
+    });
+
+    broadcastEvent('QUEUE_UPDATED', { departmentId: result.department.id });
+
+    // Send In-App & SMS Notification
+    await notificationService.sendNotification({
+      targetRole: 'patient',
+      targetJourneyId: result.journey.id,
+      title: 'Token Generated Successfully',
+      titleTa: 'டோக்கன் உருவாக்கப்பட்டது',
+      message: `Token ${result.tokenNumber} generated. Proceed to ${result.department.roomNumber} (${result.department.blockName}). ${result.metrics.peopleAhead} patients ahead.`,
+      messageTa: `டோக்கன் ${result.tokenNumber} உருவாக்கப்பட்டது. அறை ${result.department.roomNumber}-க்கு செல்லவும். உங்களுக்கு முன் ${result.metrics.peopleAhead} நபர்கள் உள்ளனர்.`,
+      type: 'info',
+      phone: patient.phone,
+      token: result.tokenNumber,
+    });
+
+    res.status(201).json({
+      success: true,
+      data: {
+        journey: result.journey,
+        doctorStage: result.doctorStage,
+        queueEntry: result.queueEntry,
+        tokenNumber: result.tokenNumber,
+        department: result.department,
+        doctor: result.doctor,
+        queueMetrics: result.metrics,
+      },
+    });
+  } catch (err: any) {
+    console.error('Error creating visit:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ==========================================
+// 2.3 PATIENT CURRENT ACTIVE VISIT & REAL QUEUE
+// ==========================================
+apiRouter.get('/patients/:id/active-visit', (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const patient = db.getPatientById(id);
+    if (!patient) {
+      return res.status(404).json({ success: false, error: 'Patient not found' });
+    }
+
+    let activeJourney = db.getActiveJourneyForPatient(patient.id);
+    let isCompletedVisit = false;
+
+    if (!activeJourney) {
+      // Check for completed visit for today
+      const recentCompleted = db.getRawData().journeys
+        .filter((j) => j.patientId === patient.id && j.status === 'completed')
+        .pop();
+      if (recentCompleted) {
+        activeJourney = recentCompleted;
+        isCompletedVisit = true;
+      }
+    }
+
+    if (!activeJourney) {
+      return res.json({
+        success: true,
+        hasActiveVisit: false,
+        patient,
+        data: null,
+      });
+    }
+
+    const metrics = db.getQueueMetricsForPatient(activeJourney.id);
+    const stages = db.getJourneyStages(activeJourney.id);
+    const department = db.getDepartmentById(activeJourney.currentDepartmentId);
+    const doctor = activeJourney.doctorId
+      ? db.getUserById(activeJourney.doctorId)
+      : db.getDoctors().find((d) => d.departmentId === activeJourney.currentDepartmentId);
+    const consultation = db.getConsultationByJourney(activeJourney.id);
+    const pharmacyOrder = db.getPharmacyOrders().find((p) => p.journeyId === activeJourney.id);
+    const diagnosticOrder = db.getDiagnosticOrders().find((d) => d.journeyId === activeJourney.id);
+
+    return res.json({
+      success: true,
+      hasActiveVisit: true,
+      patient,
+      data: {
+        journey: activeJourney,
+        stages,
+        department,
+        doctor,
+        queueMetrics: metrics,
+        consultation,
+        pharmacyOrder,
+        diagnosticOrder,
+      },
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ==========================================
+// 2.4 PATIENT PROFILE MANAGEMENT (PREFILL & UPDATES)
+// ==========================================
+apiRouter.get('/patients/:id', (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const patient = db.getPatientById(id);
+    if (!patient) {
+      return res.status(404).json({ success: false, error: 'Patient not found' });
+    }
+    res.json({ success: true, data: patient });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+apiRouter.put('/patients/:id/profile', (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { name, nameTa, age, gender, bloodGroup, allergies, chronicConditions } = req.body;
+    const existing = db.getPatientById(id);
+    if (!existing) {
+      return res.status(404).json({ success: false, error: 'Patient account not found' });
+    }
+
+    const parseList = (val: any): string[] => {
+      if (Array.isArray(val)) return val;
+      if (typeof val === 'string') {
+        return val.split(',').map((s) => s.trim()).filter(Boolean);
+      }
+      return [];
+    };
+
+    const updated = db.updatePatient(id, {
+      ...(name && { name: name.trim() }),
+      ...(nameTa && { nameTa: nameTa.trim() }),
+      ...(age !== undefined && { age: Number(age) }),
+      ...(gender && { gender }),
+      ...(bloodGroup && { bloodGroup }),
+      ...(allergies !== undefined && { allergies: parseList(allergies) }),
+      ...(chronicConditions !== undefined && { chronicConditions: parseList(chronicConditions) }),
+    });
+
+    res.json({
+      success: true,
+      message: 'Patient profile updated successfully',
+      data: updated,
+    });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -620,6 +850,17 @@ apiRouter.post('/queues/call', async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, error: 'No waiting patient found in queue' });
     }
 
+    // Mark any previous called or in_service entry in this department queue as completed
+    const activeEntries = db.getDepartmentQueue(targetQueueEntry.departmentId);
+    for (const prev of activeEntries) {
+      if ((prev.status === 'called' || prev.status === 'in_service') && prev.id !== targetQueueEntry.id) {
+        db.updateQueueEntry(prev.id, {
+          status: 'completed',
+          completedAt: new Date().toISOString(),
+        });
+      }
+    }
+
     // Update status to called
     const updatedEntry = db.updateQueueEntry(targetQueueEntry.id, {
       status: 'called',
@@ -687,6 +928,7 @@ apiRouter.post('/consultations/complete', async (req: Request, res: Response) =>
   try {
     const {
       journeyId,
+      patientId,
       doctorId,
       doctorName,
       diagnosis,
@@ -698,9 +940,17 @@ apiRouter.post('/consultations/complete', async (req: Request, res: Response) =>
       routeTo, // 'x-ray' | 'lab' | 'pharmacy' | 'complete'
     } = req.body;
 
-    const journey = db.getJourneyById(journeyId);
+    let journey = journeyId ? db.getJourneyById(journeyId) : undefined;
+    if (!journey && patientId) {
+      journey = db.getActiveJourneyForPatient(patientId);
+    }
+    if (!journey && journeyId) {
+      const trimmed = journeyId.replace(/^JNY-/, '');
+      journey = db.getActiveJourneyForPatient(trimmed);
+    }
+
     if (!journey) {
-      return res.status(404).json({ success: false, error: 'Journey not found' });
+      return res.status(404).json({ success: false, error: 'Active journey for patient not found' });
     }
 
     const patient = db.getPatientById(journey.patientId);

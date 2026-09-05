@@ -42,6 +42,9 @@ export const apiClient = {
       body: JSON.stringify({ activeCounters, isBottleneck }),
     }),
 
+  // Doctors
+  getDoctors: () => fetchApi('/doctors'),
+
   // Patient Registration & Journey
   registerPatient: (data: {
     name: string;
@@ -53,6 +56,32 @@ export const apiClient = {
     priority?: string;
     preferredLanguage?: string;
   }) => fetchApi('/patients/register', { method: 'POST', body: JSON.stringify(data) }),
+
+  createVisit: (data: {
+    patientId: string;
+    doctorId?: string;
+    departmentId: string;
+    symptoms?: string;
+    priority?: string;
+    forceNew?: boolean;
+  }) => fetchApi('/visits/create', { method: 'POST', body: JSON.stringify(data) }),
+
+  getActiveVisit: (patientId: string) => fetchApi(`/patients/${patientId}/active-visit`),
+
+  getPatient: (patientId: string) => fetchApi(`/patients/${patientId}`),
+
+  updatePatientProfile: (
+    patientId: string,
+    data: {
+      name?: string;
+      nameTa?: string;
+      age?: number;
+      gender?: string;
+      bloodGroup?: string;
+      allergies?: string[] | string;
+      chronicConditions?: string[] | string;
+    }
+  ) => fetchApi(`/patients/${patientId}/profile`, { method: 'PUT', body: JSON.stringify(data) }),
 
   getJourney: (journeyId: string) => fetchApi(`/journey/${journeyId}`),
 

@@ -87,6 +87,7 @@ export interface Patient {
   abhaId: string;
   bloodGroup?: string;
   allergies?: string[];
+  chronicConditions?: string[];
   role?: 'patient';
   preferredLanguage: 'ta' | 'en';
   isSynthetic: boolean;
@@ -96,11 +97,13 @@ export interface Patient {
 export interface Journey {
   id: string; // e.g. JNY-20260902-00042
   patientId: string;
+  doctorId?: string;
   hospitalId: string;
   initialDepartmentId: string;
   currentDepartmentId: string;
   currentStage: JourneyStageType;
   currentToken: string;
+  symptoms?: string;
   status: 'active' | 'completed' | 'cancelled';
   priority: PatientPriority;
   vitals: {
@@ -134,6 +137,7 @@ export interface JourneyStage {
 export interface QueueEntry {
   id: string;
   departmentId: string;
+  doctorId?: string;
   journeyId: string;
   journeyStageId: string;
   patientId: string;

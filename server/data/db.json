@@ -351,6 +351,257 @@
   ],
   "patients": [
     {
+      "id": "GH-P-00701",
+      "name": "Gopal R.",
+      "nameTa": "Gopal R.",
+      "age": 61,
+      "gender": "Male",
+      "phone": "9840331676",
+      "abhaId": "91-9237-3266-4299",
+      "bloodGroup": "B+ve",
+      "allergies": [
+        "None Reported"
+      ],
+      "chronicConditions": [
+        "None Reported"
+      ],
+      "preferredLanguage": "ta",
+      "isSynthetic": false,
+      "role": "patient",
+      "createdAt": "2026-09-05T07:58:01.863Z"
+    },
+    {
+      "id": "GH-P-00992",
+      "name": "Lakshmi S.",
+      "nameTa": "Lakshmi S.",
+      "age": 39,
+      "gender": "Female",
+      "phone": "9840221676",
+      "abhaId": "91-4317-9461-7874",
+      "bloodGroup": "B+ve",
+      "allergies": [
+        "None Reported"
+      ],
+      "chronicConditions": [
+        "None Reported"
+      ],
+      "preferredLanguage": "ta",
+      "isSynthetic": false,
+      "role": "patient",
+      "createdAt": "2026-09-05T07:58:01.834Z"
+    },
+    {
+      "id": "GH-P-00189",
+      "name": "Murugan K.",
+      "nameTa": "Murugan K.",
+      "age": 52,
+      "gender": "Male",
+      "phone": "9840111676",
+      "abhaId": "91-3656-3270-2601",
+      "bloodGroup": "B+ve",
+      "allergies": [
+        "None Reported"
+      ],
+      "chronicConditions": [
+        "None Reported"
+      ],
+      "preferredLanguage": "ta",
+      "isSynthetic": false,
+      "role": "patient",
+      "createdAt": "2026-09-05T07:58:01.785Z"
+    },
+    {
+      "id": "GH-P-00500",
+      "name": "Gopal R.",
+      "nameTa": "Gopal R.",
+      "age": 61,
+      "gender": "Male",
+      "phone": "9840333333",
+      "abhaId": "91-1975-1088-9462",
+      "bloodGroup": "B+ve",
+      "allergies": [
+        "None Reported"
+      ],
+      "chronicConditions": [
+        "None Reported"
+      ],
+      "preferredLanguage": "ta",
+      "isSynthetic": false,
+      "role": "patient",
+      "createdAt": "2026-09-05T07:57:24.874Z"
+    },
+    {
+      "id": "GH-P-00419",
+      "name": "Lakshmi S.",
+      "nameTa": "Lakshmi S.",
+      "age": 39,
+      "gender": "Female",
+      "phone": "9840222222",
+      "abhaId": "91-7757-8424-8248",
+      "bloodGroup": "B+ve",
+      "allergies": [
+        "None Reported"
+      ],
+      "chronicConditions": [
+        "None Reported"
+      ],
+      "preferredLanguage": "ta",
+      "isSynthetic": false,
+      "role": "patient",
+      "createdAt": "2026-09-05T07:57:24.851Z"
+    },
+    {
+      "id": "GH-P-00401",
+      "name": "Murugan K.",
+      "nameTa": "Murugan K.",
+      "age": 52,
+      "gender": "Male",
+      "phone": "9840111111",
+      "abhaId": "91-3660-6510-9450",
+      "bloodGroup": "B+ve",
+      "allergies": [
+        "None Reported"
+      ],
+      "chronicConditions": [
+        "None Reported"
+      ],
+      "preferredLanguage": "ta",
+      "isSynthetic": false,
+      "role": "patient",
+      "createdAt": "2026-09-05T07:57:24.813Z"
+    },
+    {
+      "id": "GH-P-00370",
+      "name": "aesrdtfyuio",
+      "nameTa": "aesrdtfyuio",
+      "age": 45,
+      "gender": "Female",
+      "phone": "7654321890",
+      "abhaId": "91-5131-1163-5358",
+      "bloodGroup": "O+ve",
+      "allergies": [
+        "Penicillin"
+      ],
+      "chronicConditions": [
+        "None Reported"
+      ],
+      "preferredLanguage": "ta",
+      "isSynthetic": false,
+      "role": "patient",
+      "createdAt": "2026-09-05T07:43:56.641Z"
+    },
+    {
+      "id": "GH-P-00924",
+      "name": "hnjemk",
+      "nameTa": "hnjemk",
+      "age": 33,
+      "gender": "Female",
+      "phone": "8569403456",
+      "abhaId": "91-7087-6912-1285",
+      "bloodGroup": "O+ve",
+      "allergies": [
+        "Penicillin"
+      ],
+      "chronicConditions": [
+        "None Reported"
+      ],
+      "preferredLanguage": "ta",
+      "isSynthetic": false,
+      "role": "patient",
+      "createdAt": "2026-09-05T07:32:04.575Z"
+    },
+    {
+      "id": "GH-P-00459",
+      "name": "Kavitha Ramesh",
+      "nameTa": "Kavitha Ramesh",
+      "age": 32,
+      "gender": "Female",
+      "phone": "9462618988",
+      "abhaId": "91-6307-1940-5622",
+      "bloodGroup": "B+",
+      "allergies": [
+        "Penicillin"
+      ],
+      "chronicConditions": [
+        "Asthma"
+      ],
+      "preferredLanguage": "ta",
+      "isSynthetic": false,
+      "role": "patient",
+      "createdAt": "2026-09-05T07:20:05.935Z"
+    },
+    {
+      "id": "GH-P-00255",
+      "name": "Kavitha Ramesh",
+      "nameTa": "Kavitha Ramesh",
+      "age": 32,
+      "gender": "Female",
+      "phone": "9436346326",
+      "abhaId": "91-4632-8035-1508",
+      "bloodGroup": "B+",
+      "allergies": [
+        "Penicillin"
+      ],
+      "chronicConditions": [
+        "Asthma"
+      ],
+      "preferredLanguage": "ta",
+      "isSynthetic": false,
+      "role": "patient",
+      "createdAt": "2026-09-05T07:19:38.775Z"
+    },
+    {
+      "id": "GH-P-00768",
+      "name": "Kavitha Ramesh",
+      "nameTa": "Kavitha Ramesh",
+      "age": 32,
+      "gender": "Female",
+      "phone": "9779153788",
+      "abhaId": "91-6413-6894-6652",
+      "bloodGroup": "B+",
+      "allergies": [
+        "Penicillin"
+      ],
+      "preferredLanguage": "ta",
+      "isSynthetic": false,
+      "role": "patient",
+      "createdAt": "2026-09-05T07:19:05.346Z"
+    },
+    {
+      "id": "GH-P-00785",
+      "name": "Kavitha Ramesh",
+      "nameTa": "Kavitha Ramesh",
+      "age": 32,
+      "gender": "Female",
+      "phone": "9751824767",
+      "abhaId": "91-1321-9318-7687",
+      "bloodGroup": "B+",
+      "allergies": [
+        "Penicillin"
+      ],
+      "preferredLanguage": "ta",
+      "isSynthetic": false,
+      "role": "patient",
+      "createdAt": "2026-09-05T07:18:49.417Z"
+    },
+    {
+      "id": "GH-P-00345",
+      "name": "shinchan",
+      "nameTa": "shinchan",
+      "age": 30,
+      "gender": "Female",
+      "phone": "7654382901",
+      "abhaId": "91-6365-1987-7499",
+      "bloodGroup": "O+ve",
+      "allergies": [
+        "None"
+      ],
+      "preferredLanguage": "ta",
+      "isSynthetic": false,
+      "role": "patient",
+      "createdAt": "2026-09-05T07:10:48.144Z"
+    },
+    {
       "id": "GH-P-00945",
       "name": "Murugesan K.",
       "nameTa": "Murugesan K.",
@@ -377,12 +628,16 @@
       "abhaId": "91-4829-1029-4821",
       "bloodGroup": "O+ve",
       "allergies": [
-        "Penicillin"
+        "Penicillin",
+        "Dust"
       ],
       "role": "patient",
       "preferredLanguage": "ta",
       "isSynthetic": true,
-      "createdAt": "2026-09-04T08:45:00.000Z"
+      "createdAt": "2026-09-04T08:45:00.000Z",
+      "chronicConditions": [
+        "Type 2 Diabetes"
+      ]
     },
     {
       "name": "Ganesan S.",
@@ -475,6 +730,346 @@
     }
   ],
   "journeys": [
+    {
+      "patientId": "GH-P-00370",
+      "doctorId": "usr-doc-1",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-genmed",
+      "currentStage": "doctor",
+      "currentToken": "GENMED-102",
+      "symptoms": "OPD Consultation requested",
+      "status": "active",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00061",
+      "createdAt": "2026-09-05T08:02:09.172Z"
+    },
+    {
+      "patientId": "GH-P-00127",
+      "doctorId": "usr-doc-1",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-genmed",
+      "currentStage": "doctor",
+      "currentToken": "GENMED-101",
+      "symptoms": "OPD Consultation requested",
+      "status": "active",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00060",
+      "createdAt": "2026-09-05T08:01:54.372Z"
+    },
+    {
+      "patientId": "GH-P-00127",
+      "doctorId": "usr-doc-1",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-genmed",
+      "currentStage": "doctor",
+      "currentToken": "GENMED-100",
+      "symptoms": "Checkup for allergies and blood sugar",
+      "status": "completed",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00059",
+      "createdAt": "2026-09-05T07:58:01.894Z",
+      "completedAt": "2026-09-05T08:01:54.365Z"
+    },
+    {
+      "patientId": "GH-P-00701",
+      "doctorId": "usr-doc-1",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-genmed",
+      "currentStage": "doctor",
+      "currentToken": "GENMED-099",
+      "symptoms": "Joint pain",
+      "status": "active",
+      "priority": "senior",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00058",
+      "createdAt": "2026-09-05T07:58:01.875Z"
+    },
+    {
+      "patientId": "GH-P-00992",
+      "doctorId": "usr-doc-1",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-genmed",
+      "currentStage": "doctor",
+      "currentToken": "GENMED-098",
+      "symptoms": "Headache",
+      "status": "active",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00057",
+      "createdAt": "2026-09-05T07:58:01.847Z"
+    },
+    {
+      "patientId": "GH-P-00189",
+      "doctorId": "usr-doc-1",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-genmed",
+      "currentStage": "doctor",
+      "currentToken": "GENMED-097",
+      "symptoms": "Fever",
+      "status": "active",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00056",
+      "createdAt": "2026-09-05T07:58:01.815Z"
+    },
+    {
+      "patientId": "GH-P-00127",
+      "doctorId": "usr-doc-1",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-genmed",
+      "currentStage": "doctor",
+      "currentToken": "GENMED-096",
+      "symptoms": "Checkup for allergies and blood sugar",
+      "status": "completed",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00055",
+      "createdAt": "2026-09-05T07:57:24.910Z",
+      "completedAt": "2026-09-05T07:58:01.890Z"
+    },
+    {
+      "patientId": "GH-P-00500",
+      "doctorId": "usr-doc-1",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-genmed",
+      "currentStage": "doctor",
+      "currentToken": "GENMED-095",
+      "symptoms": "Joint pain",
+      "status": "active",
+      "priority": "senior",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00054",
+      "createdAt": "2026-09-05T07:57:24.885Z"
+    },
+    {
+      "patientId": "GH-P-00419",
+      "doctorId": "usr-doc-1",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-genmed",
+      "currentStage": "doctor",
+      "currentToken": "GENMED-094",
+      "symptoms": "Headache",
+      "status": "active",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00053",
+      "createdAt": "2026-09-05T07:57:24.861Z"
+    },
+    {
+      "patientId": "GH-P-00401",
+      "doctorId": "usr-doc-1",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-genmed",
+      "currentStage": "doctor",
+      "currentToken": "GENMED-093",
+      "symptoms": "Fever",
+      "status": "active",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00052",
+      "createdAt": "2026-09-05T07:57:24.837Z"
+    },
+    {
+      "patientId": "GH-P-00127",
+      "doctorId": "usr-doc-1",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-genmed",
+      "currentStage": "doctor",
+      "currentToken": "GENMED-092",
+      "symptoms": "Follow-up consultation for respiratory symptoms and allergy",
+      "status": "completed",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00051",
+      "createdAt": "2026-09-05T07:57:08.274Z",
+      "completedAt": "2026-09-05T07:57:24.897Z"
+    },
+    {
+      "patientId": "GH-P-00370",
+      "doctorId": "usr-doc-1",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-cardio",
+      "currentDepartmentId": "dept-cardio",
+      "currentStage": "doctor",
+      "currentToken": "CARDIO-044",
+      "symptoms": "chest pain",
+      "status": "completed",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00050",
+      "createdAt": "2026-09-05T07:44:46.979Z",
+      "completedAt": "2026-09-05T08:02:09.167Z"
+    },
+    {
+      "patientId": "GH-P-00459",
+      "doctorId": "usr-doc-1",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-pharm",
+      "currentStage": "completed",
+      "currentToken": "PHARM-018",
+      "symptoms": "Cough and fever",
+      "status": "completed",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00049",
+      "createdAt": "2026-09-05T07:20:05.967Z",
+      "completedAt": "2026-09-05T07:20:06.020Z"
+    },
+    {
+      "patientId": "GH-P-00255",
+      "doctorId": "usr-doc-1",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-pharm",
+      "currentStage": "completed",
+      "currentToken": "PHARM-017",
+      "symptoms": "Cough and fever",
+      "status": "completed",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00048",
+      "createdAt": "2026-09-05T07:19:38.806Z",
+      "completedAt": "2026-09-05T07:19:38.857Z"
+    },
+    {
+      "patientId": "GH-P-00768",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-genmed",
+      "currentStage": "doctor",
+      "currentToken": "GENMED-089",
+      "status": "active",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00047",
+      "createdAt": "2026-09-05T07:19:05.351Z"
+    },
+    {
+      "patientId": "GH-P-00785",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-genmed",
+      "currentStage": "doctor",
+      "currentToken": "GENMED-088",
+      "status": "active",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00046",
+      "createdAt": "2026-09-05T07:18:49.421Z"
+    },
+    {
+      "patientId": "GH-P-00345",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-genmed",
+      "currentStage": "doctor",
+      "currentToken": "GENMED-087",
+      "status": "active",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00045",
+      "createdAt": "2026-09-05T07:10:48.149Z"
+    },
     {
       "patientId": "GH-P-00945",
       "hospitalId": "hosp-grh-01",
@@ -648,6 +1243,250 @@
       "color": "blue",
       "id": "STG-65497724",
       "createdAt": "2026-09-04T19:20:54.977Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00048",
+      "stageType": "doctor",
+      "departmentId": "dept-genmed",
+      "tokenNumber": "GENMED-090",
+      "sequenceNum": 1,
+      "status": "completed",
+      "roomNumber": "Rooms 4-8",
+      "blockName": "Block B",
+      "floorName": "Ground Floor",
+      "color": "blue",
+      "notes": "Diagnosis: Acute Upper Respiratory Tract Infection. Rx: Tab Paracetamol IP, Cap Amoxicillin Trihydrate IP",
+      "id": "STG-77880834",
+      "createdAt": "2026-09-05T07:19:38.808Z",
+      "completedAt": "2026-09-05T07:19:38.832Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00048",
+      "stageType": "pharmacy",
+      "departmentId": "dept-pharm",
+      "tokenNumber": "PHARM-017",
+      "sequenceNum": 2,
+      "status": "completed",
+      "roomNumber": "Counter 3",
+      "blockName": "Block A",
+      "floorName": "Ground Floor",
+      "color": "purple",
+      "notes": "Medications dispensed successfully",
+      "id": "STG-77883797",
+      "createdAt": "2026-09-05T07:19:38.837Z",
+      "completedAt": "2026-09-05T07:19:38.854Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00049",
+      "stageType": "doctor",
+      "departmentId": "dept-genmed",
+      "tokenNumber": "GENMED-091",
+      "sequenceNum": 1,
+      "status": "completed",
+      "roomNumber": "Rooms 4-8",
+      "blockName": "Block B",
+      "floorName": "Ground Floor",
+      "color": "blue",
+      "notes": "Diagnosis: Acute Upper Respiratory Tract Infection. Rx: Tab Paracetamol IP, Cap Amoxicillin Trihydrate IP",
+      "id": "STG-80596868",
+      "createdAt": "2026-09-05T07:20:05.968Z",
+      "completedAt": "2026-09-05T07:20:05.994Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00049",
+      "stageType": "pharmacy",
+      "departmentId": "dept-pharm",
+      "tokenNumber": "PHARM-018",
+      "sequenceNum": 2,
+      "status": "completed",
+      "roomNumber": "Counter 3",
+      "blockName": "Block A",
+      "floorName": "Ground Floor",
+      "color": "purple",
+      "notes": "Medications dispensed successfully",
+      "id": "STG-80600048",
+      "createdAt": "2026-09-05T07:20:06.000Z",
+      "completedAt": "2026-09-05T07:20:06.017Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00050",
+      "stageType": "doctor",
+      "departmentId": "dept-cardio",
+      "tokenNumber": "CARDIO-044",
+      "sequenceNum": 1,
+      "status": "waiting",
+      "roomNumber": "Room 12",
+      "blockName": "Block B",
+      "floorName": "1st Floor",
+      "color": "blue",
+      "notes": "Chief complaint: chest pain",
+      "id": "STG-28698135",
+      "createdAt": "2026-09-05T07:44:46.981Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00051",
+      "stageType": "doctor",
+      "departmentId": "dept-genmed",
+      "tokenNumber": "GENMED-092",
+      "sequenceNum": 1,
+      "status": "waiting",
+      "roomNumber": "Rooms 4-8",
+      "blockName": "Block B",
+      "floorName": "Ground Floor",
+      "color": "blue",
+      "notes": "Chief complaint: Follow-up consultation for respiratory symptoms and allergy",
+      "id": "STG-02827642",
+      "createdAt": "2026-09-05T07:57:08.276Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00052",
+      "stageType": "doctor",
+      "departmentId": "dept-genmed",
+      "tokenNumber": "GENMED-093",
+      "sequenceNum": 1,
+      "status": "waiting",
+      "roomNumber": "Rooms 4-8",
+      "blockName": "Block B",
+      "floorName": "Ground Floor",
+      "color": "blue",
+      "notes": "Chief complaint: Fever",
+      "id": "STG-04483958",
+      "createdAt": "2026-09-05T07:57:24.839Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00053",
+      "stageType": "doctor",
+      "departmentId": "dept-genmed",
+      "tokenNumber": "GENMED-094",
+      "sequenceNum": 1,
+      "status": "waiting",
+      "roomNumber": "Rooms 4-8",
+      "blockName": "Block B",
+      "floorName": "Ground Floor",
+      "color": "blue",
+      "notes": "Chief complaint: Headache",
+      "id": "STG-04486389",
+      "createdAt": "2026-09-05T07:57:24.863Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00054",
+      "stageType": "doctor",
+      "departmentId": "dept-genmed",
+      "tokenNumber": "GENMED-095",
+      "sequenceNum": 1,
+      "status": "waiting",
+      "roomNumber": "Rooms 4-8",
+      "blockName": "Block B",
+      "floorName": "Ground Floor",
+      "color": "blue",
+      "notes": "Chief complaint: Joint pain",
+      "id": "STG-04488633",
+      "createdAt": "2026-09-05T07:57:24.886Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00055",
+      "stageType": "doctor",
+      "departmentId": "dept-genmed",
+      "tokenNumber": "GENMED-096",
+      "sequenceNum": 1,
+      "status": "waiting",
+      "roomNumber": "Rooms 4-8",
+      "blockName": "Block B",
+      "floorName": "Ground Floor",
+      "color": "blue",
+      "notes": "Chief complaint: Checkup for allergies and blood sugar",
+      "id": "STG-04491190",
+      "createdAt": "2026-09-05T07:57:24.911Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00056",
+      "stageType": "doctor",
+      "departmentId": "dept-genmed",
+      "tokenNumber": "GENMED-097",
+      "sequenceNum": 1,
+      "status": "waiting",
+      "roomNumber": "Rooms 4-8",
+      "blockName": "Block B",
+      "floorName": "Ground Floor",
+      "color": "blue",
+      "notes": "Chief complaint: Fever",
+      "id": "STG-08181881",
+      "createdAt": "2026-09-05T07:58:01.818Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00057",
+      "stageType": "doctor",
+      "departmentId": "dept-genmed",
+      "tokenNumber": "GENMED-098",
+      "sequenceNum": 1,
+      "status": "waiting",
+      "roomNumber": "Rooms 4-8",
+      "blockName": "Block B",
+      "floorName": "Ground Floor",
+      "color": "blue",
+      "notes": "Chief complaint: Headache",
+      "id": "STG-08184976",
+      "createdAt": "2026-09-05T07:58:01.849Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00058",
+      "stageType": "doctor",
+      "departmentId": "dept-genmed",
+      "tokenNumber": "GENMED-099",
+      "sequenceNum": 1,
+      "status": "waiting",
+      "roomNumber": "Rooms 4-8",
+      "blockName": "Block B",
+      "floorName": "Ground Floor",
+      "color": "blue",
+      "notes": "Chief complaint: Joint pain",
+      "id": "STG-08187756",
+      "createdAt": "2026-09-05T07:58:01.877Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00059",
+      "stageType": "doctor",
+      "departmentId": "dept-genmed",
+      "tokenNumber": "GENMED-100",
+      "sequenceNum": 1,
+      "status": "waiting",
+      "roomNumber": "Rooms 4-8",
+      "blockName": "Block B",
+      "floorName": "Ground Floor",
+      "color": "blue",
+      "notes": "Chief complaint: Checkup for allergies and blood sugar",
+      "id": "STG-08189658",
+      "createdAt": "2026-09-05T07:58:01.896Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00060",
+      "stageType": "doctor",
+      "departmentId": "dept-genmed",
+      "tokenNumber": "GENMED-101",
+      "sequenceNum": 1,
+      "status": "waiting",
+      "roomNumber": "Rooms 4-8",
+      "blockName": "Block B",
+      "floorName": "Ground Floor",
+      "color": "blue",
+      "notes": "Chief complaint: OPD Consultation requested",
+      "id": "STG-31437453",
+      "createdAt": "2026-09-05T08:01:54.374Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00061",
+      "stageType": "doctor",
+      "departmentId": "dept-genmed",
+      "tokenNumber": "GENMED-102",
+      "sequenceNum": 1,
+      "status": "waiting",
+      "roomNumber": "Rooms 4-8",
+      "blockName": "Block B",
+      "floorName": "Ground Floor",
+      "color": "blue",
+      "notes": "Chief complaint: OPD Consultation requested",
+      "id": "STG-32917590",
+      "createdAt": "2026-09-05T08:02:09.175Z"
     }
   ],
   "queueEntries": [
@@ -724,9 +1563,303 @@
       "id": "QE-65497849",
       "createdAt": "2026-09-04T19:20:54.978Z",
       "calledAt": "2026-09-04T19:20:54.980Z"
+    },
+    {
+      "departmentId": "dept-genmed",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00048",
+      "journeyStageId": "STG-77880834",
+      "patientId": "GH-P-00255",
+      "tokenNumber": "GENMED-090",
+      "sequenceNum": 1,
+      "status": "completed",
+      "priority": "normal",
+      "id": "QE-77880987",
+      "createdAt": "2026-09-05T07:19:38.809Z",
+      "calledAt": "2026-09-05T07:19:38.822Z",
+      "completedAt": "2026-09-05T07:19:38.830Z"
+    },
+    {
+      "departmentId": "dept-pharm",
+      "journeyId": "JNY-20260905-00048",
+      "journeyStageId": "STG-77883797",
+      "patientId": "GH-P-00255",
+      "tokenNumber": "PHARM-017",
+      "sequenceNum": 2,
+      "status": "completed",
+      "priority": "normal",
+      "id": "QE-77883921",
+      "createdAt": "2026-09-05T07:19:38.839Z",
+      "completedAt": "2026-09-05T07:19:38.855Z"
+    },
+    {
+      "departmentId": "dept-genmed",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00049",
+      "journeyStageId": "STG-80596868",
+      "patientId": "GH-P-00459",
+      "tokenNumber": "GENMED-091",
+      "sequenceNum": 1,
+      "status": "completed",
+      "priority": "normal",
+      "id": "QE-80597066",
+      "createdAt": "2026-09-05T07:20:05.970Z",
+      "calledAt": "2026-09-05T07:20:05.984Z",
+      "completedAt": "2026-09-05T07:20:05.992Z"
+    },
+    {
+      "departmentId": "dept-pharm",
+      "journeyId": "JNY-20260905-00049",
+      "journeyStageId": "STG-80600048",
+      "patientId": "GH-P-00459",
+      "tokenNumber": "PHARM-018",
+      "sequenceNum": 2,
+      "status": "completed",
+      "priority": "normal",
+      "id": "QE-80600183",
+      "createdAt": "2026-09-05T07:20:06.001Z",
+      "completedAt": "2026-09-05T07:20:06.018Z"
+    },
+    {
+      "departmentId": "dept-cardio",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00050",
+      "journeyStageId": "STG-28698135",
+      "patientId": "GH-P-00370",
+      "tokenNumber": "CARDIO-044",
+      "sequenceNum": 5,
+      "status": "completed",
+      "priority": "normal",
+      "id": "QE-28698369",
+      "createdAt": "2026-09-05T07:44:46.983Z",
+      "completedAt": "2026-09-05T08:02:09.167Z"
+    },
+    {
+      "departmentId": "dept-genmed",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00051",
+      "journeyStageId": "STG-02827642",
+      "patientId": "GH-P-00127",
+      "tokenNumber": "GENMED-092",
+      "sequenceNum": 1,
+      "status": "completed",
+      "priority": "normal",
+      "id": "QE-02827848",
+      "createdAt": "2026-09-05T07:57:08.278Z",
+      "calledAt": "2026-09-05T07:57:08.296Z",
+      "completedAt": "2026-09-05T07:57:24.897Z"
+    },
+    {
+      "departmentId": "dept-genmed",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00052",
+      "journeyStageId": "STG-04483958",
+      "patientId": "GH-P-00401",
+      "tokenNumber": "GENMED-093",
+      "sequenceNum": 2,
+      "status": "waiting",
+      "priority": "normal",
+      "id": "QE-04484192",
+      "createdAt": "2026-09-05T07:57:24.841Z"
+    },
+    {
+      "departmentId": "dept-genmed",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00053",
+      "journeyStageId": "STG-04486389",
+      "patientId": "GH-P-00419",
+      "tokenNumber": "GENMED-094",
+      "sequenceNum": 3,
+      "status": "waiting",
+      "priority": "normal",
+      "id": "QE-04486496",
+      "createdAt": "2026-09-05T07:57:24.865Z"
+    },
+    {
+      "departmentId": "dept-genmed",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00054",
+      "journeyStageId": "STG-04488633",
+      "patientId": "GH-P-00500",
+      "tokenNumber": "GENMED-095",
+      "sequenceNum": 4,
+      "status": "completed",
+      "priority": "senior",
+      "id": "QE-04488841",
+      "createdAt": "2026-09-05T07:57:24.888Z",
+      "calledAt": "2026-09-05T07:57:24.925Z",
+      "completedAt": "2026-09-05T07:58:01.916Z"
+    },
+    {
+      "departmentId": "dept-genmed",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00055",
+      "journeyStageId": "STG-04491190",
+      "patientId": "GH-P-00127",
+      "tokenNumber": "GENMED-096",
+      "sequenceNum": 4,
+      "status": "completed",
+      "priority": "normal",
+      "id": "QE-04491393",
+      "createdAt": "2026-09-05T07:57:24.913Z",
+      "completedAt": "2026-09-05T07:58:01.890Z"
+    },
+    {
+      "departmentId": "dept-genmed",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00056",
+      "journeyStageId": "STG-08181881",
+      "patientId": "GH-P-00189",
+      "tokenNumber": "GENMED-097",
+      "sequenceNum": 5,
+      "status": "waiting",
+      "priority": "normal",
+      "id": "QE-08182058",
+      "createdAt": "2026-09-05T07:58:01.820Z"
+    },
+    {
+      "departmentId": "dept-genmed",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00057",
+      "journeyStageId": "STG-08184976",
+      "patientId": "GH-P-00992",
+      "tokenNumber": "GENMED-098",
+      "sequenceNum": 6,
+      "status": "waiting",
+      "priority": "normal",
+      "id": "QE-08185130",
+      "createdAt": "2026-09-05T07:58:01.851Z"
+    },
+    {
+      "departmentId": "dept-genmed",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00058",
+      "journeyStageId": "STG-08187756",
+      "patientId": "GH-P-00701",
+      "tokenNumber": "GENMED-099",
+      "sequenceNum": 7,
+      "status": "called",
+      "priority": "senior",
+      "id": "QE-08187965",
+      "createdAt": "2026-09-05T07:58:01.879Z",
+      "calledAt": "2026-09-05T07:58:01.918Z"
+    },
+    {
+      "departmentId": "dept-genmed",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00059",
+      "journeyStageId": "STG-08189658",
+      "patientId": "GH-P-00127",
+      "tokenNumber": "GENMED-100",
+      "sequenceNum": 7,
+      "status": "completed",
+      "priority": "normal",
+      "id": "QE-08189899",
+      "createdAt": "2026-09-05T07:58:01.898Z",
+      "completedAt": "2026-09-05T08:01:54.365Z"
+    },
+    {
+      "departmentId": "dept-genmed",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00060",
+      "journeyStageId": "STG-31437453",
+      "patientId": "GH-P-00127",
+      "tokenNumber": "GENMED-101",
+      "sequenceNum": 6,
+      "status": "waiting",
+      "priority": "normal",
+      "id": "QE-31438048",
+      "createdAt": "2026-09-05T08:01:54.380Z"
+    },
+    {
+      "departmentId": "dept-genmed",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00061",
+      "journeyStageId": "STG-32917590",
+      "patientId": "GH-P-00370",
+      "tokenNumber": "GENMED-102",
+      "sequenceNum": 7,
+      "status": "waiting",
+      "priority": "normal",
+      "id": "QE-32917753",
+      "createdAt": "2026-09-05T08:02:09.177Z"
     }
   ],
   "consultations": [
+    {
+      "journeyId": "JNY-20260905-00049",
+      "doctorId": "usr-doc-1",
+      "doctorName": "Dr. Priya Kumar, MD, DM",
+      "departmentId": "dept-genmed",
+      "symptoms": "Reported symptoms reviewed during OPD consultation",
+      "observations": "Throat hyperemic, lungs clear to auscultation. Hydration advised.",
+      "diagnosis": "Acute Upper Respiratory Tract Infection",
+      "clinicalNotes": "Throat hyperemic, lungs clear to auscultation. Hydration advised.",
+      "medications": [
+        {
+          "id": "med-1",
+          "name": "Tab Paracetamol IP",
+          "dosage": "650 mg",
+          "frequency": "1-0-1 (After Food)",
+          "duration": "5 Days",
+          "instructions": "For fever, take after food",
+          "quantity": 10,
+          "isDispensed": false
+        },
+        {
+          "id": "med-2",
+          "name": "Cap Amoxicillin Trihydrate IP",
+          "dosage": "500 mg",
+          "frequency": "1-1-1 (After Food)",
+          "duration": "5 Days",
+          "instructions": "Complete full course",
+          "quantity": 15,
+          "isDispensed": false
+        }
+      ],
+      "investigations": [],
+      "followUpDays": 14,
+      "completedAt": "2026-09-05T07:20:05.995Z",
+      "id": "CNS-805995",
+      "createdAt": "2026-09-05T07:20:05.995Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00048",
+      "doctorId": "usr-doc-1",
+      "doctorName": "Dr. Priya Kumar, MD, DM",
+      "departmentId": "dept-genmed",
+      "symptoms": "Reported symptoms reviewed during OPD consultation",
+      "observations": "Throat hyperemic, lungs clear to auscultation. Hydration advised.",
+      "diagnosis": "Acute Upper Respiratory Tract Infection",
+      "clinicalNotes": "Throat hyperemic, lungs clear to auscultation. Hydration advised.",
+      "medications": [
+        {
+          "id": "med-1",
+          "name": "Tab Paracetamol IP",
+          "dosage": "650 mg",
+          "frequency": "1-0-1 (After Food)",
+          "duration": "5 Days",
+          "instructions": "For fever, take after food",
+          "quantity": 10,
+          "isDispensed": false
+        },
+        {
+          "id": "med-2",
+          "name": "Cap Amoxicillin Trihydrate IP",
+          "dosage": "500 mg",
+          "frequency": "1-1-1 (After Food)",
+          "duration": "5 Days",
+          "instructions": "Complete full course",
+          "quantity": 15,
+          "isDispensed": false
+        }
+      ],
+      "investigations": [],
+      "followUpDays": 14,
+      "completedAt": "2026-09-05T07:19:38.833Z",
+      "id": "CNS-778833",
+      "createdAt": "2026-09-05T07:19:38.833Z"
+    },
     {
       "journeyId": "JNY-20260904-00043",
       "doctorId": "usr-doc-1",
@@ -771,6 +1904,70 @@
     }
   ],
   "pharmacyOrders": [
+    {
+      "consultationId": "CNS-805995",
+      "journeyId": "JNY-20260905-00049",
+      "tokenNumber": "PHARM-018",
+      "status": "dispensed",
+      "counterNumber": "Counter 3",
+      "medications": [
+        {
+          "id": "med-1",
+          "name": "Tab Paracetamol IP",
+          "dosage": "650 mg",
+          "frequency": "1-0-1 (After Food)",
+          "duration": "5 Days",
+          "instructions": "For fever, take after food",
+          "quantity": 10,
+          "isDispensed": false
+        },
+        {
+          "id": "med-2",
+          "name": "Cap Amoxicillin Trihydrate IP",
+          "dosage": "500 mg",
+          "frequency": "1-1-1 (After Food)",
+          "duration": "5 Days",
+          "instructions": "Complete full course",
+          "quantity": 15,
+          "isDispensed": false
+        }
+      ],
+      "id": "PHO-805998",
+      "createdAt": "2026-09-05T07:20:05.998Z",
+      "dispensedAt": "2026-09-05T07:20:06.015Z"
+    },
+    {
+      "consultationId": "CNS-778833",
+      "journeyId": "JNY-20260905-00048",
+      "tokenNumber": "PHARM-017",
+      "status": "dispensed",
+      "counterNumber": "Counter 3",
+      "medications": [
+        {
+          "id": "med-1",
+          "name": "Tab Paracetamol IP",
+          "dosage": "650 mg",
+          "frequency": "1-0-1 (After Food)",
+          "duration": "5 Days",
+          "instructions": "For fever, take after food",
+          "quantity": 10,
+          "isDispensed": false
+        },
+        {
+          "id": "med-2",
+          "name": "Cap Amoxicillin Trihydrate IP",
+          "dosage": "500 mg",
+          "frequency": "1-1-1 (After Food)",
+          "duration": "5 Days",
+          "instructions": "Complete full course",
+          "quantity": 15,
+          "isDispensed": false
+        }
+      ],
+      "id": "PHO-778836",
+      "createdAt": "2026-09-05T07:19:38.836Z",
+      "dispensedAt": "2026-09-05T07:19:38.852Z"
+    },
     {
       "consultationId": "CNS-654981",
       "journeyId": "JNY-20260904-00043",
@@ -857,6 +2054,282 @@
   ],
   "notifications": [
     {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00061",
+      "title": "Token Generated Successfully",
+      "titleTa": "டோக்கன் உருவாக்கப்பட்டது",
+      "message": "Token GENMED-102 generated. Proceed to Rooms 4-8 (Block B). 5 patients ahead.",
+      "messageTa": "டோக்கன் GENMED-102 உருவாக்கப்பட்டது. அறை Rooms 4-8-க்கு செல்லவும். உங்களுக்கு முன் 5 நபர்கள் உள்ளனர்.",
+      "type": "info",
+      "id": "NOTIF-1788595329182-2n6",
+      "isRead": false,
+      "createdAt": "2026-09-05T08:02:09.182Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00060",
+      "title": "Token Generated Successfully",
+      "titleTa": "டோக்கன் உருவாக்கப்பட்டது",
+      "message": "Token GENMED-101 generated. Proceed to Rooms 4-8 (Block B). 4 patients ahead.",
+      "messageTa": "டோக்கன் GENMED-101 உருவாக்கப்பட்டது. அறை Rooms 4-8-க்கு செல்லவும். உங்களுக்கு முன் 4 நபர்கள் உள்ளனர்.",
+      "type": "info",
+      "id": "NOTIF-1788595314388-999",
+      "isRead": false,
+      "createdAt": "2026-09-05T08:01:54.388Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00058",
+      "title": "🔔 YOUR TURN IS NOW ACTIVE",
+      "titleTa": "🔔 இப்போது உங்கள் முறை! உள்ளே செல்லவும்",
+      "message": "Token GENMED-099 (Gopal R.): Please proceed into Rooms 4-8 (Block B).",
+      "messageTa": "டோக்கன் GENMED-099 (Gopal R.): தயவுசெய்து Rooms 4-8 உள்ளே செல்லவும்.",
+      "type": "turn",
+      "id": "NOTIF-1788595081920-4or",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:58:01.920Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00059",
+      "title": "Token Generated Successfully",
+      "titleTa": "டோக்கன் உருவாக்கப்பட்டது",
+      "message": "Token GENMED-100 generated. Proceed to Rooms 4-8 (Block B). 5 patients ahead.",
+      "messageTa": "டோக்கன் GENMED-100 உருவாக்கப்பட்டது. அறை Rooms 4-8-க்கு செல்லவும். உங்களுக்கு முன் 5 நபர்கள் உள்ளனர்.",
+      "type": "info",
+      "id": "NOTIF-1788595081900-rh6",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:58:01.900Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00058",
+      "title": "Token Generated Successfully",
+      "titleTa": "டோக்கன் உருவாக்கப்பட்டது",
+      "message": "Token GENMED-099 generated. Proceed to Rooms 4-8 (Block B). 0 patients ahead.",
+      "messageTa": "டோக்கன் GENMED-099 உருவாக்கப்பட்டது. அறை Rooms 4-8-க்கு செல்லவும். உங்களுக்கு முன் 0 நபர்கள் உள்ளனர்.",
+      "type": "info",
+      "id": "NOTIF-1788595081882-pv2",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:58:01.882Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00057",
+      "title": "Token Generated Successfully",
+      "titleTa": "டோக்கன் உருவாக்கப்பட்டது",
+      "message": "Token GENMED-098 generated. Proceed to Rooms 4-8 (Block B). 4 patients ahead.",
+      "messageTa": "டோக்கன் GENMED-098 உருவாக்கப்பட்டது. அறை Rooms 4-8-க்கு செல்லவும். உங்களுக்கு முன் 4 நபர்கள் உள்ளனர்.",
+      "type": "info",
+      "id": "NOTIF-1788595081854-u48",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:58:01.854Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00056",
+      "title": "Token Generated Successfully",
+      "titleTa": "டோக்கன் உருவாக்கப்பட்டது",
+      "message": "Token GENMED-097 generated. Proceed to Rooms 4-8 (Block B). 3 patients ahead.",
+      "messageTa": "டோக்கன் GENMED-097 உருவாக்கப்பட்டது. அறை Rooms 4-8-க்கு செல்லவும். உங்களுக்கு முன் 3 நபர்கள் உள்ளனர்.",
+      "type": "info",
+      "id": "NOTIF-1788595081824-ulz",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:58:01.824Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00054",
+      "title": "🔔 YOUR TURN IS NOW ACTIVE",
+      "titleTa": "🔔 இப்போது உங்கள் முறை! உள்ளே செல்லவும்",
+      "message": "Token GENMED-095 (Gopal R.): Please proceed into Rooms 4-8 (Block B).",
+      "messageTa": "டோக்கன் GENMED-095 (Gopal R.): தயவுசெய்து Rooms 4-8 உள்ளே செல்லவும்.",
+      "type": "turn",
+      "id": "NOTIF-1788595044927-hy4",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:57:24.927Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00055",
+      "title": "Token Generated Successfully",
+      "titleTa": "டோக்கன் உருவாக்கப்பட்டது",
+      "message": "Token GENMED-096 generated. Proceed to Rooms 4-8 (Block B). 3 patients ahead.",
+      "messageTa": "டோக்கன் GENMED-096 உருவாக்கப்பட்டது. அறை Rooms 4-8-க்கு செல்லவும். உங்களுக்கு முன் 3 நபர்கள் உள்ளனர்.",
+      "type": "info",
+      "id": "NOTIF-1788595044914-9au",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:57:24.915Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00054",
+      "title": "Token Generated Successfully",
+      "titleTa": "டோக்கன் உருவாக்கப்பட்டது",
+      "message": "Token GENMED-095 generated. Proceed to Rooms 4-8 (Block B). 0 patients ahead.",
+      "messageTa": "டோக்கன் GENMED-095 உருவாக்கப்பட்டது. அறை Rooms 4-8-க்கு செல்லவும். உங்களுக்கு முன் 0 நபர்கள் உள்ளனர்.",
+      "type": "info",
+      "id": "NOTIF-1788595044890-188",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:57:24.890Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00053",
+      "title": "Token Generated Successfully",
+      "titleTa": "டோக்கன் உருவாக்கப்பட்டது",
+      "message": "Token GENMED-094 generated. Proceed to Rooms 4-8 (Block B). 2 patients ahead.",
+      "messageTa": "டோக்கன் GENMED-094 உருவாக்கப்பட்டது. அறை Rooms 4-8-க்கு செல்லவும். உங்களுக்கு முன் 2 நபர்கள் உள்ளனர்.",
+      "type": "info",
+      "id": "NOTIF-1788595044867-15d",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:57:24.867Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00052",
+      "title": "Token Generated Successfully",
+      "titleTa": "டோக்கன் உருவாக்கப்பட்டது",
+      "message": "Token GENMED-093 generated. Proceed to Rooms 4-8 (Block B). 1 patients ahead.",
+      "messageTa": "டோக்கன் GENMED-093 உருவாக்கப்பட்டது. அறை Rooms 4-8-க்கு செல்லவும். உங்களுக்கு முன் 1 நபர்கள் உள்ளனர்.",
+      "type": "info",
+      "id": "NOTIF-1788595044843-rch",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:57:24.843Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00051",
+      "title": "🔔 YOUR TURN IS NOW ACTIVE",
+      "titleTa": "🔔 இப்போது உங்கள் முறை! உள்ளே செல்லவும்",
+      "message": "Token GENMED-092 (Anitha Kumar): Please proceed into Rooms 4-8 (Block B).",
+      "messageTa": "டோக்கன் GENMED-092 (Anitha Kumar): தயவுசெய்து Rooms 4-8 உள்ளே செல்லவும்.",
+      "type": "turn",
+      "id": "NOTIF-1788595028299-1oh",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:57:08.299Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00051",
+      "title": "Token Generated Successfully",
+      "titleTa": "டோக்கன் உருவாக்கப்பட்டது",
+      "message": "Token GENMED-092 generated. Proceed to Rooms 4-8 (Block B). 0 patients ahead.",
+      "messageTa": "டோக்கன் GENMED-092 உருவாக்கப்பட்டது. அறை Rooms 4-8-க்கு செல்லவும். உங்களுக்கு முன் 0 நபர்கள் உள்ளனர்.",
+      "type": "info",
+      "id": "NOTIF-1788595028281-enf",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:57:08.281Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00050",
+      "title": "Token Generated Successfully",
+      "titleTa": "டோக்கன் உருவாக்கப்பட்டது",
+      "message": "Token CARDIO-044 generated. Proceed to Room 12 (Block B). 3 patients ahead.",
+      "messageTa": "டோக்கன் CARDIO-044 உருவாக்கப்பட்டது. அறை Room 12-க்கு செல்லவும். உங்களுக்கு முன் 3 நபர்கள் உள்ளனர்.",
+      "type": "info",
+      "id": "NOTIF-1788594286987-uca",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:44:46.987Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00049",
+      "title": "🎉 HOSPITAL JOURNEY COMPLETED",
+      "titleTa": "🎉 மருத்துவமனை பயணம் வெற்றிகரமாக முடிந்தது",
+      "message": "Token PHARM-018 (Kavitha Ramesh): All consultations, diagnostics, and medicines completed. Wish you a speedy recovery!",
+      "messageTa": "டோக்கன் PHARM-018 (Kavitha Ramesh): அனைத்து சிகிச்சைகளும் மருந்தும் பெறப்பட்டுவிட்டன. விரைவில் நலம் பெற வாழ்த்துகிறோம்!",
+      "type": "success",
+      "id": "NOTIF-1788592806021-1k9",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:20:06.021Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00049",
+      "title": "Next Stage: Central Pharmacy",
+      "titleTa": "அடுத்த நிலை: மருந்தகம்",
+      "message": "Proceed to Pharmacy Counter 3 (Block A) following PURPLE path. Token: PHARM-018.",
+      "messageTa": "ஊதா வழியைப் பின்பற்றி மருந்தகம் Counter 3-க்கு செல்லவும். புதிய டோக்கன்: PHARM-018.",
+      "type": "info",
+      "id": "NOTIF-1788592806005-27v",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:20:06.005Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00049",
+      "title": "🔔 YOUR TURN IS NOW ACTIVE",
+      "titleTa": "🔔 இப்போது உங்கள் முறை! உள்ளே செல்லவும்",
+      "message": "Token GENMED-091 (Kavitha Ramesh): Please proceed into Rooms 4-8 (Block B).",
+      "messageTa": "டோக்கன் GENMED-091 (Kavitha Ramesh): தயவுசெய்து Rooms 4-8 உள்ளே செல்லவும்.",
+      "type": "turn",
+      "id": "NOTIF-1788592805986-6xj",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:20:05.986Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00049",
+      "title": "Token Generated Successfully",
+      "titleTa": "டோக்கன் உருவாக்கப்பட்டது",
+      "message": "Token GENMED-091 generated. Proceed to Rooms 4-8 (Block B). 0 patients ahead.",
+      "messageTa": "டோக்கன் GENMED-091 உருவாக்கப்பட்டது. அறை Rooms 4-8-க்கு செல்லவும். உங்களுக்கு முன் 0 நபர்கள் உள்ளனர்.",
+      "type": "info",
+      "id": "NOTIF-1788592805974-8j1",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:20:05.974Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00048",
+      "title": "🎉 HOSPITAL JOURNEY COMPLETED",
+      "titleTa": "🎉 மருத்துவமனை பயணம் வெற்றிகரமாக முடிந்தது",
+      "message": "Token PHARM-017 (Kavitha Ramesh): All consultations, diagnostics, and medicines completed. Wish you a speedy recovery!",
+      "messageTa": "டோக்கன் PHARM-017 (Kavitha Ramesh): அனைத்து சிகிச்சைகளும் மருந்தும் பெறப்பட்டுவிட்டன. விரைவில் நலம் பெற வாழ்த்துகிறோம்!",
+      "type": "success",
+      "id": "NOTIF-1788592778858-jvw",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:19:38.858Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00048",
+      "title": "Next Stage: Central Pharmacy",
+      "titleTa": "அடுத்த நிலை: மருந்தகம்",
+      "message": "Proceed to Pharmacy Counter 3 (Block A) following PURPLE path. Token: PHARM-017.",
+      "messageTa": "ஊதா வழியைப் பின்பற்றி மருந்தகம் Counter 3-க்கு செல்லவும். புதிய டோக்கன்: PHARM-017.",
+      "type": "info",
+      "id": "NOTIF-1788592778842-7wj",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:19:38.842Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00048",
+      "title": "🔔 YOUR TURN IS NOW ACTIVE",
+      "titleTa": "🔔 இப்போது உங்கள் முறை! உள்ளே செல்லவும்",
+      "message": "Token GENMED-090 (Kavitha Ramesh): Please proceed into Rooms 4-8 (Block B).",
+      "messageTa": "டோக்கன் GENMED-090 (Kavitha Ramesh): தயவுசெய்து Rooms 4-8 உள்ளே செல்லவும்.",
+      "type": "turn",
+      "id": "NOTIF-1788592778824-3af",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:19:38.824Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00048",
+      "title": "Token Generated Successfully",
+      "titleTa": "டோக்கன் உருவாக்கப்பட்டது",
+      "message": "Token GENMED-090 generated. Proceed to Rooms 4-8 (Block B). 0 patients ahead.",
+      "messageTa": "டோக்கன் GENMED-090 உருவாக்கப்பட்டது. அறை Rooms 4-8-க்கு செல்லவும். உங்களுக்கு முன் 0 நபர்கள் உள்ளனர்.",
+      "type": "info",
+      "id": "NOTIF-1788592778812-uwp",
+      "isRead": false,
+      "createdAt": "2026-09-05T07:19:38.812Z"
+    },
+    {
       "id": "notif-1",
       "targetRole": "admin",
       "title": "Digital X-Ray Bottleneck Warning",
@@ -883,15 +2356,15 @@
   "serviceCounters": [],
   "auditLogs": [],
   "sequences": {
-    "journeyCount": 44,
+    "journeyCount": 61,
     "tokens": {
-      "CARDIO": 43,
-      "GENMED": 86,
+      "CARDIO": 44,
+      "GENMED": 102,
       "ORTHO": 28,
       "X-RAY": 32,
       "LAB": 45,
       "CT": 12,
-      "PHARM": 16,
+      "PHARM": 18,
       "REG": 184
     }
   }

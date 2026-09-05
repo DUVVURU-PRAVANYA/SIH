@@ -206,7 +206,7 @@ export function seedDatabase() {
   ];
 
   const users: User[] = [
-    { id: 'usr-doc-1', username: 'dr_priya', role: 'doctor', fullName: 'Dr. Priya Kumar, MD, DM', departmentId: 'dept-cardio', hospitalId, isActive: true },
+    { id: 'usr-doc-1', username: 'dr_priya', role: 'doctor', fullName: 'Dr. Priya Kumar, MD, DM', departmentId: 'dept-genmed', hospitalId, isActive: true },
     { id: 'usr-doc-2', username: 'dr_senthil', role: 'doctor', fullName: 'Dr. M. Senthil Nathan, MD', departmentId: 'dept-genmed', hospitalId, isActive: true },
     { id: 'usr-diag-1', username: 'tech_murugan', role: 'diagnostic', fullName: 'K. Murugan (Senior Radiographer)', departmentId: 'dept-xray', hospitalId, isActive: true },
     { id: 'usr-pharm-1', username: 'pharm_radha', role: 'pharmacy', fullName: 'S. Radha (Chief Pharmacist)', departmentId: 'dept-pharm', hospitalId, isActive: true },

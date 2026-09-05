@@ -5,6 +5,17 @@ export type UserRole =
   | 'scan_lab'
   | 'pharmacy';
 
+export type AuthStatus = 'NOT_AUTHENTICATED' | 'OTP_PENDING' | 'AUTHENTICATED';
+
+export interface PendingOtpSession {
+  phone: string;
+  patientName?: string;
+  maskedPhone?: string;
+  demoOtp: string;
+  expiresAt: number;
+  isNewPatient?: boolean;
+}
+
 export interface DoctorProfile {
   id: string;
   name: string;
