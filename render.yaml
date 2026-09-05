@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: gh-queueflow
+    runtime: node
+    plan: free
+    region: oregon
+    branch: main
+    buildCommand: npm install && npm run build
+    startCommand: npm run server
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
