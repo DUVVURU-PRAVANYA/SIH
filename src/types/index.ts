@@ -250,6 +250,7 @@ export interface Patient {
   bloodGroup?: string;
   allergies?: string[];
   existingConditions?: string[];
+  chronicConditions?: string[];
   address?: string;
   emergencyContact?: string;
   vitals: {

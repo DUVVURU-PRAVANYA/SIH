@@ -83,6 +83,10 @@ export const apiClient = {
     }
   ) => fetchApi(`/patients/${patientId}/profile`, { method: 'PUT', body: JSON.stringify(data) }),
 
+  getPatientHistory: (patientId: string) => fetchApi(`/patients/${patientId}/history`),
+  getPatientReports: (patientId: string) => fetchApi(`/patients/${patientId}/reports`),
+  getPatientPrescriptions: (patientId: string) => fetchApi(`/patients/${patientId}/prescriptions`),
+
   getJourney: (journeyId: string) => fetchApi(`/journey/${journeyId}`),
 
   // Queues & Doctor
@@ -93,6 +97,8 @@ export const apiClient = {
     fetchApi('/consultations/start', { method: 'POST', body: JSON.stringify({ queueEntryId, journeyId }) }),
   completeConsultation: (data: any) =>
     fetchApi('/consultations/complete', { method: 'POST', body: JSON.stringify(data) }),
+  createRevisit: (data: { patientId: string; decisionType: 'normal' | 'emergency'; doctorRemarks?: string }) =>
+    fetchApi('/visits/revisit', { method: 'POST', body: JSON.stringify(data) }),
 
   // Diagnostics
   getDiagnostics: () => fetchApi('/diagnostics'),
@@ -103,6 +109,8 @@ export const apiClient = {
 
   // Pharmacy
   getPharmacyOrders: () => fetchApi('/pharmacy'),
+  updatePharmacyStatus: (orderId: string, status: string) =>
+    fetchApi('/pharmacy/status', { method: 'POST', body: JSON.stringify({ orderId, status }) }),
   dispensePharmacyOrder: (orderId: string) =>
     fetchApi('/pharmacy/dispense', { method: 'POST', body: JSON.stringify({ orderId }) }),
 

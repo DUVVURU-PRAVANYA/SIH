@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Clock,
   CheckCircle2,
@@ -16,9 +16,13 @@ import {
   Building2,
   Plus,
   Info,
+  Edit3,
+  Save,
+  X,
 } from 'lucide-react';
 import { useQueueFlow } from '../../context/QueueFlowContext';
 import { DoctorDepartmentSelection } from './DoctorDepartmentSelection';
+import { apiClient } from '../../services/api';
 
 export const PatientHome: React.FC = () => {
   const {
@@ -36,6 +40,42 @@ export const PatientHome: React.FC = () => {
   >('queue');
 
   const [showDoctorSelection, setShowDoctorSelection] = useState(false);
+
+  const patId = activePatient?.id || currentPatient?.id || 'GH-P-00127';
+  const [patientHistory, setPatientHistory] = useState<any[]>([]);
+  const [patientReports, setPatientReports] = useState<any[]>([]);
+  const [patientPrescriptions, setPatientPrescriptions] = useState<any[]>([]);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editBloodGroup, setEditBloodGroup] = useState(activePatient?.bloodGroup || currentPatient?.bloodGroup || 'O+ve');
+  const [editAllergies, setEditAllergies] = useState((activePatient?.allergies || currentPatient?.allergies || ['None Reported']).join(', '));
+  const [editChronic, setEditChronic] = useState((activePatient?.chronicConditions || currentPatient?.chronicConditions || ['None Reported']).join(', '));
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  const loadSubTabRecords = useCallback(async () => {
+    if (!patId) return;
+    try {
+      const [histRes, repRes, rxRes] = await Promise.all([
+        apiClient.getPatientHistory(patId),
+        apiClient.getPatientReports(patId),
+        apiClient.getPatientPrescriptions(patId),
+      ]);
+      if (histRes.success && Array.isArray(histRes.data)) {
+        setPatientHistory(histRes.data);
+      }
+      if (repRes.success && Array.isArray(repRes.data)) {
+        setPatientReports(repRes.data);
+      }
+      if (rxRes.success && Array.isArray(rxRes.data)) {
+        setPatientPrescriptions(rxRes.data);
+      }
+    } catch (err) {
+      console.warn('Error loading patient records:', err);
+    }
+  }, [patId]);
+
+  useEffect(() => {
+    loadSubTabRecords();
+  }, [loadSubTabRecords, activeSection]);
 
   // If patient has no active visit OR clicked "Start New Visit", render Doctor & Department Selection
   if (!hasActiveVisit || showDoctorSelection) {
@@ -585,7 +625,47 @@ export const PatientHome: React.FC = () => {
               </p>
             </div>
 
-            {diagnosticOrder ? (
+            {patientReports.length > 0 ? (
+              <div className="space-y-4">
+                {patientReports.map((report: any, idx: number) => (
+                  <div key={report.id || idx} className="p-5 bg-blue-50/70 border border-blue-200 rounded-xl space-y-4 text-xs">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-blue-200 pb-3">
+                      <div>
+                        <strong className="text-sm text-blue-950 font-bold">
+                          {report.testName || 'Diagnostic Scan'} (Token: {report.tokenNumber || realToken})
+                        </strong>
+                        <div className="text-slate-600 mt-0.5">
+                          Modality: {report.modality?.toUpperCase() || 'SCAN'} • Room: {report.roomNumber || 'Radiology Room 18'} • Doctor: {report.doctorName || realDoctorName}
+                        </div>
+                      </div>
+                      <span
+                        className={`px-3 py-1 font-bold rounded text-xs border self-start sm:self-auto ${
+                          report.status === 'completed'
+                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                            : 'bg-amber-100 text-amber-800 border-amber-300'
+                        }`}
+                      >
+                        {report.status === 'completed'
+                          ? 'Result Ready / Reviewed by Doctor'
+                          : 'Test In Progress / Waiting'}
+                      </span>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-lg border border-slate-200 space-y-2">
+                      <div className="text-xs font-bold text-slate-700">Diagnostic Findings Summary:</div>
+                      <p className="text-xs text-slate-800 font-mono bg-slate-50 p-3 rounded border border-slate-200">
+                        {report.findingsSummary || 'Sample collected. Radiology suite is processing the scan imaging.'}
+                      </p>
+                      {report.completedAt && (
+                        <div className="text-[11px] text-slate-500">
+                          Report Finalized: {new Date(report.completedAt).toLocaleTimeString()} ({new Date(report.completedAt).toLocaleDateString()})
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : diagnosticOrder ? (
               <div className="p-5 bg-blue-50/70 border border-blue-200 rounded-xl space-y-4 text-xs">
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-blue-200 pb-3">
                   <div>
@@ -624,9 +704,9 @@ export const PatientHome: React.FC = () => {
             ) : (
               <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-xl text-slate-500 text-xs">
                 <FlaskConical className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                <p className="font-bold text-slate-700">No Lab or Scan Orders for Current Visit</p>
+                <p className="font-bold text-slate-700">No Lab or Scan Orders on File</p>
                 <p className="text-slate-500 mt-1">
-                  If the consulting doctor requests an X-Ray, Scan, or Blood Test, the request and results will appear here.
+                  When the consulting doctor requests an X-Ray, Scan, or Blood Test, the request and results will appear here.
                 </p>
               </div>
             )}
@@ -649,21 +729,76 @@ export const PatientHome: React.FC = () => {
                     : 'Medications prescribed by the consulting doctor and pharmacy fulfillment status'}
                 </p>
               </div>
-
-              {pharmacyOrder && (
-                <span
-                  className={`px-3 py-1 font-bold rounded text-xs border self-start sm:self-auto ${
-                    pharmacyOrder.status === 'dispensed'
-                      ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                      : 'bg-purple-100 text-purple-800 border-purple-300'
-                  }`}
-                >
-                  Pharmacy Status: {pharmacyOrder.status?.toUpperCase()}
-                </span>
-              )}
             </div>
 
-            {pharmacyOrder && pharmacyOrder.medications && pharmacyOrder.medications.length > 0 ? (
+            {patientPrescriptions.length > 0 ? (
+              <div className="space-y-6">
+                {patientPrescriptions.map((order: any, oIdx: number) => (
+                  <div key={order.id || oIdx} className="border border-slate-200 rounded-xl p-4 bg-slate-50/50 space-y-3">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-slate-200 pb-2.5">
+                      <div>
+                        <span className="text-xs font-bold text-slate-900">
+                          Prescription (Token: {order.tokenNumber || realToken})
+                        </span>
+                        <div className="text-[11px] text-slate-500">
+                          Prescribed by: {order.doctorName || realDoctorName} • Counter: {order.counterNumber || 'Counter 3'}
+                        </div>
+                      </div>
+                      <span
+                        className={`px-3 py-1 font-bold rounded text-xs border self-start sm:self-auto ${
+                          order.status === 'dispensed'
+                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                            : order.status === 'ready'
+                            ? 'bg-purple-100 text-purple-800 border-purple-300'
+                            : order.status === 'preparing'
+                            ? 'bg-blue-100 text-blue-800 border-blue-300'
+                            : 'bg-amber-100 text-amber-800 border-amber-300'
+                        }`}
+                      >
+                        Pharmacy Status: {order.status?.toUpperCase()}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2.5 text-xs">
+                      {(order.medications || []).map((med: any, idx: number) => (
+                        <div key={idx} className="p-3.5 bg-purple-50/60 border border-purple-200 rounded-lg space-y-2">
+                          <div className="flex justify-between items-center">
+                            <strong className="text-sm font-bold text-purple-950">{med.name}</strong>
+                            <span className="font-mono font-bold text-purple-900 bg-purple-100 px-2 py-0.5 rounded">
+                              {med.dosage}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-purple-100 text-slate-700">
+                            <div>
+                              <span className="text-slate-500">Timing:</span>
+                              <div className="font-bold text-purple-950">{med.frequency || med.timing || '1-0-1'}</div>
+                            </div>
+                            <div>
+                              <span className="text-slate-500">Food Instruction:</span>
+                              <div className="font-bold text-purple-950">{med.instructions || 'After Food'}</div>
+                            </div>
+                            <div>
+                              <span className="text-slate-500">Duration:</span>
+                              <div className="font-bold text-purple-950">{med.duration || '5 Days'}</div>
+                            </div>
+                            <div>
+                              <span className="text-slate-500">Quantity:</span>
+                              <div className="font-bold text-purple-950">{med.quantity || '10 tablets'}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                <div className="p-3 bg-purple-100/60 rounded-lg text-[11px] text-purple-900 flex items-center justify-between">
+                  <span>Dispensing Counter: <strong>Counter 3 (Central Pharmacy, Block A)</strong></span>
+                  <span>TNMSC Free Medicine Scheme Applicable</span>
+                </div>
+              </div>
+            ) : pharmacyOrder && pharmacyOrder.medications && pharmacyOrder.medications.length > 0 ? (
               <div className="space-y-3 text-xs">
                 {pharmacyOrder.medications.map((med: any, idx: number) => (
                   <div key={idx} className="p-4 bg-purple-50/60 border border-purple-200 rounded-xl space-y-2">
@@ -703,7 +838,7 @@ export const PatientHome: React.FC = () => {
             ) : (
               <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-xl text-slate-500 text-xs">
                 <Pill className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                <p className="font-bold text-slate-700">No Prescriptions Issued for Current Visit</p>
+                <p className="font-bold text-slate-700">No Prescriptions Issued on File</p>
                 <p className="text-slate-500 mt-1">
                   Once the doctor completes the consultation and prescribes medicines, they will appear here.
                 </p>
@@ -724,11 +859,77 @@ export const PatientHome: React.FC = () => {
               <p className="text-xs text-slate-500">
                 {lang === 'ta'
                   ? 'மருத்துவர் பதிவு செய்த மருத்துவ குறிப்புகள் மற்றும் நோயறிதல்'
-                  : 'Clinical notes and diagnosis recorded by the consulting doctor'}
+                  : 'Clinical notes and diagnosis recorded by the consulting doctor across hospital visits'}
               </p>
             </div>
 
-            {consultation ? (
+            {patientHistory.length > 0 ? (
+              <div className="space-y-4">
+                {patientHistory.map((item: any, idx: number) => {
+                  const c = item.consultation;
+                  const doc = item.doctor?.fullName || c?.doctorName || 'Dr. Priya Kumar';
+                  const dept = item.department?.name || 'General Medicine';
+                  const dateStr = item.journey?.createdAt ? new Date(item.journey.createdAt).toLocaleDateString() : new Date().toLocaleDateString();
+
+                  return (
+                    <div key={item.journey?.id || idx} className="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-3 text-xs">
+                      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1 border-b border-slate-200 pb-2">
+                        <div>
+                          <div className="font-bold text-sm text-blue-950 font-serif">
+                            {dept} • Doctor: {doc}
+                          </div>
+                          <span className="text-[11px] text-slate-500">
+                            Visit Token: <strong className="font-mono text-slate-800">{item.journey?.currentToken}</strong> ({item.journey?.status?.toUpperCase()})
+                          </span>
+                        </div>
+                        <span className="text-slate-500 font-medium">
+                          {dateStr}
+                        </span>
+                      </div>
+
+                      {c ? (
+                        <>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <span className="text-slate-500 font-bold">Chief Complaint:</span>
+                              <p className="text-slate-800 mt-0.5">{c.symptoms || item.journey?.symptoms || 'Reported symptoms reviewed'}</p>
+                            </div>
+                            <div>
+                              <span className="text-slate-500 font-bold">Doctor Diagnosis:</span>
+                              <p className="text-slate-900 font-bold mt-0.5 text-sm">{c.diagnosis || 'Clinical evaluation completed'}</p>
+                            </div>
+                          </div>
+
+                          {c.clinicalNotes && (
+                            <div className="pt-2 border-t border-slate-200">
+                              <span className="text-slate-500 font-bold block mb-1">Clinical Notes:</span>
+                              <p className="text-slate-800 bg-white p-2.5 rounded border border-slate-200">
+                                {c.clinicalNotes}
+                              </p>
+                            </div>
+                          )}
+
+                          {c.medications && c.medications.length > 0 && (
+                            <div className="pt-2 border-t border-slate-200">
+                              <span className="text-slate-500 font-bold block mb-1">Prescribed Medications:</span>
+                              <div className="flex flex-wrap gap-1.5">
+                                {c.medications.map((m: any, mIdx: number) => (
+                                  <span key={mIdx} className="px-2 py-0.5 bg-purple-50 text-purple-800 border border-purple-200 rounded text-[11px] font-medium">
+                                    {m.name} ({m.dosage}) - {m.frequency || m.timing || 'Daily'}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <p className="text-slate-600 italic">Consultation record in progress or archived.</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : consultation ? (
               <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-3 text-xs">
                 <div className="flex justify-between items-center border-b border-slate-200 pb-2">
                   <div className="font-bold text-sm text-blue-950 font-serif">
@@ -762,7 +963,7 @@ export const PatientHome: React.FC = () => {
             ) : (
               <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-xl text-slate-500 text-xs">
                 <FileText className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                <p className="font-bold text-slate-700">No Consultation Completed Yet</p>
+                <p className="font-bold text-slate-700">No Past Consultations on File</p>
                 <p className="text-slate-500 mt-1">
                   When the doctor conducts your consultation, the diagnosis and clinical observations will appear here.
                 </p>
@@ -772,7 +973,7 @@ export const PatientHome: React.FC = () => {
         )}
 
         {/* ========================================================= */}
-        {/* SECTION 6: PATIENT PROFILE */}
+        {/* SECTION 6: PATIENT PROFILE (PERSISTENT & EDITABLE) */}
         {/* ========================================================= */}
         {activeSection === 'profile' && (
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
@@ -782,49 +983,148 @@ export const PatientHome: React.FC = () => {
                   {lang === 'ta' ? 'நோயாளி சுயவிவரம்' : 'Patient Profile'}
                 </h2>
                 <p className="text-xs text-slate-500">
-                  {lang === 'ta' ? 'அங்கீகரிக்கப்பட்ட நோயாளி விவரங்கள்' : 'Persistent hospital patient record'}
+                  {lang === 'ta' ? 'அங்கீகரிக்கப்பட்ட நோயாளி விவரங்கள் • நிரந்தர பதிவு' : 'Permanent hospital patient record in database'}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={logout}
-                className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded text-xs font-bold transition-colors cursor-pointer"
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsEditingProfile(!isEditingProfile)}
+                  className="px-3 py-1.5 bg-blue-900 hover:bg-blue-800 text-white rounded text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>{isEditingProfile ? 'Cancel Edit' : (lang === 'ta' ? 'சுயவிவரம் திருத்து' : 'Edit Profile')}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded text-xs font-bold transition-colors cursor-pointer"
+                >
+                  {lang === 'ta' ? 'வெளியேறு' : 'Logout'}
+                </button>
+              </div>
+            </div>
+
+            {isEditingProfile ? (
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setIsSavingProfile(true);
+                  try {
+                    const res = await apiClient.updatePatientProfile(patId, {
+                      bloodGroup: editBloodGroup,
+                      allergies: editAllergies,
+                      chronicConditions: editChronic,
+                    });
+                    if (res.success) {
+                      await loadActiveVisit(patId);
+                      setIsEditingProfile(false);
+                    } else {
+                      alert(res.error || 'Failed to update profile');
+                    }
+                  } catch (err: any) {
+                    alert(err.message || 'Error updating profile');
+                  } finally {
+                    setIsSavingProfile(false);
+                  }
+                }}
+                className="p-5 bg-blue-50/50 border border-blue-200 rounded-xl space-y-4 text-xs"
               >
-                {lang === 'ta' ? 'வெளியேறு' : 'Logout'}
-              </button>
-            </div>
+                <h3 className="font-bold text-blue-950 text-sm">Update Allowed Medical Profile Information</h3>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Blood Group:</label>
+                    <select
+                      value={editBloodGroup}
+                      onChange={(e) => setEditBloodGroup(e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-900"
+                    >
+                      {['A+ve', 'A-ve', 'B+ve', 'B-ve', 'AB+ve', 'AB-ve', 'O+ve', 'O-ve'].map((bg) => (
+                        <option key={bg} value={bg}>{bg}</option>
+                      ))}
+                    </select>
+                  </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-                <span className="text-slate-500 font-bold">Patient Name:</span>
-                <div className="text-sm font-bold text-slate-900">{currentPat?.name}</div>
-              </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Known Allergies (comma-separated):</label>
+                    <input
+                      type="text"
+                      value={editAllergies}
+                      onChange={(e) => setEditAllergies(e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-900"
+                      placeholder="e.g. Penicillin, Dust, Sulfa"
+                    />
+                  </div>
 
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-                <span className="text-slate-500 font-bold">Patient ID:</span>
-                <div className="text-sm font-mono font-bold text-blue-900">{currentPat?.id}</div>
-              </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Chronic Conditions (comma-separated):</label>
+                    <input
+                      type="text"
+                      value={editChronic}
+                      onChange={(e) => setEditChronic(e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-900"
+                      placeholder="e.g. Diabetes Mellitus, Hypertension"
+                    />
+                  </div>
+                </div>
 
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-                <span className="text-slate-500 font-bold">Mobile Number (Login Identifier):</span>
-                <div className="text-sm font-mono font-bold text-slate-900">+91 {currentPat?.phone}</div>
-              </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingProfile(false)}
+                    className="px-4 py-2 border border-slate-300 rounded text-slate-700 hover:bg-slate-100 font-bold cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSavingProfile}
+                    className="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white rounded font-bold flex items-center gap-1.5 cursor-pointer shadow"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    <span>{isSavingProfile ? 'Saving...' : 'Save Profile Changes'}</span>
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                  <span className="text-slate-500 font-bold">Patient Name:</span>
+                  <div className="text-sm font-bold text-slate-900">{currentPat?.name}</div>
+                </div>
 
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-                <span className="text-slate-500 font-bold">Age & Gender:</span>
-                <div className="text-sm font-bold text-slate-900">{currentPat?.age} yrs • {currentPat?.gender}</div>
-              </div>
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                  <span className="text-slate-500 font-bold">Patient ID:</span>
+                  <div className="text-sm font-mono font-bold text-blue-900">{currentPat?.id}</div>
+                </div>
 
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-                <span className="text-slate-500 font-bold">Blood Group:</span>
-                <div className="text-sm font-bold text-slate-900">{currentPat?.bloodGroup || 'O+ve'}</div>
-              </div>
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                  <span className="text-slate-500 font-bold">Mobile Number (Login Identifier):</span>
+                  <div className="text-sm font-mono font-bold text-slate-900">+91 {currentPat?.phone}</div>
+                </div>
 
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-                <span className="text-slate-500 font-bold">Known Allergies:</span>
-                <div className="text-sm font-bold text-amber-700">{currentPat?.allergies?.join(', ') || 'None Reported'}</div>
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                  <span className="text-slate-500 font-bold">Age & Gender:</span>
+                  <div className="text-sm font-bold text-slate-900">{currentPat?.age} yrs • {currentPat?.gender}</div>
+                </div>
+
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                  <span className="text-slate-500 font-bold">Blood Group:</span>
+                  <div className="text-sm font-bold text-slate-900">{currentPat?.bloodGroup || 'O+ve'}</div>
+                </div>
+
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                  <span className="text-slate-500 font-bold">Known Allergies:</span>
+                  <div className="text-sm font-bold text-amber-700">{currentPat?.allergies?.join(', ') || 'None Reported'}</div>
+                </div>
+
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1 sm:col-span-2">
+                  <span className="text-slate-500 font-bold">Chronic Conditions:</span>
+                  <div className="text-sm font-bold text-slate-800">{currentPat?.chronicConditions?.join(', ') || 'None Reported'}</div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>

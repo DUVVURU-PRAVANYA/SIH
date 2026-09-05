@@ -1104,113 +1104,129 @@ export const DoctorPortal: React.FC = () => {
               </p>
             </div>
 
-            <div className="p-5 bg-blue-50 border border-blue-200 rounded-lg space-y-4 text-xs">
-              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                <div>
-                  <strong className="text-sm text-blue-950 font-bold">Patient: Anitha Kumar (ID: GH-2026-004281)</strong>
-                  <div className="text-slate-600">Test: Blood Test (FBS, PPBS, HbA1c, CBC) • Token: GM-038</div>
-                </div>
-                <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold rounded text-xs self-start sm:self-auto border border-emerald-200">
-                  Status: Result Available
-                </span>
-              </div>
-
-              {/* Lab Values Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-white p-3.5 rounded border border-slate-200">
-                <div>
-                  <span className="text-slate-500">FBS:</span>
-                  <strong className="block text-red-700 font-mono text-sm font-bold">154 mg/dL (High)</strong>
-                  <span className="text-[10px] text-slate-400">Ref: 70 - 99 mg/dL</span>
-                </div>
-                <div>
-                  <span className="text-slate-500">PPBS:</span>
-                  <strong className="block text-red-700 font-mono text-sm font-bold">210 mg/dL (High)</strong>
-                  <span className="text-[10px] text-slate-400">Ref: &lt; 140 mg/dL</span>
-                </div>
-                <div>
-                  <span className="text-slate-500">HbA1c:</span>
-                  <strong className="block text-red-700 font-mono text-sm font-bold">7.8 % (Suboptimal)</strong>
-                  <span className="text-[10px] text-slate-400">Ref: &lt; 5.7 %</span>
-                </div>
-                <div>
-                  <span className="text-slate-500">CBC (Hb):</span>
-                  <strong className="block text-emerald-700 font-mono text-sm font-bold">12.4 g/dL (Normal)</strong>
-                  <span className="text-[10px] text-slate-400">Ref: 12.0 - 15.5</span>
-                </div>
-              </div>
-
-              {/* Doctor Clinical Interpretation */}
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Doctor Clinical Assessment & Review Remarks
-                </label>
-                <textarea
-                  rows={2}
-                  value={doctorInterpretation}
-                  onChange={(e) => setDoctorInterpretation(e.target.value)}
-                  className="w-full p-2.5 bg-white border border-slate-300 rounded text-xs outline-none focus:border-blue-900"
-                ></textarea>
-              </div>
-
-              {/* TWO STRICT OPTIONS: EMERGENCY VS NORMAL REVISIT */}
-              <div className="border-t border-blue-200 pt-3 space-y-3">
-                <label className="block font-bold text-slate-800 uppercase tracking-wider text-[11px]">
-                  Select Clinical Revisit Decision:
-                </label>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Option 1: NORMAL REVISIT (New Queue Entry) */}
-                  <div className="p-4 bg-white border-2 border-blue-300 rounded-lg space-y-2 flex flex-col justify-between shadow-xs">
-                    <div>
-                      <div className="font-bold text-blue-950 flex items-center gap-1.5 text-sm">
-                        <Users className="w-4 h-4 text-blue-700" />
-                        <span>NORMAL REVISIT</span>
+            {labOrders.filter((o) => o.status === 'result_ready').length > 0 ? (
+              <div className="space-y-6">
+                {labOrders.filter((o) => o.status === 'result_ready').map((order, idx) => (
+                  <div key={order.id || idx} className="p-5 bg-blue-50 border border-blue-200 rounded-lg space-y-4 text-xs">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                      <div>
+                        <strong className="text-sm text-blue-950 font-bold">
+                          Patient: {order.patientName} (ID: {order.patientId})
+                        </strong>
+                        <div className="text-slate-600">
+                          Test: {order.tests.join(', ')} • Token: {order.patientToken}
+                        </div>
                       </div>
-                      <p className="text-[11px] text-slate-600 mt-1">
-                        Creates a new queue entry for patient under Dr. Priya Kumar. Generates new token <strong>GM-039</strong> and recalculates queue waiting time.
-                      </p>
+                      <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold rounded text-xs self-start sm:self-auto border border-emerald-200">
+                        Status: Result Available
+                      </span>
                     </div>
-                    <button
-                      onClick={() => {
-                        doctorRevisitDecision(selectedReviewPatientId, 'normal', {
-                          doctorRemarks: doctorInterpretation,
-                        });
-                        setActiveTab('queue');
-                      }}
-                      className="w-full py-2 bg-blue-900 hover:bg-blue-800 text-white font-bold rounded text-xs flex items-center justify-center gap-1.5 shadow cursor-pointer mt-2"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Create Normal Revisit (Token GM-039)</span>
-                    </button>
-                  </div>
 
-                  {/* Option 2: EMERGENCY (Direct Doctor Bypass) */}
-                  <div className="p-4 bg-white border-2 border-red-300 rounded-lg space-y-2 flex flex-col justify-between shadow-xs">
-                    <div>
-                      <div className="font-bold text-red-950 flex items-center gap-1.5 text-sm">
-                        <AlertTriangle className="w-4 h-4 text-red-600" />
-                        <span>EMERGENCY ACCESS</span>
+                    {/* Lab Values / Findings Grid */}
+                    {order.results && order.results.length > 0 ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-white p-3.5 rounded border border-slate-200">
+                        {order.results.map((r, rIdx) => (
+                          <div key={rIdx}>
+                            <span className="text-slate-500">{r.testName}:</span>
+                            <strong className={`block font-mono text-sm font-bold ${r.isAbnormal ? 'text-red-700' : 'text-slate-900'}`}>
+                              {r.value} {r.unit}
+                            </strong>
+                            <span className="text-[10px] text-slate-400">Ref: {r.referenceRange || 'Standard'}</span>
+                          </div>
+                        ))}
                       </div>
-                      <p className="text-[11px] text-slate-600 mt-1">
-                        Patient proceeds directly to doctor without normal queue waiting. Recalculates remaining queue automatically.
-                      </p>
+                    ) : (
+                      <div className="bg-white p-3.5 rounded border border-slate-200">
+                        <span className="text-slate-500 font-bold block mb-1">Laboratory Findings:</span>
+                        <p className="text-slate-800 font-mono">
+                          {order.results?.[0]?.remarks || 'Test completed by diagnostic technician.'}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Doctor Clinical Interpretation */}
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">
+                        Doctor Clinical Assessment & Review Remarks
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={doctorInterpretation}
+                        onChange={(e) => setDoctorInterpretation(e.target.value)}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded text-xs outline-none focus:border-blue-900"
+                      ></textarea>
                     </div>
-                    <button
-                      onClick={() => {
-                        doctorRevisitDecision(selectedReviewPatientId, 'emergency', {
-                          doctorRemarks: doctorInterpretation,
-                        });
-                        setActiveTab('queue');
-                      }}
-                      className="w-full py-2 bg-red-700 hover:bg-red-600 text-white font-bold rounded text-xs flex items-center justify-center gap-1.5 shadow cursor-pointer mt-2"
-                    >
-                      <AlertTriangle className="w-3.5 h-3.5" />
-                      <span>Priority Emergency Access (Direct)</span>
-                    </button>
+
+                    {/* TWO STRICT OPTIONS: EMERGENCY VS NORMAL REVISIT */}
+                    <div className="border-t border-blue-200 pt-3 space-y-3">
+                      <label className="block font-bold text-slate-800 uppercase tracking-wider text-[11px]">
+                        Select Clinical Revisit Decision:
+                      </label>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* Option 1: NORMAL REVISIT (New Queue Entry) */}
+                        <div className="p-4 bg-white border-2 border-blue-300 rounded-lg space-y-2 flex flex-col justify-between shadow-xs">
+                          <div>
+                            <div className="font-bold text-blue-950 flex items-center gap-1.5 text-sm">
+                              <Users className="w-4 h-4 text-blue-700" />
+                              <span>NORMAL REVISIT</span>
+                            </div>
+                            <p className="text-[11px] text-slate-600 mt-1">
+                              Creates a new queue entry for patient under Dr. Priya Kumar. Generates a new revisit token and recalculates queue waiting time.
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              doctorRevisitDecision(order.patientId, 'normal', {
+                                doctorRemarks: doctorInterpretation,
+                              });
+                              setActiveTab('queue');
+                            }}
+                            className="w-full py-2 bg-blue-900 hover:bg-blue-800 text-white font-bold rounded text-xs flex items-center justify-center gap-1.5 shadow cursor-pointer mt-2"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Create Normal Revisit</span>
+                          </button>
+                        </div>
+
+                        {/* Option 2: EMERGENCY (Direct Doctor Bypass) */}
+                        <div className="p-4 bg-white border-2 border-red-300 rounded-lg space-y-2 flex flex-col justify-between shadow-xs">
+                          <div>
+                            <div className="font-bold text-red-950 flex items-center gap-1.5 text-sm">
+                              <AlertTriangle className="w-4 h-4 text-red-600" />
+                              <span>EMERGENCY ACCESS</span>
+                            </div>
+                            <p className="text-[11px] text-slate-600 mt-1">
+                              Patient proceeds directly to doctor without normal queue waiting. Prioritized immediately in the queue.
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              doctorRevisitDecision(order.patientId, 'emergency', {
+                                doctorRemarks: doctorInterpretation,
+                              });
+                              setActiveTab('queue');
+                            }}
+                            className="w-full py-2 bg-red-700 hover:bg-red-600 text-white font-bold rounded text-xs flex items-center justify-center gap-1.5 shadow cursor-pointer mt-2"
+                          >
+                            <AlertTriangle className="w-3.5 h-3.5" />
+                            <span>Priority Emergency Access (Direct)</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
-            </div>
+            ) : (
+              <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-xl text-slate-500 text-xs">
+                <FlaskConical className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                <p className="font-bold text-slate-700">No Results Currently Requiring Review</p>
+                <p className="text-slate-500 mt-1">
+                  When diagnostic laboratory or scan findings are submitted by the technician, they will appear here.
+                </p>
+              </div>
+            )}
           </div>
         )}
 

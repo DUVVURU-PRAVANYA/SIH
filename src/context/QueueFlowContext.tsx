@@ -201,6 +201,9 @@ interface QueueFlowContextType {
   loginStaff: (username: string, password?: string) => Promise<{ success: boolean; role?: UserRole; error?: string }>;
   registerPatientWithPhone: (data: { name: string; age: number; gender: 'Male' | 'Female' | 'Other'; phone: string; bloodGroup?: string; allergies?: string[]; chronicConditions?: string[] }) => Promise<{ success: boolean; demoOtp?: string; error?: string; patient?: any }>;
   updatePatientProfile: (patientId: string, data: { name?: string; nameTa?: string; age?: number; gender?: string; bloodGroup?: string; allergies?: string[] | string; chronicConditions?: string[] | string }) => Promise<{ success: boolean; data?: any; error?: string }>;
+  refreshDoctorQueue: (deptId?: string) => Promise<void>;
+  refreshLabOrders: () => Promise<void>;
+  refreshPharmacyOrders: () => Promise<void>;
   logout: () => void;
 }
 
@@ -531,25 +534,197 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return res.data;
   };
 
-  // Sync active visit on mount & periodic polling
+  // Real Database Queue & Orders Refreshers
+  const refreshDoctorQueue = useCallback(async (deptId: string = 'dept-genmed') => {
+    try {
+      const res = await apiClient.getQueue(deptId);
+      if (res.success && Array.isArray(res.data)) {
+        const queuePatients: Patient[] = res.data.map((q: any) => ({
+          id: q.patientId,
+          name: q.patientName,
+          nameTa: q.patientName,
+          age: q.patientAge || 35,
+          gender: q.patientGender || 'Male',
+          phone: '',
+          abhaId: q.abhaId || '',
+          token: q.tokenNumber,
+          departmentId: q.departmentId,
+          departmentName: 'General Medicine (OPD)',
+          departmentNameTa: 'பொது மருத்துவம்',
+          currentStage: 'doctor' as const,
+          queuePosition: q.queuePosition || 1,
+          estimatedWaitMinutes: Math.max(1, (q.queuePosition || 1) * 3),
+          status: q.status === 'in_service' ? 'in_consultation' : q.status === 'called' ? 'approaching' : 'normal',
+          priority: q.priority || 'normal',
+          bloodGroup: 'B+ve',
+          allergies: ['None Reported'],
+          existingConditions: ['None Reported'],
+          address: 'Madurai District',
+          emergencyContact: 'Family Member',
+          vitals: q.vitals || {
+            bp: '120/80 mmHg',
+            pulse: '76 bpm',
+            temp: '98.4 °F',
+            weight: '62 kg',
+            spo2: '99%',
+          },
+          stagesHistory: [
+            {
+              stage: 'registration',
+              title: 'Central Registration & Token Triage',
+              titleTa: 'மைய பதிவு மற்றும் டோக்கன் பிரிவு',
+              departmentCode: 'REG',
+              tokenNumber: `REG-${q.patientId.slice(-4)}`,
+              status: 'completed',
+              room: 'Counter 2',
+              block: 'Block A',
+              floor: 'Ground Floor',
+              color: 'yellow',
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            },
+            {
+              stage: 'doctor',
+              title: 'General Medicine Consultation',
+              titleTa: 'பொது மருத்துவம் ஆலோசனை',
+              departmentCode: 'GM',
+              tokenNumber: q.tokenNumber,
+              status: q.status === 'in_service' || q.status === 'called' ? 'current' : 'upcoming',
+              room: 'Rooms 4-8',
+              block: 'Block B',
+              floor: 'Ground Floor',
+              color: 'blue',
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            },
+          ],
+          location: {
+            block: 'Block B',
+            floor: 'Ground Floor',
+            room: 'Rooms 4-8',
+            pathColor: 'blue',
+            pathName: 'Follow Blue Path → Block B → Rooms 4-8',
+            pathNameTa: 'நீல வழித்தடத்தை பின்தொடரவும் → பிளாக் B → அறைகள் 4-8',
+          },
+          createdAt: q.createdAt || new Date().toISOString(),
+          updatedAt: q.createdAt || new Date().toISOString(),
+        }));
+
+        setPatients((prev) => {
+          const otherDept = prev.filter((p) => p.departmentId !== deptId);
+          return [...queuePatients, ...otherDept];
+        });
+      }
+    } catch (err) {
+      console.warn('Could not refresh doctor queue:', err);
+    }
+  }, []);
+
+  const refreshLabOrders = useCallback(async () => {
+    try {
+      const res = await apiClient.getDiagnostics();
+      if (res.success && Array.isArray(res.data)) {
+        const mappedOrders: LabOrder[] = res.data.map((ord: any) => ({
+          id: ord.id,
+          patientId: ord.patientId || (ord.journeyId ? ord.journeyId.replace(/^JNY-/, '') : 'GH-P-00127'),
+          patientName: ord.patientName || 'Patient',
+          patientToken: ord.tokenNumber || 'GM-029',
+          requestedByDoctor: 'Dr. Priya Kumar (MD - Gen Med)',
+          tests: [ord.testName || 'Diagnostic Investigation'],
+          priority: 'routine' as const,
+          schedule: 'today' as const,
+          status: ord.status === 'completed'
+            ? 'result_ready'
+            : ord.status === 'in_progress'
+            ? 'sample_collected'
+            : 'pending',
+          results: ord.findingsSummary
+            ? [
+                {
+                  testName: ord.testName || 'Diagnostic Investigation',
+                  value: ord.findingsSummary,
+                  unit: '',
+                  referenceRange: 'Clinical Range',
+                  isAbnormal: false,
+                  remarks: ord.findingsSummary,
+                },
+              ]
+            : undefined,
+          createdAt: ord.orderedAt || ord.createdAt || new Date().toISOString(),
+          completedAt: ord.completedAt,
+        }));
+        setLabOrders(mappedOrders);
+      }
+    } catch (err) {
+      console.warn('Could not refresh lab orders:', err);
+    }
+  }, []);
+
+  const refreshPharmacyOrders = useCallback(async () => {
+    try {
+      const res = await apiClient.getPharmacyOrders();
+      if (res.success && Array.isArray(res.data)) {
+        const mappedOrders: PharmacyOrder[] = res.data.map((ord: any) => ({
+          id: ord.id,
+          patientId: ord.patientId || (ord.journeyId ? ord.journeyId.replace(/^JNY-/, '') : 'GH-P-00127'),
+          patientName: ord.patientName || 'Patient',
+          patientToken: ord.tokenNumber || 'PH-001',
+          doctorName: ord.doctorName || 'Dr. Priya Kumar',
+          medications: (ord.medications || []).map((m: any, idx: number) => ({
+            id: m.id || `m-${idx}`,
+            name: m.name,
+            dosage: m.dosage || '500mg',
+            frequency: m.frequency || '1-0-1',
+            duration: m.duration || '5 Days',
+            instructions: m.instructions || 'After Food',
+            quantity: m.quantity || 10,
+          })),
+          status: ord.status === 'dispensed'
+            ? 'dispensed'
+            : ord.status === 'ready'
+            ? 'ready'
+            : ord.status === 'preparing'
+            ? 'preparing'
+            : 'waiting',
+          counterNumber: ord.counterNumber || 'Counter 3',
+          tokenNumber: ord.tokenNumber || 'PH-001',
+          totalAmount: 0,
+          isPaid: true,
+          createdAt: ord.createdAt || new Date().toISOString(),
+          completedAt: ord.dispensedAt,
+        }));
+        setPharmacyOrders(mappedOrders);
+      }
+    } catch (err) {
+      console.warn('Could not refresh pharmacy orders:', err);
+    }
+  }, []);
+
+  // Initial fetch for all roles on mount
   useEffect(() => {
     if (activePatientId && role === 'patient') {
       loadActiveVisit(activePatientId);
     }
-  }, [activePatientId, role, loadActiveVisit]);
+    refreshDoctorQueue('dept-genmed');
+    refreshLabOrders();
+    refreshPharmacyOrders();
+  }, [activePatientId, role, loadActiveVisit, refreshDoctorQueue, refreshLabOrders, refreshPharmacyOrders]);
 
-  // Dynamic real-time polling every 3 seconds for active visit & doctor queues
+  // Dynamic real-time polling every 3 seconds for all portals
   useEffect(() => {
-    if (role !== 'patient' && role !== 'doctor') return;
-
     const interval = setInterval(() => {
       if (role === 'patient' && activePatientId && hasActiveVisit) {
         loadActiveVisit(activePatientId);
+      } else if (role === 'doctor') {
+        refreshDoctorQueue('dept-genmed');
+        refreshLabOrders();
+      } else if (role === 'scan_lab') {
+        refreshLabOrders();
+      } else if (role === 'pharmacy') {
+        refreshPharmacyOrders();
       }
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [role, activePatientId, hasActiveVisit, loadActiveVisit]);
+  }, [role, activePatientId, hasActiveVisit, loadActiveVisit, refreshDoctorQueue, refreshLabOrders, refreshPharmacyOrders]);
 
   // Active Patient lookup: derived from real database visit
   const basePatient = currentPatient || (activePatientId ? patients.find((p) => p.id === activePatientId) : null) || null;
@@ -777,10 +952,11 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // 2. Doctor OPD Queue Advance (Connects to Real Database Queue)
   const callNextOPDPatient = (deptId: string = 'dept-genmed') => {
     // 1. Call Backend API to advance queue in database
-    apiClient.callPatient({ departmentId: deptId }).then((res) => {
+    apiClient.callPatient({ departmentId: deptId }).then(async (res) => {
       if (res.success) {
+        await refreshDoctorQueue(deptId);
         if (activePatientId) {
-          loadActiveVisit(activePatientId);
+          await loadActiveVisit(activePatientId);
         }
       }
     }).catch((err) => {
@@ -882,8 +1058,11 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       })),
       investigations: orders.labTests || (orders.diagnosticTestName ? [orders.diagnosticTestName] : []),
       routeTo: orders.labTests && orders.labTests.length > 0 ? 'lab' : (orders.diagnosticTestName ? 'x-ray' : (orders.prescriptions && orders.prescriptions.length > 0 ? 'pharmacy' : 'complete')),
-    }).then(() => {
-      if (activePatientId) loadActiveVisit(activePatientId);
+    }).then(async () => {
+      await refreshDoctorQueue();
+      await refreshLabOrders();
+      await refreshPharmacyOrders();
+      if (activePatientId) await loadActiveVisit(activePatientId);
     }).catch((err) => {
       console.warn('Backend complete consultation notification:', err);
     });
@@ -1158,6 +1337,19 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const targetPatient = patients.find((p) => p.id === patientId);
     if (!targetPatient) return;
 
+    if (decisionType === 'normal' || decisionType === 'emergency') {
+      apiClient.createRevisit({
+        patientId,
+        decisionType,
+        doctorRemarks: data?.doctorRemarks,
+      }).then(async () => {
+        await refreshDoctorQueue();
+        if (activePatientId) await loadActiveVisit(activePatientId);
+      }).catch((err) => {
+        console.warn('Backend revisit error:', err);
+      });
+    }
+
     if (decisionType === 'normal') {
       const newToken = 'GM-039';
       setPatients((prev) =>
@@ -1272,7 +1464,11 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             completedAt: status === 'result_ready' ? new Date().toISOString() : ord.completedAt,
           };
 
-          if (status === 'result_ready') {
+          if (status === 'sample_collected' || status === 'processing') {
+            apiClient.startDiagnostic(orderId).then(() => {
+              refreshLabOrders();
+            }).catch((err) => console.warn('Sync start diagnostic to backend:', err));
+          } else if (status === 'result_ready') {
             // Update patient to Doctor Review Pending
             setPatients((pList) =>
               pList.map((p) => {
@@ -1303,8 +1499,11 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             });
 
             // Sync with backend persistent database
-            apiClient.completeDiagnostic(orderId, results?.map((r) => `${r.testName}: ${r.value} ${r.unit}`).join(', ')).then(() => {
-              if (activePatientId) loadActiveVisit(activePatientId);
+            const findingsSummary = results?.map((r) => `${r.testName}: ${r.value} ${r.unit} (${r.remarks || ''})`).join('; ') || 'Diagnostic investigation completed';
+            apiClient.completeDiagnostic(orderId, findingsSummary).then(async () => {
+              await refreshLabOrders();
+              await refreshDoctorQueue();
+              if (activePatientId) await loadActiveVisit(activePatientId);
             }).catch((err) => console.warn('Sync lab result to backend:', err));
           }
           return updated;
@@ -1394,6 +1593,12 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             completedAt: status === 'dispensed' ? new Date().toISOString() : ord.completedAt,
           };
 
+          if (status === 'preparing' || status === 'ready') {
+            apiClient.updatePharmacyStatus(orderId, status).then(() => {
+              refreshPharmacyOrders();
+            }).catch((err) => console.warn('Sync pharmacy status to backend:', err));
+          }
+
           if (status === 'ready') {
             setPatients((pList) =>
               pList.map((p) => {
@@ -1457,8 +1662,9 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             });
 
             // Sync with backend persistent database
-            apiClient.dispensePharmacyOrder(orderId).then(() => {
-              if (activePatientId) loadActiveVisit(activePatientId);
+            apiClient.dispensePharmacyOrder(orderId).then(async () => {
+              await refreshPharmacyOrders();
+              if (activePatientId) await loadActiveVisit(activePatientId);
             }).catch((err) => console.warn('Sync pharmacy dispense to backend:', err));
           }
 
@@ -2235,6 +2441,9 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         loginStaff,
         registerPatientWithPhone,
         updatePatientProfile,
+        refreshDoctorQueue,
+        refreshLabOrders,
+        refreshPharmacyOrders,
         logout,
       }}
     >

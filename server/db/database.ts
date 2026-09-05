@@ -676,6 +676,105 @@ export class DatabaseEngine {
     }
   }
 
+  // Patient History & Records Across Visits
+  public getPatientHistory(patientId: string): Array<{
+    journey: Journey;
+    department?: Department;
+    doctor?: User;
+    consultation?: Consultation;
+    diagnosticOrder?: DiagnosticOrder;
+    pharmacyOrder?: PharmacyOrder;
+  }> {
+    const journeys = this.data.journeys.filter((j) => j.patientId === patientId);
+    return journeys.map((journey) => {
+      const department = this.getDepartmentById(journey.currentDepartmentId);
+      const doctor = journey.doctorId ? this.getUserById(journey.doctorId) : this.getDoctors().find((d) => d.departmentId === journey.currentDepartmentId);
+      const consultation = this.getConsultationByJourney(journey.id);
+      const diagnosticOrder = this.getDiagnosticOrderByJourney(journey.id);
+      const pharmacyOrder = this.getPharmacyOrderByJourney(journey.id);
+      return {
+        journey,
+        department,
+        doctor,
+        consultation,
+        diagnosticOrder,
+        pharmacyOrder,
+      };
+    });
+  }
+
+  public getPatientDiagnosticOrders(patientId: string): Array<DiagnosticOrder & { patientName?: string; doctorName?: string }> {
+    const patientJourneys = new Set(this.data.journeys.filter((j) => j.patientId === patientId).map((j) => j.id));
+    const patient = this.getPatientById(patientId);
+    return this.data.diagnosticOrders
+      .filter((o) => patientJourneys.has(o.journeyId))
+      .map((ord) => {
+        const journey = this.getJourneyById(ord.journeyId);
+        const doctor = journey?.doctorId ? this.getUserById(journey.doctorId) : undefined;
+        return {
+          ...ord,
+          patientName: patient?.name,
+          doctorName: doctor?.fullName || 'Dr. Priya Kumar',
+        };
+      });
+  }
+
+  public getPatientPharmacyOrders(patientId: string): Array<PharmacyOrder & { patientName?: string; doctorName?: string }> {
+    const patientJourneys = new Set(this.data.journeys.filter((j) => j.patientId === patientId).map((j) => j.id));
+    const patient = this.getPatientById(patientId);
+    return this.data.pharmacyOrders
+      .filter((o) => patientJourneys.has(o.journeyId))
+      .map((ord) => {
+        const journey = this.getJourneyById(ord.journeyId);
+        const doctor = journey?.doctorId ? this.getUserById(journey.doctorId) : undefined;
+        return {
+          ...ord,
+          patientName: patient?.name,
+          doctorName: doctor?.fullName || 'Dr. Priya Kumar',
+        };
+      });
+  }
+
+  // Doctor Revisit Creation
+  public createRevisit(params: {
+    patientId: string;
+    decisionType: 'normal' | 'emergency';
+    doctorRemarks?: string;
+  }): { queueEntry: QueueEntry; tokenNumber: string } {
+    const patient = this.getPatientById(params.patientId);
+    if (!patient) throw new Error(`Patient ${params.patientId} not found`);
+
+    const activeJourney = this.getActiveJourneyForPatient(params.patientId) || this.data.journeys.find((j) => j.patientId === params.patientId);
+    if (!activeJourney) throw new Error(`No visit journey found for patient ${params.patientId}`);
+
+    const deptId = activeJourney.currentDepartmentId;
+    const dept = this.getDepartmentById(deptId) || this.getDepartments()[0];
+
+    const tokenNumber = this.getNextTokenNumber(dept.code);
+    const queueSeq = this.getDepartmentQueue(deptId).length + 1;
+    const priority: PatientPriority = params.decisionType === 'emergency' ? 'emergency' : 'normal';
+
+    const queueEntry = this.createQueueEntry({
+      departmentId: deptId,
+      doctorId: activeJourney.doctorId,
+      journeyId: activeJourney.id,
+      patientId: params.patientId,
+      tokenNumber,
+      sequenceNum: queueSeq,
+      status: 'waiting',
+      priority,
+    });
+
+    this.updateJourney(activeJourney.id, {
+      currentStage: 'doctor',
+      currentToken: tokenNumber,
+      status: 'active',
+      priority,
+    });
+
+    return { queueEntry, tokenNumber };
+  }
+
   // Audit Logs
   public logAudit(actionType: string, entityName: string, entityId: string, details: string, userId?: string) {
     const log: AuditLog = {

@@ -351,6 +351,26 @@
   ],
   "patients": [
     {
+      "id": "GH-P-00143",
+      "name": "shinchan",
+      "nameTa": "shinchan",
+      "age": 33,
+      "gender": "Female",
+      "phone": "1234567890",
+      "abhaId": "91-5104-5305-9901",
+      "bloodGroup": "O+ve",
+      "allergies": [
+        "Penicillin"
+      ],
+      "chronicConditions": [
+        "None Reported"
+      ],
+      "preferredLanguage": "ta",
+      "isSynthetic": false,
+      "role": "patient",
+      "createdAt": "2026-09-05T08:20:02.114Z"
+    },
+    {
       "id": "GH-P-00701",
       "name": "Gopal R.",
       "nameTa": "Gopal R.",
@@ -636,7 +656,8 @@
       "isSynthetic": true,
       "createdAt": "2026-09-04T08:45:00.000Z",
       "chronicConditions": [
-        "Type 2 Diabetes"
+        "Type 2 Diabetes Mellitus",
+        "Hypertension"
       ]
     },
     {
@@ -731,6 +752,89 @@
   ],
   "journeys": [
     {
+      "patientId": "GH-P-00127",
+      "doctorId": "usr-doc-1",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-pharm",
+      "currentStage": "completed",
+      "currentToken": "PHARM-024",
+      "symptoms": "Mild fever and routine review of blood glucose",
+      "status": "completed",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00065",
+      "createdAt": "2026-09-05T08:30:31.229Z",
+      "completedAt": "2026-09-05T08:30:31.348Z"
+    },
+    {
+      "patientId": "GH-P-00127",
+      "doctorId": "usr-doc-1",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-pharm",
+      "currentStage": "completed",
+      "currentToken": "PHARM-022",
+      "symptoms": "Mild fever and routine review of blood glucose",
+      "status": "completed",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00064",
+      "createdAt": "2026-09-05T08:28:32.991Z",
+      "completedAt": "2026-09-05T08:28:33.110Z"
+    },
+    {
+      "patientId": "GH-P-00127",
+      "doctorId": "usr-doc-1",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-pharm",
+      "currentStage": "completed",
+      "currentToken": "PHARM-020",
+      "symptoms": "Mild fever and routine review of blood glucose",
+      "status": "completed",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00063",
+      "createdAt": "2026-09-05T08:28:04.093Z",
+      "completedAt": "2026-09-05T08:28:04.211Z"
+    },
+    {
+      "patientId": "GH-P-00143",
+      "doctorId": "usr-doc-1",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-genmed",
+      "currentStage": "doctor",
+      "currentToken": "GENMED-103",
+      "symptoms": "OPD Consultation requested",
+      "status": "active",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
+      "id": "JNY-20260905-00062",
+      "createdAt": "2026-09-05T08:20:10.962Z"
+    },
+    {
       "patientId": "GH-P-00370",
       "doctorId": "usr-doc-1",
       "hospitalId": "hosp-grh-01",
@@ -759,7 +863,7 @@
       "currentStage": "doctor",
       "currentToken": "GENMED-101",
       "symptoms": "OPD Consultation requested",
-      "status": "active",
+      "status": "completed",
       "priority": "normal",
       "vitals": {
         "bp": "120/80 mmHg",
@@ -768,7 +872,8 @@
         "spo2": "99%"
       },
       "id": "JNY-20260905-00060",
-      "createdAt": "2026-09-05T08:01:54.372Z"
+      "createdAt": "2026-09-05T08:01:54.372Z",
+      "completedAt": "2026-09-05T08:28:04.089Z"
     },
     {
       "patientId": "GH-P-00127",
@@ -1487,6 +1592,165 @@
       "notes": "Chief complaint: OPD Consultation requested",
       "id": "STG-32917590",
       "createdAt": "2026-09-05T08:02:09.175Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00062",
+      "stageType": "doctor",
+      "departmentId": "dept-genmed",
+      "tokenNumber": "GENMED-103",
+      "sequenceNum": 1,
+      "status": "waiting",
+      "roomNumber": "Rooms 4-8",
+      "blockName": "Block B",
+      "floorName": "Ground Floor",
+      "color": "blue",
+      "notes": "Chief complaint: OPD Consultation requested",
+      "id": "STG-41096561",
+      "createdAt": "2026-09-05T08:20:10.965Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00063",
+      "stageType": "doctor",
+      "departmentId": "dept-genmed",
+      "tokenNumber": "GENMED-104",
+      "sequenceNum": 1,
+      "status": "completed",
+      "roomNumber": "Rooms 4-8",
+      "blockName": "Block B",
+      "floorName": "Ground Floor",
+      "color": "blue",
+      "notes": "Diagnosis: Type 2 Diabetes Mellitus - Glycemic Review. Rx: Tab Metformin, Tab Glimepiride",
+      "id": "STG-88409684",
+      "createdAt": "2026-09-05T08:28:04.096Z",
+      "completedAt": "2026-09-05T08:28:04.127Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00063",
+      "stageType": "diagnostic",
+      "departmentId": "dept-lab",
+      "tokenNumber": "LAB-046",
+      "sequenceNum": 2,
+      "status": "completed",
+      "roomNumber": "Lab 101",
+      "blockName": "Block C",
+      "floorName": "1st Floor",
+      "color": "green",
+      "notes": "FBS: 142 mg/dL (Elevated); HbA1c: 7.2% (Suboptimal glycemic control)",
+      "id": "STG-88413682",
+      "createdAt": "2026-09-05T08:28:04.136Z",
+      "completedAt": "2026-09-05T08:28:04.162Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00063",
+      "stageType": "pharmacy",
+      "departmentId": "dept-pharm",
+      "tokenNumber": "PHARM-019",
+      "sequenceNum": 3,
+      "status": "completed",
+      "roomNumber": "Counter 3",
+      "blockName": "Block A",
+      "floorName": "Ground Floor",
+      "color": "purple",
+      "notes": "Medications dispensed successfully",
+      "id": "STG-88416958",
+      "createdAt": "2026-09-05T08:28:04.169Z",
+      "completedAt": "2026-09-05T08:28:04.207Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00064",
+      "stageType": "doctor",
+      "departmentId": "dept-genmed",
+      "tokenNumber": "GENMED-105",
+      "sequenceNum": 1,
+      "status": "completed",
+      "roomNumber": "Rooms 4-8",
+      "blockName": "Block B",
+      "floorName": "Ground Floor",
+      "color": "blue",
+      "notes": "Diagnosis: Type 2 Diabetes Mellitus - Glycemic Review. Rx: Tab Metformin, Tab Glimepiride",
+      "id": "STG-91299348",
+      "createdAt": "2026-09-05T08:28:32.993Z",
+      "completedAt": "2026-09-05T08:28:33.023Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00064",
+      "stageType": "diagnostic",
+      "departmentId": "dept-lab",
+      "tokenNumber": "LAB-047",
+      "sequenceNum": 2,
+      "status": "completed",
+      "roomNumber": "Lab 101",
+      "blockName": "Block C",
+      "floorName": "1st Floor",
+      "color": "green",
+      "notes": "FBS: 142 mg/dL (Elevated); HbA1c: 7.2% (Suboptimal glycemic control)",
+      "id": "STG-91303274",
+      "createdAt": "2026-09-05T08:28:33.032Z",
+      "completedAt": "2026-09-05T08:28:33.059Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00064",
+      "stageType": "pharmacy",
+      "departmentId": "dept-pharm",
+      "tokenNumber": "PHARM-021",
+      "sequenceNum": 3,
+      "status": "completed",
+      "roomNumber": "Counter 3",
+      "blockName": "Block A",
+      "floorName": "Ground Floor",
+      "color": "purple",
+      "notes": "Medications dispensed successfully",
+      "id": "STG-91306710",
+      "createdAt": "2026-09-05T08:28:33.067Z",
+      "completedAt": "2026-09-05T08:28:33.106Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00065",
+      "stageType": "doctor",
+      "departmentId": "dept-genmed",
+      "tokenNumber": "GENMED-106",
+      "sequenceNum": 1,
+      "status": "completed",
+      "roomNumber": "Rooms 4-8",
+      "blockName": "Block B",
+      "floorName": "Ground Floor",
+      "color": "blue",
+      "notes": "Diagnosis: Type 2 Diabetes Mellitus - Glycemic Review. Rx: Tab Metformin, Tab Glimepiride",
+      "id": "STG-03123182",
+      "createdAt": "2026-09-05T08:30:31.231Z",
+      "completedAt": "2026-09-05T08:30:31.261Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00065",
+      "stageType": "diagnostic",
+      "departmentId": "dept-lab",
+      "tokenNumber": "LAB-048",
+      "sequenceNum": 2,
+      "status": "completed",
+      "roomNumber": "Lab 101",
+      "blockName": "Block C",
+      "floorName": "1st Floor",
+      "color": "green",
+      "notes": "FBS: 142 mg/dL (Elevated); HbA1c: 7.2% (Suboptimal glycemic control)",
+      "id": "STG-03127199",
+      "createdAt": "2026-09-05T08:30:31.271Z",
+      "completedAt": "2026-09-05T08:30:31.298Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00065",
+      "stageType": "pharmacy",
+      "departmentId": "dept-pharm",
+      "tokenNumber": "PHARM-023",
+      "sequenceNum": 3,
+      "status": "completed",
+      "roomNumber": "Counter 3",
+      "blockName": "Block A",
+      "floorName": "Ground Floor",
+      "color": "purple",
+      "notes": "Medications dispensed successfully",
+      "id": "STG-03130458",
+      "createdAt": "2026-09-05T08:30:31.304Z",
+      "completedAt": "2026-09-05T08:30:31.344Z"
     }
   ],
   "queueEntries": [
@@ -1738,11 +2002,12 @@
       "patientId": "GH-P-00701",
       "tokenNumber": "GENMED-099",
       "sequenceNum": 7,
-      "status": "called",
+      "status": "completed",
       "priority": "senior",
       "id": "QE-08187965",
       "createdAt": "2026-09-05T07:58:01.879Z",
-      "calledAt": "2026-09-05T07:58:01.918Z"
+      "calledAt": "2026-09-05T07:58:01.918Z",
+      "completedAt": "2026-09-05T08:28:04.114Z"
     },
     {
       "departmentId": "dept-genmed",
@@ -1766,10 +2031,11 @@
       "patientId": "GH-P-00127",
       "tokenNumber": "GENMED-101",
       "sequenceNum": 6,
-      "status": "waiting",
+      "status": "completed",
       "priority": "normal",
       "id": "QE-31438048",
-      "createdAt": "2026-09-05T08:01:54.380Z"
+      "createdAt": "2026-09-05T08:01:54.380Z",
+      "completedAt": "2026-09-05T08:28:04.089Z"
     },
     {
       "departmentId": "dept-genmed",
@@ -1783,9 +2049,286 @@
       "priority": "normal",
       "id": "QE-32917753",
       "createdAt": "2026-09-05T08:02:09.177Z"
+    },
+    {
+      "departmentId": "dept-genmed",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00062",
+      "journeyStageId": "STG-41096561",
+      "patientId": "GH-P-00143",
+      "tokenNumber": "GENMED-103",
+      "sequenceNum": 8,
+      "status": "waiting",
+      "priority": "normal",
+      "id": "QE-41096977",
+      "createdAt": "2026-09-05T08:20:10.969Z"
+    },
+    {
+      "departmentId": "dept-genmed",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00063",
+      "journeyStageId": "STG-88409684",
+      "patientId": "GH-P-00127",
+      "tokenNumber": "GENMED-104",
+      "sequenceNum": 8,
+      "status": "completed",
+      "priority": "normal",
+      "id": "QE-88409858",
+      "createdAt": "2026-09-05T08:28:04.098Z",
+      "calledAt": "2026-09-05T08:28:04.116Z",
+      "completedAt": "2026-09-05T08:28:04.124Z"
+    },
+    {
+      "departmentId": "dept-lab",
+      "journeyId": "JNY-20260905-00063",
+      "journeyStageId": "STG-88413682",
+      "patientId": "GH-P-00127",
+      "tokenNumber": "LAB-046",
+      "sequenceNum": 1,
+      "status": "completed",
+      "priority": "normal",
+      "id": "QE-88413846",
+      "createdAt": "2026-09-05T08:28:04.138Z",
+      "completedAt": "2026-09-05T08:28:04.160Z"
+    },
+    {
+      "departmentId": "dept-pharm",
+      "journeyId": "JNY-20260905-00063",
+      "journeyStageId": "STG-88416958",
+      "patientId": "GH-P-00127",
+      "tokenNumber": "PHARM-019",
+      "sequenceNum": 2,
+      "status": "completed",
+      "priority": "normal",
+      "id": "QE-88417149",
+      "createdAt": "2026-09-05T08:28:04.171Z",
+      "completedAt": "2026-09-05T08:28:04.209Z"
+    },
+    {
+      "departmentId": "dept-pharm",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00063",
+      "patientId": "GH-P-00127",
+      "tokenNumber": "PHARM-020",
+      "sequenceNum": 3,
+      "status": "waiting",
+      "priority": "normal",
+      "id": "QE-88418321",
+      "createdAt": "2026-09-05T08:28:04.183Z"
+    },
+    {
+      "departmentId": "dept-genmed",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00064",
+      "journeyStageId": "STG-91299348",
+      "patientId": "GH-P-00127",
+      "tokenNumber": "GENMED-105",
+      "sequenceNum": 7,
+      "status": "completed",
+      "priority": "normal",
+      "id": "QE-91299555",
+      "createdAt": "2026-09-05T08:28:32.995Z",
+      "calledAt": "2026-09-05T08:28:33.012Z",
+      "completedAt": "2026-09-05T08:28:33.020Z"
+    },
+    {
+      "departmentId": "dept-lab",
+      "journeyId": "JNY-20260905-00064",
+      "journeyStageId": "STG-91303274",
+      "patientId": "GH-P-00127",
+      "tokenNumber": "LAB-047",
+      "sequenceNum": 1,
+      "status": "completed",
+      "priority": "normal",
+      "id": "QE-91303485",
+      "createdAt": "2026-09-05T08:28:33.034Z",
+      "completedAt": "2026-09-05T08:28:33.057Z"
+    },
+    {
+      "departmentId": "dept-pharm",
+      "journeyId": "JNY-20260905-00064",
+      "journeyStageId": "STG-91306710",
+      "patientId": "GH-P-00127",
+      "tokenNumber": "PHARM-021",
+      "sequenceNum": 3,
+      "status": "completed",
+      "priority": "normal",
+      "id": "QE-91306983",
+      "createdAt": "2026-09-05T08:28:33.069Z",
+      "completedAt": "2026-09-05T08:28:33.108Z"
+    },
+    {
+      "departmentId": "dept-pharm",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00064",
+      "patientId": "GH-P-00127",
+      "tokenNumber": "PHARM-022",
+      "sequenceNum": 4,
+      "status": "waiting",
+      "priority": "normal",
+      "id": "QE-91308279",
+      "createdAt": "2026-09-05T08:28:33.082Z"
+    },
+    {
+      "departmentId": "dept-genmed",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00065",
+      "journeyStageId": "STG-03123182",
+      "patientId": "GH-P-00127",
+      "tokenNumber": "GENMED-106",
+      "sequenceNum": 7,
+      "status": "completed",
+      "priority": "normal",
+      "id": "QE-03123423",
+      "createdAt": "2026-09-05T08:30:31.234Z",
+      "calledAt": "2026-09-05T08:30:31.251Z",
+      "completedAt": "2026-09-05T08:30:31.259Z"
+    },
+    {
+      "departmentId": "dept-lab",
+      "journeyId": "JNY-20260905-00065",
+      "journeyStageId": "STG-03127199",
+      "patientId": "GH-P-00127",
+      "tokenNumber": "LAB-048",
+      "sequenceNum": 1,
+      "status": "completed",
+      "priority": "normal",
+      "id": "QE-03127373",
+      "createdAt": "2026-09-05T08:30:31.273Z",
+      "completedAt": "2026-09-05T08:30:31.296Z"
+    },
+    {
+      "departmentId": "dept-pharm",
+      "journeyId": "JNY-20260905-00065",
+      "journeyStageId": "STG-03130458",
+      "patientId": "GH-P-00127",
+      "tokenNumber": "PHARM-023",
+      "sequenceNum": 4,
+      "status": "completed",
+      "priority": "normal",
+      "id": "QE-03130782",
+      "createdAt": "2026-09-05T08:30:31.307Z",
+      "completedAt": "2026-09-05T08:30:31.346Z"
+    },
+    {
+      "departmentId": "dept-pharm",
+      "doctorId": "usr-doc-1",
+      "journeyId": "JNY-20260905-00065",
+      "patientId": "GH-P-00127",
+      "tokenNumber": "PHARM-024",
+      "sequenceNum": 5,
+      "status": "waiting",
+      "priority": "normal",
+      "id": "QE-03132012",
+      "createdAt": "2026-09-05T08:30:31.320Z"
     }
   ],
   "consultations": [
+    {
+      "journeyId": "JNY-20260905-00065",
+      "doctorId": "usr-doc-1",
+      "doctorName": "Dr. Priya Kumar",
+      "departmentId": "dept-genmed",
+      "symptoms": "Reported symptoms reviewed during OPD consultation",
+      "observations": "Blood pressure 130/80 mmHg. Advised fasting blood sugar and HbA1c panel.",
+      "diagnosis": "Type 2 Diabetes Mellitus - Glycemic Review",
+      "clinicalNotes": "Blood pressure 130/80 mmHg. Advised fasting blood sugar and HbA1c panel.",
+      "medications": [
+        {
+          "name": "Tab Metformin",
+          "dosage": "500mg",
+          "frequency": "1-0-1",
+          "duration": "30 Days",
+          "instructions": "After food",
+          "quantity": 60
+        },
+        {
+          "name": "Tab Glimepiride",
+          "dosage": "1mg",
+          "frequency": "1-0-0",
+          "duration": "30 Days",
+          "instructions": "Before breakfast",
+          "quantity": 30
+        }
+      ],
+      "investigations": [
+        "Fasting Blood Sugar & HbA1c Panel"
+      ],
+      "followUpDays": 14,
+      "completedAt": "2026-09-05T08:30:31.264Z",
+      "id": "CNS-031264",
+      "createdAt": "2026-09-05T08:30:31.264Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00064",
+      "doctorId": "usr-doc-1",
+      "doctorName": "Dr. Priya Kumar",
+      "departmentId": "dept-genmed",
+      "symptoms": "Reported symptoms reviewed during OPD consultation",
+      "observations": "Blood pressure 130/80 mmHg. Advised fasting blood sugar and HbA1c panel.",
+      "diagnosis": "Type 2 Diabetes Mellitus - Glycemic Review",
+      "clinicalNotes": "Blood pressure 130/80 mmHg. Advised fasting blood sugar and HbA1c panel.",
+      "medications": [
+        {
+          "name": "Tab Metformin",
+          "dosage": "500mg",
+          "frequency": "1-0-1",
+          "duration": "30 Days",
+          "instructions": "After food",
+          "quantity": 60
+        },
+        {
+          "name": "Tab Glimepiride",
+          "dosage": "1mg",
+          "frequency": "1-0-0",
+          "duration": "30 Days",
+          "instructions": "Before breakfast",
+          "quantity": 30
+        }
+      ],
+      "investigations": [
+        "Fasting Blood Sugar & HbA1c Panel"
+      ],
+      "followUpDays": 14,
+      "completedAt": "2026-09-05T08:28:33.025Z",
+      "id": "CNS-913025",
+      "createdAt": "2026-09-05T08:28:33.025Z"
+    },
+    {
+      "journeyId": "JNY-20260905-00063",
+      "doctorId": "usr-doc-1",
+      "doctorName": "Dr. Priya Kumar",
+      "departmentId": "dept-genmed",
+      "symptoms": "Reported symptoms reviewed during OPD consultation",
+      "observations": "Blood pressure 130/80 mmHg. Advised fasting blood sugar and HbA1c panel.",
+      "diagnosis": "Type 2 Diabetes Mellitus - Glycemic Review",
+      "clinicalNotes": "Blood pressure 130/80 mmHg. Advised fasting blood sugar and HbA1c panel.",
+      "medications": [
+        {
+          "name": "Tab Metformin",
+          "dosage": "500mg",
+          "frequency": "1-0-1",
+          "duration": "30 Days",
+          "instructions": "After food",
+          "quantity": 60
+        },
+        {
+          "name": "Tab Glimepiride",
+          "dosage": "1mg",
+          "frequency": "1-0-0",
+          "duration": "30 Days",
+          "instructions": "Before breakfast",
+          "quantity": 30
+        }
+      ],
+      "investigations": [
+        "Fasting Blood Sugar & HbA1c Panel"
+      ],
+      "followUpDays": 14,
+      "completedAt": "2026-09-05T08:28:04.129Z",
+      "id": "CNS-884130",
+      "createdAt": "2026-09-05T08:28:04.130Z"
+    },
     {
       "journeyId": "JNY-20260905-00049",
       "doctorId": "usr-doc-1",
@@ -1890,6 +2433,45 @@
   ],
   "diagnosticOrders": [
     {
+      "consultationId": "CNS-031264",
+      "journeyId": "JNY-20260905-00065",
+      "modality": "pathology",
+      "testName": "Fasting Blood Sugar & HbA1c Panel",
+      "tokenNumber": "LAB-048",
+      "status": "completed",
+      "roomNumber": "Lab 101",
+      "id": "DXO-031268",
+      "orderedAt": "2026-09-05T08:30:31.268Z",
+      "findingsSummary": "FBS: 142 mg/dL (Elevated); HbA1c: 7.2% (Suboptimal glycemic control)",
+      "completedAt": "2026-09-05T08:30:31.293Z"
+    },
+    {
+      "consultationId": "CNS-913025",
+      "journeyId": "JNY-20260905-00064",
+      "modality": "pathology",
+      "testName": "Fasting Blood Sugar & HbA1c Panel",
+      "tokenNumber": "LAB-047",
+      "status": "completed",
+      "roomNumber": "Lab 101",
+      "id": "DXO-913030",
+      "orderedAt": "2026-09-05T08:28:33.030Z",
+      "findingsSummary": "FBS: 142 mg/dL (Elevated); HbA1c: 7.2% (Suboptimal glycemic control)",
+      "completedAt": "2026-09-05T08:28:33.055Z"
+    },
+    {
+      "consultationId": "CNS-884130",
+      "journeyId": "JNY-20260905-00063",
+      "modality": "pathology",
+      "testName": "Fasting Blood Sugar & HbA1c Panel",
+      "tokenNumber": "LAB-046",
+      "status": "completed",
+      "roomNumber": "Lab 101",
+      "id": "DXO-884134",
+      "orderedAt": "2026-09-05T08:28:04.134Z",
+      "findingsSummary": "FBS: 142 mg/dL (Elevated); HbA1c: 7.2% (Suboptimal glycemic control)",
+      "completedAt": "2026-09-05T08:28:04.158Z"
+    },
+    {
       "consultationId": "CNS-654981",
       "journeyId": "JNY-20260904-00043",
       "modality": "x-ray",
@@ -1904,6 +2486,90 @@
     }
   ],
   "pharmacyOrders": [
+    {
+      "consultationId": "CNS-031264",
+      "journeyId": "JNY-20260905-00065",
+      "tokenNumber": "PHARM-023",
+      "status": "dispensed",
+      "counterNumber": "Counter 3",
+      "medications": [
+        {
+          "name": "Tab Metformin",
+          "dosage": "500mg",
+          "frequency": "1-0-1",
+          "duration": "30 Days",
+          "instructions": "After food",
+          "quantity": 60
+        },
+        {
+          "name": "Tab Glimepiride",
+          "dosage": "1mg",
+          "frequency": "1-0-0",
+          "duration": "30 Days",
+          "instructions": "Before breakfast",
+          "quantity": 30
+        }
+      ],
+      "id": "PHO-031302",
+      "createdAt": "2026-09-05T08:30:31.302Z",
+      "dispensedAt": "2026-09-05T08:30:31.341Z"
+    },
+    {
+      "consultationId": "CNS-913025",
+      "journeyId": "JNY-20260905-00064",
+      "tokenNumber": "PHARM-021",
+      "status": "dispensed",
+      "counterNumber": "Counter 3",
+      "medications": [
+        {
+          "name": "Tab Metformin",
+          "dosage": "500mg",
+          "frequency": "1-0-1",
+          "duration": "30 Days",
+          "instructions": "After food",
+          "quantity": 60
+        },
+        {
+          "name": "Tab Glimepiride",
+          "dosage": "1mg",
+          "frequency": "1-0-0",
+          "duration": "30 Days",
+          "instructions": "Before breakfast",
+          "quantity": 30
+        }
+      ],
+      "id": "PHO-913064",
+      "createdAt": "2026-09-05T08:28:33.064Z",
+      "dispensedAt": "2026-09-05T08:28:33.104Z"
+    },
+    {
+      "consultationId": "CNS-884130",
+      "journeyId": "JNY-20260905-00063",
+      "tokenNumber": "PHARM-019",
+      "status": "dispensed",
+      "counterNumber": "Counter 3",
+      "medications": [
+        {
+          "name": "Tab Metformin",
+          "dosage": "500mg",
+          "frequency": "1-0-1",
+          "duration": "30 Days",
+          "instructions": "After food",
+          "quantity": 60
+        },
+        {
+          "name": "Tab Glimepiride",
+          "dosage": "1mg",
+          "frequency": "1-0-0",
+          "duration": "30 Days",
+          "instructions": "Before breakfast",
+          "quantity": 30
+        }
+      ],
+      "id": "PHO-884166",
+      "createdAt": "2026-09-05T08:28:04.166Z",
+      "dispensedAt": "2026-09-05T08:28:04.205Z"
+    },
     {
       "consultationId": "CNS-805995",
       "journeyId": "JNY-20260905-00049",
@@ -2053,6 +2719,198 @@
     }
   ],
   "notifications": [
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00065",
+      "title": "🎉 HOSPITAL JOURNEY COMPLETED",
+      "titleTa": "🎉 மருத்துவமனை பயணம் வெற்றிகரமாக முடிந்தது",
+      "message": "Token PHARM-024 (Anitha Kumar): All consultations, diagnostics, and medicines completed. Wish you a speedy recovery!",
+      "messageTa": "டோக்கன் PHARM-024 (Anitha Kumar): அனைத்து சிகிச்சைகளும் மருந்தும் பெறப்பட்டுவிட்டன. விரைவில் நலம் பெற வாழ்த்துகிறோம்!",
+      "type": "success",
+      "id": "NOTIF-1788597031351-125",
+      "isRead": false,
+      "createdAt": "2026-09-05T08:30:31.351Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00065",
+      "title": "X-Ray Completed → Proceed to Pharmacy",
+      "titleTa": "எக்ஸ்-ரே முடிந்தது → மருந்தகத்திற்கு செல்லவும்",
+      "message": "Diagnostic scan finished. Proceed to Pharmacy Counter 3 (Block A) following PURPLE path. Token: PHARM-023.",
+      "messageTa": "பரிசோதனை முடிந்தது. ஊதா வழியைப் பின்பற்றி மருந்தக கவுண்டர் 3-க்கு செல்லவும். புதிய டோக்கன்: PHARM-023.",
+      "type": "success",
+      "id": "NOTIF-1788597031312-x8h",
+      "isRead": false,
+      "createdAt": "2026-09-05T08:30:31.312Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00065",
+      "title": "Next Stage: Central Diagnostic Lab",
+      "titleTa": "அடுத்த நிலை: மைய ஆய்வகம்",
+      "message": "Doctor completed consultation. Proceed to Lab 101 (Block C) following GREEN path. Token: LAB-048.",
+      "messageTa": "மருத்துவர் ஆலோசனை முடிந்தது. பச்சை வழியைப் பின்பற்றி Lab 101-க்கு செல்லவும். புதிய டோக்கன்: LAB-048.",
+      "type": "info",
+      "id": "NOTIF-1788597031278-xug",
+      "isRead": false,
+      "createdAt": "2026-09-05T08:30:31.278Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00065",
+      "title": "🔔 YOUR TURN IS NOW ACTIVE",
+      "titleTa": "🔔 இப்போது உங்கள் முறை! உள்ளே செல்லவும்",
+      "message": "Token GENMED-106 (Anitha Kumar): Please proceed into Rooms 4-8 (Block B).",
+      "messageTa": "டோக்கன் GENMED-106 (Anitha Kumar): தயவுசெய்து Rooms 4-8 உள்ளே செல்லவும்.",
+      "type": "turn",
+      "id": "NOTIF-1788597031253-4yy",
+      "isRead": false,
+      "createdAt": "2026-09-05T08:30:31.253Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00065",
+      "title": "Token Generated Successfully",
+      "titleTa": "டோக்கன் உருவாக்கப்பட்டது",
+      "message": "Token GENMED-106 generated. Proceed to Rooms 4-8 (Block B). 5 patients ahead.",
+      "messageTa": "டோக்கன் GENMED-106 உருவாக்கப்பட்டது. அறை Rooms 4-8-க்கு செல்லவும். உங்களுக்கு முன் 5 நபர்கள் உள்ளனர்.",
+      "type": "info",
+      "id": "NOTIF-1788597031237-yci",
+      "isRead": false,
+      "createdAt": "2026-09-05T08:30:31.237Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00064",
+      "title": "🎉 HOSPITAL JOURNEY COMPLETED",
+      "titleTa": "🎉 மருத்துவமனை பயணம் வெற்றிகரமாக முடிந்தது",
+      "message": "Token PHARM-022 (Anitha Kumar): All consultations, diagnostics, and medicines completed. Wish you a speedy recovery!",
+      "messageTa": "டோக்கன் PHARM-022 (Anitha Kumar): அனைத்து சிகிச்சைகளும் மருந்தும் பெறப்பட்டுவிட்டன. விரைவில் நலம் பெற வாழ்த்துகிறோம்!",
+      "type": "success",
+      "id": "NOTIF-1788596913112-sbr",
+      "isRead": false,
+      "createdAt": "2026-09-05T08:28:33.112Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00064",
+      "title": "X-Ray Completed → Proceed to Pharmacy",
+      "titleTa": "எக்ஸ்-ரே முடிந்தது → மருந்தகத்திற்கு செல்லவும்",
+      "message": "Diagnostic scan finished. Proceed to Pharmacy Counter 3 (Block A) following PURPLE path. Token: PHARM-021.",
+      "messageTa": "பரிசோதனை முடிந்தது. ஊதா வழியைப் பின்பற்றி மருந்தக கவுண்டர் 3-க்கு செல்லவும். புதிய டோக்கன்: PHARM-021.",
+      "type": "success",
+      "id": "NOTIF-1788596913073-w8f",
+      "isRead": false,
+      "createdAt": "2026-09-05T08:28:33.073Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00064",
+      "title": "Next Stage: Central Diagnostic Lab",
+      "titleTa": "அடுத்த நிலை: மைய ஆய்வகம்",
+      "message": "Doctor completed consultation. Proceed to Lab 101 (Block C) following GREEN path. Token: LAB-047.",
+      "messageTa": "மருத்துவர் ஆலோசனை முடிந்தது. பச்சை வழியைப் பின்பற்றி Lab 101-க்கு செல்லவும். புதிய டோக்கன்: LAB-047.",
+      "type": "info",
+      "id": "NOTIF-1788596913038-0fe",
+      "isRead": false,
+      "createdAt": "2026-09-05T08:28:33.038Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00064",
+      "title": "🔔 YOUR TURN IS NOW ACTIVE",
+      "titleTa": "🔔 இப்போது உங்கள் முறை! உள்ளே செல்லவும்",
+      "message": "Token GENMED-105 (Anitha Kumar): Please proceed into Rooms 4-8 (Block B).",
+      "messageTa": "டோக்கன் GENMED-105 (Anitha Kumar): தயவுசெய்து Rooms 4-8 உள்ளே செல்லவும்.",
+      "type": "turn",
+      "id": "NOTIF-1788596913014-4d0",
+      "isRead": false,
+      "createdAt": "2026-09-05T08:28:33.014Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00064",
+      "title": "Token Generated Successfully",
+      "titleTa": "டோக்கன் உருவாக்கப்பட்டது",
+      "message": "Token GENMED-105 generated. Proceed to Rooms 4-8 (Block B). 5 patients ahead.",
+      "messageTa": "டோக்கன் GENMED-105 உருவாக்கப்பட்டது. அறை Rooms 4-8-க்கு செல்லவும். உங்களுக்கு முன் 5 நபர்கள் உள்ளனர்.",
+      "type": "info",
+      "id": "NOTIF-1788596912998-6ff",
+      "isRead": false,
+      "createdAt": "2026-09-05T08:28:32.998Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00063",
+      "title": "🎉 HOSPITAL JOURNEY COMPLETED",
+      "titleTa": "🎉 மருத்துவமனை பயணம் வெற்றிகரமாக முடிந்தது",
+      "message": "Token PHARM-020 (Anitha Kumar): All consultations, diagnostics, and medicines completed. Wish you a speedy recovery!",
+      "messageTa": "டோக்கன் PHARM-020 (Anitha Kumar): அனைத்து சிகிச்சைகளும் மருந்தும் பெறப்பட்டுவிட்டன. விரைவில் நலம் பெற வாழ்த்துகிறோம்!",
+      "type": "success",
+      "id": "NOTIF-1788596884213-u5a",
+      "isRead": false,
+      "createdAt": "2026-09-05T08:28:04.213Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00063",
+      "title": "X-Ray Completed → Proceed to Pharmacy",
+      "titleTa": "எக்ஸ்-ரே முடிந்தது → மருந்தகத்திற்கு செல்லவும்",
+      "message": "Diagnostic scan finished. Proceed to Pharmacy Counter 3 (Block A) following PURPLE path. Token: PHARM-019.",
+      "messageTa": "பரிசோதனை முடிந்தது. ஊதா வழியைப் பின்பற்றி மருந்தக கவுண்டர் 3-க்கு செல்லவும். புதிய டோக்கன்: PHARM-019.",
+      "type": "success",
+      "id": "NOTIF-1788596884174-3se",
+      "isRead": false,
+      "createdAt": "2026-09-05T08:28:04.174Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00063",
+      "title": "Next Stage: Central Diagnostic Lab",
+      "titleTa": "அடுத்த நிலை: மைய ஆய்வகம்",
+      "message": "Doctor completed consultation. Proceed to Lab 101 (Block C) following GREEN path. Token: LAB-046.",
+      "messageTa": "மருத்துவர் ஆலோசனை முடிந்தது. பச்சை வழியைப் பின்பற்றி Lab 101-க்கு செல்லவும். புதிய டோக்கன்: LAB-046.",
+      "type": "info",
+      "id": "NOTIF-1788596884142-mtf",
+      "isRead": false,
+      "createdAt": "2026-09-05T08:28:04.142Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00063",
+      "title": "🔔 YOUR TURN IS NOW ACTIVE",
+      "titleTa": "🔔 இப்போது உங்கள் முறை! உள்ளே செல்லவும்",
+      "message": "Token GENMED-104 (Anitha Kumar): Please proceed into Rooms 4-8 (Block B).",
+      "messageTa": "டோக்கன் GENMED-104 (Anitha Kumar): தயவுசெய்து Rooms 4-8 உள்ளே செல்லவும்.",
+      "type": "turn",
+      "id": "NOTIF-1788596884118-88u",
+      "isRead": false,
+      "createdAt": "2026-09-05T08:28:04.118Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00063",
+      "title": "Token Generated Successfully",
+      "titleTa": "டோக்கன் உருவாக்கப்பட்டது",
+      "message": "Token GENMED-104 generated. Proceed to Rooms 4-8 (Block B). 6 patients ahead.",
+      "messageTa": "டோக்கன் GENMED-104 உருவாக்கப்பட்டது. அறை Rooms 4-8-க்கு செல்லவும். உங்களுக்கு முன் 6 நபர்கள் உள்ளனர்.",
+      "type": "info",
+      "id": "NOTIF-1788596884101-m73",
+      "isRead": false,
+      "createdAt": "2026-09-05T08:28:04.101Z"
+    },
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260905-00062",
+      "title": "Token Generated Successfully",
+      "titleTa": "டோக்கன் உருவாக்கப்பட்டது",
+      "message": "Token GENMED-103 generated. Proceed to Rooms 4-8 (Block B). 6 patients ahead.",
+      "messageTa": "டோக்கன் GENMED-103 உருவாக்கப்பட்டது. அறை Rooms 4-8-க்கு செல்லவும். உங்களுக்கு முன் 6 நபர்கள் உள்ளனர்.",
+      "type": "info",
+      "id": "NOTIF-1788596410971-98k",
+      "isRead": false,
+      "createdAt": "2026-09-05T08:20:10.971Z"
+    },
     {
       "targetRole": "patient",
       "targetJourneyId": "JNY-20260905-00061",
@@ -2356,15 +3214,15 @@
   "serviceCounters": [],
   "auditLogs": [],
   "sequences": {
-    "journeyCount": 61,
+    "journeyCount": 65,
     "tokens": {
       "CARDIO": 44,
-      "GENMED": 102,
+      "GENMED": 106,
       "ORTHO": 28,
       "X-RAY": 32,
-      "LAB": 45,
+      "LAB": 48,
       "CT": 12,
-      "PHARM": 18,
+      "PHARM": 24,
       "REG": 184
     }
   }
