@@ -80,9 +80,17 @@ export const PatientTokenModal: React.FC<PatientTokenModalProps> = ({ isOpen, on
             {/* Current Stage & Location */}
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="p-2.5 rounded-lg bg-slate-100 border border-slate-200">
-                <span className="font-bold text-slate-500">ROOM / COUNTER:</span>
-                <div className="font-extrabold text-slate-900 text-sm">{p.location.room}</div>
-                <div className="text-slate-600">{p.location.block}, {p.location.floor}</div>
+                <span className="font-bold text-slate-500">{lang === 'ta' ? 'பிரிவு / நிலை:' : 'DEPARTMENT / STAGE:'}</span>
+                <div className="font-extrabold text-slate-900 text-sm">{p.departmentName}</div>
+                <div className="text-slate-600 font-medium capitalize">
+                  {p.currentStage === 'completed'
+                    ? (lang === 'ta' ? 'முடிவடைந்தது' : 'Visit Complete')
+                    : p.currentStage === 'pharmacy'
+                    ? (lang === 'ta' ? 'மருந்தகம்' : 'Pharmacy')
+                    : p.currentStage === 'diagnostic'
+                    ? (lang === 'ta' ? 'ஆய்வகம் / ஸ்கேன்' : 'Diagnostics / Lab')
+                    : (lang === 'ta' ? 'ஆலோசனை வரிசை' : 'OPD Consultation')}
+                </div>
               </div>
               <div className="p-2.5 rounded-lg bg-teal-50 border border-teal-200">
                 <span className="font-bold text-teal-800">ESTIMATED WAIT:</span>

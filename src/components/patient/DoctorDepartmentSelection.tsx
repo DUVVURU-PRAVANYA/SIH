@@ -86,8 +86,8 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
     age: '46',
     gender: 'Female',
     bloodGroup: 'O+ve',
-    allergies: 'Penicillin',
-    chronicConditions: 'Type 2 Diabetes',
+    allergies: '',
+    chronicConditions: '',
   });
   const [profileSavedNotice, setProfileSavedNotice] = useState('');
 
@@ -111,8 +111,8 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
               age: String(pat.age || 46),
               gender: pat.gender || 'Female',
               bloodGroup: pat.bloodGroup || 'O+ve',
-              allergies: Array.isArray(pat.allergies) ? pat.allergies.join(', ') : (pat.allergies || 'Penicillin'),
-              chronicConditions: Array.isArray(pat.chronicConditions) ? pat.chronicConditions.join(', ') : (pat.chronicConditions || 'Type 2 Diabetes'),
+              allergies: Array.isArray(pat.allergies) ? pat.allergies.join(', ') : (pat.allergies || ''),
+              chronicConditions: Array.isArray(pat.chronicConditions) ? pat.chronicConditions.join(', ') : (pat.chronicConditions || ''),
             });
           }
 
@@ -122,14 +122,18 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
                 { id: 'dept-genmed', code: 'GENMED', name: 'General Medicine (OPD)', nameTa: 'பொது மருத்துவம்', roomNumber: 'Rooms 4-8', blockName: 'Block B', floorName: 'Ground Floor' },
                 { id: 'dept-cardio', code: 'CARDIO', name: 'Cardiology (OPD)', nameTa: 'இதயவியல் பிரிவு', roomNumber: 'Room 12', blockName: 'Block B', floorName: '1st Floor' },
                 { id: 'dept-ortho', code: 'ORTHO', name: 'Orthopedics (OPD)', nameTa: 'எலும்பியல் பிரிவு', roomNumber: 'Rooms 14-16', blockName: 'Block B', floorName: '1st Floor' },
+                { id: 'dept-derma', code: 'DERMA', name: 'Dermatology (OPD)', nameTa: 'சருமவியல் பிரிவு', roomNumber: 'Room 10', blockName: 'Block B', floorName: '1st Floor' },
               ];
           setDepartments(depts);
 
           const docs: DoctorItem[] = docRes.success && docRes.data && docRes.data.length > 0
             ? docRes.data
             : [
-                { id: 'usr-doc-1', fullName: 'Dr. Priya Kumar, MD, DM', username: 'dr_priya', role: 'doctor', departmentId: 'dept-genmed' },
-                { id: 'usr-doc-2', fullName: 'Dr. M. Senthil Nathan, MD', username: 'dr_senthil', role: 'doctor', departmentId: 'dept-genmed' },
+                { id: 'usr-doc-1', fullName: 'Dr. Priya Kumar', username: 'dr_priya', role: 'doctor', departmentId: 'dept-genmed' },
+                { id: 'usr-doc-2', fullName: 'Dr. M. Senthil Nathan', username: 'dr_senthil', role: 'doctor', departmentId: 'dept-genmed' },
+                { id: 'usr-doc-arun', fullName: 'Dr. Arun Kumar', username: 'dr_arun', role: 'doctor', departmentId: 'dept-cardio' },
+                { id: 'usr-doc-meena', fullName: 'Dr. Meena Sharma', username: 'dr_meena', role: 'doctor', departmentId: 'dept-ortho' },
+                { id: 'usr-doc-ravi', fullName: 'Dr. Ravi Kumar', username: 'dr_ravi', role: 'doctor', departmentId: 'dept-derma' },
               ];
           setDoctors(docs);
 
@@ -139,7 +143,7 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
             setSelectedDeptId(defaultDept.id);
             setRecommendedDept(defaultDept);
           }
-          const defaultDoc = docs.find((d) => d.id === 'usr-doc-1') || docs[0];
+          const defaultDoc = docs.find((d) => d.departmentId === (defaultDept ? defaultDept.id : 'dept-genmed')) || docs[0];
           if (defaultDoc) {
             setSelectedDoctorId(defaultDoc.id);
             setRecommendedDoctor(defaultDoc);
@@ -165,12 +169,15 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
     let targetDeptCode = 'GENMED';
     let reason = 'Symptoms of cough, cold, fever, or general complaints are best evaluated by General Medicine.';
 
-    if (text.includes('chest') || text.includes('heart') || text.includes('palpitation') || text.includes('breathless')) {
+    if (text.includes('chest') || text.includes('heart') || text.includes('palpitation') || text.includes('breathless') || text.includes('cardio')) {
       targetDeptCode = 'CARDIO';
       reason = 'Symptoms related to chest discomfort, palpitations, or cardiac symptoms are routed to Cardiology.';
-    } else if (text.includes('bone') || text.includes('joint') || text.includes('fracture') || text.includes('knee') || text.includes('back pain')) {
+    } else if (text.includes('bone') || text.includes('joint') || text.includes('fracture') || text.includes('knee') || text.includes('back pain') || text.includes('ortho')) {
       targetDeptCode = 'ORTHO';
       reason = 'Musculoskeletal, bone, and joint complaints are routed to Orthopedics.';
+    } else if (text.includes('skin') || text.includes('rash') || text.includes('itch') || text.includes('derma') || text.includes('allergy') || text.includes('acne')) {
+      targetDeptCode = 'DERMA';
+      reason = 'Dermatological issues, skin rashes, allergies, and itching are routed to Dermatology.';
     }
 
     const matchedDept = departments.find((d) => d.code === targetDeptCode) || departments[0];
@@ -476,7 +483,7 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
                 >
                   {departments.map((d) => (
                     <option key={d.id} value={d.id}>
-                      {d.name} ({d.roomNumber} - {d.blockName})
+                      {d.name}
                     </option>
                   ))}
                 </select>
@@ -503,12 +510,10 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
               <div className="p-3 bg-blue-50/70 border border-blue-200/80 rounded-lg text-xs space-y-1">
                 <div className="font-bold text-blue-950 flex items-center gap-1.5">
                   <User className="w-3.5 h-3.5 text-blue-700" />
-                  {doctors.find((d) => d.id === selectedDoctorId)?.fullName || 'Dr. Priya Kumar, MD, DM'}
+                  {doctors.find((d) => d.id === selectedDoctorId)?.fullName || 'Consulting Physician'}
                 </div>
                 <div className="text-slate-600">
-                  {departments.find((d) => d.id === selectedDeptId)?.name} •{' '}
-                  {departments.find((d) => d.id === selectedDeptId)?.roomNumber} (
-                  {departments.find((d) => d.id === selectedDeptId)?.blockName})
+                  {departments.find((d) => d.id === selectedDeptId)?.name}
                 </div>
               </div>
             </div>
@@ -550,6 +555,13 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
                   >
                     Joint pain
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setSymptomInput('Skin rash and itching')}
+                    className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[11px] font-medium transition-colors"
+                  >
+                    Skin rash / itching
+                  </button>
                 </div>
               </div>
 
@@ -571,10 +583,7 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
                       {recommendedDept.name}
                     </div>
                     <div className="text-xs font-medium text-slate-700">
-                      {recommendedDoctor?.fullName || 'Dr. Priya Kumar, MD, DM'}
-                    </div>
-                    <div className="text-xs text-slate-500">
-                      Location: {recommendedDept.roomNumber}, {recommendedDept.floorName} ({recommendedDept.blockName})
+                      {recommendedDoctor?.fullName || 'Consulting Physician'}
                     </div>
                   </div>
 

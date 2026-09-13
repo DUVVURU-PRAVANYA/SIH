@@ -73,6 +73,7 @@ apiRouter.post('/auth/identify', (req: Request, res: Response) => {
       (u) =>
         u.username.toLowerCase() === normalizedUsername ||
         (normalizedUsername === 'doctor' && u.role === 'doctor') ||
+        ((normalizedUsername === 'dr_sethilnathan' || normalizedUsername === 'sethilnathan') && u.username === 'dr_senthil') ||
         (normalizedUsername === 'lab' && (u.role === 'diagnostic' || (u as any).role === 'scan_lab')) ||
         (normalizedUsername === 'scanlab' && (u.role === 'diagnostic' || (u as any).role === 'scan_lab')) ||
         (normalizedUsername === 'pharmacy' && u.role === 'pharmacy')
@@ -269,6 +270,7 @@ apiRouter.post('/auth/staff-login', (req: Request, res: Response) => {
       (u) =>
         u.username.toLowerCase() === normalizedUsername ||
         (normalizedUsername === 'doctor' && u.role === 'doctor') ||
+        ((normalizedUsername === 'dr_sethilnathan' || normalizedUsername === 'sethilnathan') && u.username === 'dr_senthil') ||
         (normalizedUsername === 'lab' && (u.role === 'diagnostic' || (u as any).role === 'scan_lab')) ||
         (normalizedUsername === 'scanlab' && (u.role === 'diagnostic' || (u as any).role === 'scan_lab')) ||
         (normalizedUsername === 'pharmacy' && u.role === 'pharmacy')
@@ -278,8 +280,8 @@ apiRouter.post('/auth/staff-login', (req: Request, res: Response) => {
       return res.status(401).json({ success: false, error: 'Staff account not found' });
     }
 
-    // In demo environment, verify standard demo passwords or any non-empty password
-    if (password.length < 3) {
+    // Verify standard password
+    if (user.password && password !== user.password && password !== 'password123') {
       return res.status(401).json({ success: false, error: 'Invalid staff password. Please check your credentials.' });
     }
 
@@ -462,8 +464,8 @@ apiRouter.post('/visits/create', async (req: Request, res: Response) => {
       targetJourneyId: result.journey.id,
       title: 'Token Generated Successfully',
       titleTa: 'டோக்கன் உருவாக்கப்பட்டது',
-      message: `Token ${result.tokenNumber} generated. Proceed to ${result.department.roomNumber} (${result.department.blockName}). ${result.metrics.peopleAhead} patients ahead.`,
-      messageTa: `டோக்கன் ${result.tokenNumber} உருவாக்கப்பட்டது. அறை ${result.department.roomNumber}-க்கு செல்லவும். உங்களுக்கு முன் ${result.metrics.peopleAhead} நபர்கள் உள்ளனர்.`,
+      message: `Token ${result.tokenNumber} generated for ${result.department.name}. ${result.metrics.peopleAhead} patients ahead.`,
+      messageTa: `டோக்கன் ${result.tokenNumber} உருவாக்கப்பட்டது (${result.department.nameTa || result.department.name}). உங்களுக்கு முன் ${result.metrics.peopleAhead} நபர்கள் உள்ளனர்.`,
       type: 'info',
       phone: patient.phone,
       token: result.tokenNumber,
@@ -492,7 +494,7 @@ apiRouter.post('/visits/create', async (req: Request, res: Response) => {
 // ==========================================
 apiRouter.post('/visits/revisit', async (req: Request, res: Response) => {
   try {
-    const { patientId, decisionType, doctorRemarks } = req.body;
+    const { patientId, decisionType, doctorRemarks, doctorId } = req.body;
     if (!patientId) {
       return res.status(400).json({ success: false, error: 'Patient ID is required' });
     }
@@ -501,16 +503,53 @@ apiRouter.post('/visits/revisit', async (req: Request, res: Response) => {
       patientId,
       decisionType: decisionType === 'emergency' ? 'emergency' : 'normal',
       doctorRemarks,
+      doctorId,
     });
 
     const activeJourney = db.getActiveJourneyForPatient(patientId);
     const metrics = activeJourney ? db.getQueueMetricsForPatient(activeJourney.id) : null;
+    const patient = db.getPatientById(patientId);
+    const dept = db.getDepartmentById(result.queueEntry.departmentId);
 
     broadcastEvent('QUEUE_UPDATED', {
       patientId,
       tokenNumber: result.tokenNumber,
       priority: decisionType,
+      departmentId: result.queueEntry.departmentId,
+      doctorId: result.queueEntry.doctorId,
     });
+
+    if (decisionType === 'emergency') {
+      broadcastEvent('CONSULTATION_STARTED', {
+        journeyId: activeJourney?.id,
+        patientId,
+        doctorId: result.queueEntry.doctorId,
+        tokenNumber: result.tokenNumber,
+        isEmergency: true,
+      });
+
+      await notificationService.sendNotification({
+        targetRole: 'patient',
+        targetJourneyId: activeJourney?.id,
+        title: '🚨 EMERGENCY CONSULTATION: YOUR TURN NOW',
+        titleTa: '🚨 அவசர ஆலோசனை: உடனடியாக மருத்துவரிடம் செல்லவும்',
+        message: `Emergency priority allocated for Token ${result.tokenNumber} (${patient?.name || 'Patient'}). Please enter ${dept?.roomNumber || 'OPD Room'} immediately.`,
+        messageTa: `அவசர ஆலோசனை தொடங்கப்பட்டது. உடனடியாக ${dept?.roomNumber || 'அறை'}-க்கு செல்லவும். டோக்கன்: ${result.tokenNumber}.`,
+        type: 'critical',
+        token: result.tokenNumber,
+      });
+    } else {
+      await notificationService.sendNotification({
+        targetRole: 'patient',
+        targetJourneyId: activeJourney?.id,
+        title: 'Revisit Token Allocated - Added to Waiting List',
+        titleTa: 'மறு வருகை டோக்கன் ஒதுக்கப்பட்டது - வரிசையில் காத்திருக்கவும்',
+        message: `Your test results have been reviewed. Revisit Token: ${result.tokenNumber}. Please wait in OPD waiting area until called.`,
+        messageTa: `பரிசோதனை முடிவுகள் சரிபார்க்கப்பட்டன. புதிய டோக்கன்: ${result.tokenNumber}. உங்கள் முறை வரும் வரை காத்திருக்கவும்.`,
+        type: 'info',
+        token: result.tokenNumber,
+      });
+    }
 
     res.json({
       success: true,
@@ -567,7 +606,12 @@ apiRouter.get('/patients/:id/active-visit', (req: Request, res: Response) => {
       ? db.getUserById(activeJourney.doctorId)
       : db.getDoctors().find((d) => d.departmentId === activeJourney.currentDepartmentId);
     const consultation = db.getConsultationByJourney(activeJourney.id);
-    const pharmacyOrder = db.getPharmacyOrders().find((p) => p.journeyId === activeJourney.id);
+    const pharmacyOrder =
+      db.getPharmacyOrders().find((p) => p.journeyId === activeJourney.id || (p as any).patientId === patient.id) ||
+      db.getPharmacyOrders().find((p) => {
+        const j = db.getJourneyById(p.journeyId);
+        return j && j.patientId === patient.id;
+      });
     const diagnosticOrder = db.getDiagnosticOrders().find((d) => d.journeyId === activeJourney.id);
 
     return res.json({
@@ -806,8 +850,8 @@ apiRouter.post('/patients/register', async (req: Request, res: Response) => {
       targetJourneyId: journey.id,
       title: 'Token Generated Successfully',
       titleTa: 'டோக்கன் வெற்றிகரமாக உருவாக்கப்பட்டது',
-      message: `Token ${tokenNumber} issued to ${patient.name}. Proceed to ${dept.roomNumber} (${dept.blockName}). ${queueMetrics.peopleAhead} patients ahead.`,
-      messageTa: `டோக்கன் ${tokenNumber} உருவாக்கப்பட்டது (${patient.name}). அறை ${dept.roomNumber}-க்கு செல்லவும். உங்களுக்கு முன் ${queueMetrics.peopleAhead} நபர்கள் உள்ளனர்.`,
+      message: `Token ${tokenNumber} issued to ${patient.name} for ${dept.name}. ${queueMetrics.peopleAhead} patients ahead.`,
+      messageTa: `டோக்கன் ${tokenNumber} வழங்கப்பட்டது (${patient.name}). உங்களுக்கு முன் ${queueMetrics.peopleAhead} நபர்கள் உள்ளனர்.`,
       type: 'info',
       phone: patient.phone,
       token: tokenNumber,
@@ -898,12 +942,17 @@ apiRouter.get('/journey/:journeyId', (req: Request, res: Response) => {
 // ==========================================
 // 5. QUEUE MANAGEMENT & CALLING PATIENTS
 // ==========================================
+// 5. QUEUE MANAGEMENT & CALLING PATIENTS
+// ==========================================
 apiRouter.get('/queues/:departmentId', (req: Request, res: Response) => {
   try {
     const { departmentId } = req.params;
-    const queue = db.getDepartmentQueue(departmentId).map((q, idx) => {
+    const { doctorId } = req.query;
+    const rawQueue = db.getDepartmentQueue(departmentId, doctorId as string);
+    const queue = rawQueue.map((q, idx) => {
       const patient = db.getPatientById(q.patientId);
       const journey = db.getJourneyById(q.journeyId);
+      const doctor = q.doctorId ? db.getUserById(q.doctorId) : undefined;
       return {
         ...q,
         patientName: patient ? patient.name : 'Unknown Patient',
@@ -911,6 +960,7 @@ apiRouter.get('/queues/:departmentId', (req: Request, res: Response) => {
         patientGender: patient ? patient.gender : 'Male',
         abhaId: patient ? patient.abhaId : '',
         vitals: journey ? journey.vitals : undefined,
+        doctorName: doctor?.fullName,
         queuePosition: idx + 1,
       };
     });
@@ -921,13 +971,49 @@ apiRouter.get('/queues/:departmentId', (req: Request, res: Response) => {
   }
 });
 
+// DOCTOR-SPECIFIC QUEUE (Requirement 5 & 9)
+apiRouter.get('/doctors/:doctorId/queue', (req: Request, res: Response) => {
+  try {
+    const { doctorId } = req.params;
+    const doctor = db.getUserById(doctorId);
+    if (!doctor) {
+      return res.status(404).json({ success: false, error: 'Doctor not found' });
+    }
+    const rawQueue = db.getDoctorQueue(doctorId);
+    const dept = doctor.departmentId ? db.getDepartmentById(doctor.departmentId) : undefined;
+    const queue = rawQueue.map((q, idx) => {
+      const patient = db.getPatientById(q.patientId);
+      const journey = db.getJourneyById(q.journeyId);
+      return {
+        ...q,
+        patientName: patient ? patient.name : 'Unknown Patient',
+        patientAge: patient ? patient.age : 0,
+        patientGender: patient ? patient.gender : 'Male',
+        abhaId: patient ? patient.abhaId : '',
+        vitals: journey ? journey.vitals : undefined,
+        doctorName: doctor.fullName,
+        departmentName: dept?.name,
+        departmentNameTa: dept?.nameTa,
+        queuePosition: idx + 1,
+      };
+    });
+
+    res.json({ success: true, data: queue, doctor });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 apiRouter.post('/queues/call', async (req: Request, res: Response) => {
   try {
-    const { queueEntryId, departmentId } = req.body;
+    const { queueEntryId, departmentId, doctorId } = req.body;
 
     let targetQueueEntry;
     if (queueEntryId) {
       targetQueueEntry = db.getRawData().queueEntries.find((q) => q.id === queueEntryId);
+    } else if (doctorId) {
+      const queue = db.getDoctorQueue(doctorId);
+      targetQueueEntry = queue.find((q) => q.status === 'waiting');
     } else if (departmentId) {
       const queue = db.getDepartmentQueue(departmentId);
       targetQueueEntry = queue.find((q) => q.status === 'waiting');
@@ -937,8 +1023,10 @@ apiRouter.post('/queues/call', async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, error: 'No waiting patient found in queue' });
     }
 
-    // Mark any previous called or in_service entry in this department queue as completed
-    const activeEntries = db.getDepartmentQueue(targetQueueEntry.departmentId);
+    // Mark any previous called or in_service entry in this doctor/dept queue as completed
+    const activeEntries = targetQueueEntry.doctorId
+      ? db.getDoctorQueue(targetQueueEntry.doctorId)
+      : db.getDepartmentQueue(targetQueueEntry.departmentId);
     for (const prev of activeEntries) {
       if ((prev.status === 'called' || prev.status === 'in_service') && prev.id !== targetQueueEntry.id) {
         db.updateQueueEntry(prev.id, {
@@ -957,6 +1045,7 @@ apiRouter.post('/queues/call', async (req: Request, res: Response) => {
     const journey = db.getJourneyById(targetQueueEntry.journeyId);
     const patient = db.getPatientById(targetQueueEntry.patientId);
     const dept = db.getDepartmentById(targetQueueEntry.departmentId);
+    const doctor = targetQueueEntry.doctorId ? db.getUserById(targetQueueEntry.doctorId) : undefined;
 
     // Broadcast realtime event
     broadcastEvent('PATIENT_CALLED', {
@@ -964,10 +1053,15 @@ apiRouter.post('/queues/call', async (req: Request, res: Response) => {
       tokenNumber: targetQueueEntry.tokenNumber,
       patientName: patient?.name,
       departmentId: targetQueueEntry.departmentId,
+      doctorId: targetQueueEntry.doctorId,
+      doctorName: doctor?.fullName,
       roomNumber: dept?.roomNumber,
     });
 
-    broadcastEvent('QUEUE_UPDATED', { departmentId: targetQueueEntry.departmentId });
+    broadcastEvent('QUEUE_UPDATED', {
+      departmentId: targetQueueEntry.departmentId,
+      doctorId: targetQueueEntry.doctorId,
+    });
 
     // Send High-Priority Turn Alert Notification
     if (patient) {
@@ -976,8 +1070,8 @@ apiRouter.post('/queues/call', async (req: Request, res: Response) => {
         targetJourneyId: targetQueueEntry.journeyId,
         title: '🔔 YOUR TURN IS NOW ACTIVE',
         titleTa: '🔔 இப்போது உங்கள் முறை! உள்ளே செல்லவும்',
-        message: `Token ${targetQueueEntry.tokenNumber} (${patient.name}): Please proceed into ${dept?.roomNumber} (${dept?.blockName}).`,
-        messageTa: `டோக்கன் ${targetQueueEntry.tokenNumber} (${patient.name}): தயவுசெய்து ${dept?.roomNumber} உள்ளே செல்லவும்.`,
+        message: `Token ${targetQueueEntry.tokenNumber} (${patient.name}): Consultation is starting. Please proceed for doctor consultation.`,
+        messageTa: `டோக்கன் ${targetQueueEntry.tokenNumber} (${patient.name}): இப்போது உங்கள் முறை. மருத்துவ ஆலோசனைக்கு செல்லவும்.`,
         type: 'turn',
         phone: patient.phone,
         token: targetQueueEntry.tokenNumber,
@@ -996,16 +1090,31 @@ apiRouter.post('/queues/call', async (req: Request, res: Response) => {
 // ==========================================
 apiRouter.post('/consultations/start', (req: Request, res: Response) => {
   try {
-    const { queueEntryId, journeyId } = req.body;
-    if (queueEntryId) {
-      db.updateQueueEntry(queueEntryId, {
+    const { queueEntryId, journeyId, patientId } = req.body;
+    let entryToUpdate = queueEntryId ? db.getRawData().queueEntries.find((q) => q.id === queueEntryId) : null;
+    if (!entryToUpdate && (journeyId || patientId)) {
+      const pid = patientId || (journeyId && !journeyId.startsWith('JNY-') ? journeyId : null);
+      const jid = journeyId && journeyId.startsWith('JNY-') ? journeyId : null;
+      entryToUpdate = db.getRawData().queueEntries.find(
+        (q) => ((jid && q.journeyId === jid) || (pid && q.patientId === pid) || (journeyId && (q.journeyId === journeyId || q.patientId === journeyId)))
+      );
+    }
+    if (entryToUpdate) {
+      db.updateQueueEntry(entryToUpdate.id, {
         status: 'in_service',
         startedAt: new Date().toISOString(),
       });
+      const j = db.getJourneyById(entryToUpdate.journeyId);
+      if (j) {
+        db.updateJourney(j.id, {
+          currentStage: 'doctor',
+          status: 'active',
+        });
+      }
     }
 
-    broadcastEvent('CONSULTATION_STARTED', { journeyId, queueEntryId });
-    res.json({ success: true, message: 'Consultation started' });
+    broadcastEvent('CONSULTATION_STARTED', { journeyId: entryToUpdate?.journeyId || journeyId, patientId: entryToUpdate?.patientId || patientId, queueEntryId: entryToUpdate?.id });
+    res.json({ success: true, message: 'Consultation started', data: entryToUpdate, queueEntry: entryToUpdate });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -1022,18 +1131,24 @@ apiRouter.post('/consultations/complete', async (req: Request, res: Response) =>
       clinicalNotes,
       voiceDictationRaw,
       medications,
+      prescriptions,
       investigations,
+      labTests,
+      diagnosticTestName,
+      diagnosticModality,
       followUpDays,
-      routeTo, // 'x-ray' | 'lab' | 'pharmacy' | 'complete'
+      routeTo, // 'x-ray' | 'lab' | 'pharmacy' | 'complete' | 'both'
     } = req.body;
+
+    const actualMedications = (medications && medications.length > 0) ? medications : (prescriptions || []);
 
     let journey = journeyId ? db.getJourneyById(journeyId) : undefined;
     if (!journey && patientId) {
-      journey = db.getActiveJourneyForPatient(patientId);
+      journey = db.getActiveJourneyForPatient(patientId) || db.getJourneys().find((j) => j.patientId === patientId && j.status !== 'completed') || db.getJourneys().find((j) => j.patientId === patientId);
     }
     if (!journey && journeyId) {
       const trimmed = journeyId.replace(/^JNY-/, '');
-      journey = db.getActiveJourneyForPatient(trimmed);
+      journey = db.getActiveJourneyForPatient(trimmed) || db.getJourneys().find((j) => j.patientId === trimmed);
     }
 
     if (!journey) {
@@ -1057,227 +1172,276 @@ apiRouter.post('/consultations/complete', async (req: Request, res: Response) =>
     if (doctorStage) {
       db.updateJourneyStage(doctorStage.id, {
         status: 'completed',
-        notes: `Diagnosis: ${diagnosis}. Rx: ${medications ? medications.map((m: any) => m.name).join(', ') : 'None'}`,
+        notes: `Diagnosis: ${diagnosis}. Rx: ${actualMedications.length > 0 ? actualMedications.map((m: any) => m.name).join(', ') : 'None'}`,
         completedAt: new Date().toISOString(),
       });
     }
 
-    // 2. Store Consultation Record
+    // 2. Store Consultation Record with Authenticated Doctor
+    const actualDoctorId = doctorId || journey.doctorId || 'usr-doc-1';
+    const doctorObj = db.getUserById(actualDoctorId);
+    const actualDoctorName = doctorName || doctorObj?.fullName || 'Attending Doctor';
+
     const consultation = db.createConsultation({
       journeyId: journey.id,
-      doctorId: doctorId || 'usr-doc-1',
-      doctorName: doctorName || 'Dr. Priya Kumar',
+      doctorId: actualDoctorId,
+      doctorName: actualDoctorName,
       departmentId: journey.currentDepartmentId,
       symptoms: 'Reported symptoms reviewed during OPD consultation',
       observations: clinicalNotes || 'Vitals checked. Auscultation clear.',
       diagnosis: diagnosis || 'Clinical evaluation completed',
       clinicalNotes: clinicalNotes || '',
       voiceDictationRaw,
-      medications: medications || [],
+      medications: actualMedications,
       investigations: investigations || [],
       followUpDays: Number(followUpDays) || 14,
       completedAt: new Date().toISOString(),
     });
 
-    // 3. MULTI-STEP ROUTING ENGINE STATE MACHINE
+    // 3. IF MEDICATIONS ARE PRESCRIBED: CREATE PHARMACY ORDER IN DATABASE
+    let pharmOrderCreated: any = undefined;
+    const pharmDept = db.getDepartmentByCode('PHARM') || db.getDepartments().find((d) => d.category === 'pharmacy') || db.getDepartments()[7];
+
+    if (actualMedications && actualMedications.length > 0) {
+      const existingPharmOrder = db.getPharmacyOrderByJourney(journey.id);
+      if (existingPharmOrder && existingPharmOrder.status !== 'dispensed') {
+        // Merge medications into existing active pharmacy order
+        const mergedMeds = [...existingPharmOrder.medications];
+        for (const newM of actualMedications) {
+          const matchIdx = mergedMeds.findIndex((m: any) => m.name.toLowerCase().trim() === newM.name.toLowerCase().trim());
+          if (matchIdx >= 0) {
+            mergedMeds[matchIdx] = { ...mergedMeds[matchIdx], ...newM };
+          } else {
+            mergedMeds.push(newM);
+          }
+        }
+
+        pharmOrderCreated = db.updatePharmacyOrder(existingPharmOrder.id, {
+          medications: mergedMeds,
+          consultationId: consultation.id,
+          doctorId: actualDoctorId,
+          doctorName: actualDoctorName,
+        });
+
+        broadcastEvent('PHARMACY_UPDATED', {
+          orderId: pharmOrderCreated.id,
+          status: pharmOrderCreated.status,
+          journeyId: journey.id,
+          patientId: journey.patientId,
+          medications: mergedMeds,
+        });
+      } else {
+        const pharmToken = db.getNextTokenNumber('PHARM');
+        pharmOrderCreated = db.createPharmacyOrder({
+          consultationId: consultation.id,
+          journeyId: journey.id,
+          patientId: journey.patientId,
+          tokenNumber: pharmToken,
+          status: 'waiting',
+          counterNumber: pharmDept.roomNumber,
+          doctorId: actualDoctorId,
+          doctorName: actualDoctorName,
+          medications: actualMedications,
+        });
+
+        broadcastEvent('PHARMACY_ORDER_CREATED', {
+          orderId: pharmOrderCreated.id,
+          journeyId: journey.id,
+          patientId: journey.patientId,
+          tokenNumber: pharmToken,
+          counterNumber: pharmDept.roomNumber,
+          patientName: patient?.name,
+          doctorName: actualDoctorName,
+          medications: actualMedications,
+        });
+
+        broadcastEvent('PHARMACY_UPDATED', {
+          orderId: pharmOrderCreated.id,
+          status: 'waiting',
+          journeyId: journey.id,
+          patientId: journey.patientId,
+        });
+      }
+    }
+
+    // 4. MULTI-STEP ROUTING ENGINE STATE MACHINE (SUPPORTS BOTH SCAN AND LAB TOGETHER)
     let nextStageType: JourneyStageType = 'completed';
     let nextToken = journey.currentToken;
     let nextDepartmentId = journey.currentDepartmentId;
 
-    if (routeTo === 'x-ray' || (investigations && investigations.some((inv: string) => inv.toLowerCase().includes('x-ray')))) {
-      // Route to Digital X-Ray Department
+    const scanKeywordRegex = /x-ray|scan|usg|ultrasound|ct|mri/i;
+    const requestedScan = diagnosticTestName || (investigations && investigations.find((inv: string) => scanKeywordRegex.test(inv)));
+
+    let requestedLabs: string[] = [];
+    if (Array.isArray(labTests) && labTests.length > 0) {
+      requestedLabs = labTests;
+    } else if (routeTo !== 'pharmacy' && investigations && investigations.length > 0) {
+      requestedLabs = investigations.filter((inv: string) => !scanKeywordRegex.test(inv));
+    }
+
+    const hasScan = routeTo === 'x-ray' || (routeTo !== 'pharmacy' && Boolean(requestedScan));
+    const hasLab = routeTo === 'lab' || (routeTo !== 'pharmacy' && requestedLabs.length > 0);
+
+    if (hasScan || hasLab) {
       const xrayDept = db.getDepartmentByCode('X-RAY') || db.getDepartments()[4];
-      const xrayToken = db.getNextTokenNumber('X-RAY');
-      nextStageType = 'diagnostic';
-      nextToken = xrayToken;
-      nextDepartmentId = xrayDept.id;
-
-      // Create Diagnostic Order
-      db.createDiagnosticOrder({
-        consultationId: consultation.id,
-        journeyId: journey.id,
-        modality: 'x-ray',
-        testName: investigations[0] || 'Digital Chest X-Ray (PA View)',
-        tokenNumber: xrayToken,
-        status: 'waiting',
-        roomNumber: xrayDept.roomNumber,
-      });
-
-      // Create JourneyStage & QueueEntry for X-Ray
-      const diagStage = db.createJourneyStage({
-        journeyId: journey.id,
-        stageType: 'diagnostic',
-        departmentId: xrayDept.id,
-        tokenNumber: xrayToken,
-        sequenceNum: stages.length + 1,
-        status: 'waiting',
-        roomNumber: xrayDept.roomNumber,
-        blockName: xrayDept.blockName,
-        floorName: xrayDept.floorName,
-        color: 'orange',
-        notes: 'Ordered by ' + (doctorName || 'Dr. Priya Kumar'),
-      });
-
-      const qSeq = db.getDepartmentQueue(xrayDept.id).length + 1;
-      db.createQueueEntry({
-        departmentId: xrayDept.id,
-        journeyId: journey.id,
-        journeyStageId: diagStage.id,
-        patientId: journey.patientId,
-        tokenNumber: xrayToken,
-        sequenceNum: qSeq,
-        status: 'waiting',
-        priority: journey.priority,
-      });
-
-      db.updateJourney(journey.id, {
-        currentDepartmentId: xrayDept.id,
-        currentStage: 'diagnostic',
-        currentToken: xrayToken,
-      });
-
-      broadcastEvent('DIAGNOSTIC_ORDER_CREATED', {
-        journeyId: journey.id,
-        tokenNumber: xrayToken,
-        modality: 'x-ray',
-        roomNumber: xrayDept.roomNumber,
-      });
-
-      await notificationService.sendNotification({
-        targetRole: 'patient',
-        targetJourneyId: journey.id,
-        title: 'Next Stage: Diagnostic X-Ray',
-        titleTa: 'அடுத்த நிலை: எக்ஸ்-ரே பரிசோதனை',
-        message: `Doctor completed consultation. Proceed to ${xrayDept.roomNumber} (${xrayDept.blockName}) following ORANGE path. Token: ${xrayToken}.`,
-        messageTa: `மருத்துவர் ஆலோசனை முடிந்தது. ஆரஞ்சு வழியைப் பின்பற்றி ${xrayDept.roomNumber}-க்கு செல்லவும். புதிய டோக்கன்: ${xrayToken}.`,
-        type: 'info',
-        phone: patient?.phone,
-        token: xrayToken,
-      });
-    } else if (routeTo === 'lab' || (investigations && investigations.length > 0)) {
-      // Route to Central Biochemistry & Pathology Lab Department
       const labDept = db.getDepartmentByCode('LAB') || db.getDepartments().find((d) => d.category === 'diagnostic') || db.getDepartments()[5];
-      const labToken = db.getNextTokenNumber('LAB');
+      const primaryDept = hasLab ? labDept : xrayDept;
+      const primaryToken = db.getNextTokenNumber(primaryDept.code);
+
       nextStageType = 'diagnostic';
-      nextToken = labToken;
-      nextDepartmentId = labDept.id;
+      nextToken = primaryToken;
+      nextDepartmentId = primaryDept.id;
 
-      // Create Diagnostic Order in Database
-      db.createDiagnosticOrder({
-        consultationId: consultation.id,
-        journeyId: journey.id,
-        modality: 'pathology',
-        testName: (investigations && investigations[0]) || 'Fasting Blood Sugar & Routine Biochemistry Panel',
-        tokenNumber: labToken,
-        status: 'waiting',
-        roomNumber: labDept.roomNumber,
-      });
+      // Create Scan Diagnostic Order if requested
+      if (hasScan) {
+        const scanName = requestedScan || 'Digital Chest X-Ray (PA View)';
+        db.createDiagnosticOrder({
+          consultationId: consultation.id,
+          journeyId: journey.id,
+          modality: (diagnosticModality as any) || 'x-ray',
+          testName: scanName,
+          tokenNumber: primaryToken,
+          status: 'waiting',
+          roomNumber: xrayDept.roomNumber,
+          doctorId: actualDoctorId,
+          doctorName: actualDoctorName,
+        });
 
-      // Create JourneyStage & QueueEntry for Diagnostic Lab
+        broadcastEvent('DIAGNOSTIC_ORDER_CREATED', {
+          journeyId: journey.id,
+          tokenNumber: primaryToken,
+          modality: (diagnosticModality as any) || 'x-ray',
+          testName: scanName,
+          roomNumber: xrayDept.roomNumber,
+        });
+      }
+
+      // Create Lab Diagnostic Order(s) if requested
+      if (hasLab) {
+        const effectiveLabs = requestedLabs.length > 0 ? requestedLabs : ['Serum Electrolytes & Routine Biochemistry Panel'];
+        for (const tName of effectiveLabs) {
+          db.createDiagnosticOrder({
+            consultationId: consultation.id,
+            journeyId: journey.id,
+            modality: 'pathology',
+            testName: tName,
+            tokenNumber: primaryToken,
+            status: 'waiting',
+            roomNumber: labDept.roomNumber,
+            doctorId: actualDoctorId,
+            doctorName: actualDoctorName,
+          });
+        }
+
+        broadcastEvent('DIAGNOSTIC_ORDER_CREATED', {
+          journeyId: journey.id,
+          tokenNumber: primaryToken,
+          modality: 'pathology',
+          testNames: effectiveLabs,
+          roomNumber: labDept.roomNumber,
+        });
+      }
+
+      // Create JourneyStage & QueueEntry for Diagnostic Workstation
+      const allTestsOrdered = [...(hasScan ? [requestedScan || 'Chest X-Ray'] : []), ...requestedLabs];
       const diagStage = db.createJourneyStage({
         journeyId: journey.id,
         stageType: 'diagnostic',
-        departmentId: labDept.id,
-        tokenNumber: labToken,
+        departmentId: primaryDept.id,
+        tokenNumber: primaryToken,
         sequenceNum: stages.length + 1,
         status: 'waiting',
-        roomNumber: labDept.roomNumber,
-        blockName: labDept.blockName,
-        floorName: labDept.floorName,
-        color: 'green',
-        notes: 'Ordered by ' + (doctorName || 'Dr. Priya Kumar'),
+        roomNumber: primaryDept.roomNumber,
+        blockName: primaryDept.blockName,
+        floorName: primaryDept.floorName,
+        color: hasLab ? 'green' : 'orange',
+        notes: `Ordered by ${actualDoctorName}: ${allTestsOrdered.join(', ')}`,
       });
 
-      const qSeq = db.getDepartmentQueue(labDept.id).length + 1;
+      const qSeq = db.getDepartmentQueue(primaryDept.id).length + 1;
       db.createQueueEntry({
-        departmentId: labDept.id,
+        departmentId: primaryDept.id,
         journeyId: journey.id,
         journeyStageId: diagStage.id,
         patientId: journey.patientId,
-        tokenNumber: labToken,
+        tokenNumber: primaryToken,
         sequenceNum: qSeq,
         status: 'waiting',
         priority: journey.priority,
       });
 
       db.updateJourney(journey.id, {
-        currentDepartmentId: labDept.id,
+        currentDepartmentId: primaryDept.id,
         currentStage: 'diagnostic',
-        currentToken: labToken,
-      });
-
-      broadcastEvent('DIAGNOSTIC_ORDER_CREATED', {
-        journeyId: journey.id,
-        tokenNumber: labToken,
-        modality: 'pathology',
-        roomNumber: labDept.roomNumber,
+        currentToken: primaryToken,
+        status: 'active',
       });
 
       await notificationService.sendNotification({
         targetRole: 'patient',
         targetJourneyId: journey.id,
-        title: 'Next Stage: Central Diagnostic Lab',
-        titleTa: 'அடுத்த நிலை: மைய ஆய்வகம்',
-        message: `Doctor completed consultation. Proceed to ${labDept.roomNumber} (${labDept.blockName}) following GREEN path. Token: ${labToken}.`,
-        messageTa: `மருத்துவர் ஆலோசனை முடிந்தது. பச்சை வழியைப் பின்பற்றி ${labDept.roomNumber}-க்கு செல்லவும். புதிய டோக்கன்: ${labToken}.`,
+        title: hasScan && hasLab ? 'Next Stage: Diagnostic Scan & Lab' : (hasScan ? 'Next Stage: Diagnostic X-Ray / Scan' : 'Next Stage: Central Diagnostic Lab'),
+        titleTa: 'அடுத்த நிலை: ஆய்வகம் & ஸ்கேன் பரிசோதனை மையம்',
+        message: `Doctor completed initial examination. Proceed for investigations (${allTestsOrdered.join(', ')}). Token: ${primaryToken}.`,
+        messageTa: `பரிசோதனைகளுக்கு செல்லவும் (${allTestsOrdered.join(', ')}). புதிய டோக்கன்: ${primaryToken}.`,
         type: 'info',
         phone: patient?.phone,
-        token: labToken,
+        token: primaryToken,
       });
-    } else if (medications && medications.length > 0) {
+    } else if (pharmOrderCreated) {
       // Route directly to Pharmacy
-      const pharmDept = db.getDepartmentByCode('PHARM') || db.getDepartments()[7];
-      const pharmToken = db.getNextTokenNumber('PHARM');
       nextStageType = 'pharmacy';
-      nextToken = pharmToken;
+      nextToken = pharmOrderCreated.tokenNumber;
       nextDepartmentId = pharmDept.id;
 
-      // Create Pharmacy Order
-      db.createPharmacyOrder({
-        consultationId: consultation.id,
-        journeyId: journey.id,
-        tokenNumber: pharmToken,
-        status: 'waiting',
-        counterNumber: pharmDept.roomNumber,
-        medications: medications || [],
-      });
+      const existingPharmStage = stages.find((s) => s.stageType === 'pharmacy');
+      if (!existingPharmStage) {
+        const pharmStage = db.createJourneyStage({
+          journeyId: journey.id,
+          stageType: 'pharmacy',
+          departmentId: pharmDept.id,
+          tokenNumber: pharmOrderCreated.tokenNumber,
+          sequenceNum: stages.length + 1,
+          status: 'waiting',
+          roomNumber: pharmDept.roomNumber,
+          blockName: pharmDept.blockName,
+          floorName: pharmDept.floorName,
+          color: 'purple',
+          notes: 'Prescriptions ready for dispensing',
+        });
 
-      const pharmStage = db.createJourneyStage({
-        journeyId: journey.id,
-        stageType: 'pharmacy',
-        departmentId: pharmDept.id,
-        tokenNumber: pharmToken,
-        sequenceNum: stages.length + 1,
-        status: 'waiting',
-        roomNumber: pharmDept.roomNumber,
-        blockName: pharmDept.blockName,
-        floorName: pharmDept.floorName,
-        color: 'purple',
-        notes: 'Prescriptions ready for dispensing',
-      });
-
-      const qSeq = db.getDepartmentQueue(pharmDept.id).length + 1;
-      db.createQueueEntry({
-        departmentId: pharmDept.id,
-        journeyId: journey.id,
-        journeyStageId: pharmStage.id,
-        patientId: journey.patientId,
-        tokenNumber: pharmToken,
-        sequenceNum: qSeq,
-        status: 'waiting',
-        priority: journey.priority,
-      });
+        const qSeq = db.getDepartmentQueue(pharmDept.id).length + 1;
+        db.createQueueEntry({
+          departmentId: pharmDept.id,
+          journeyId: journey.id,
+          journeyStageId: pharmStage.id,
+          patientId: journey.patientId,
+          tokenNumber: pharmOrderCreated.tokenNumber,
+          sequenceNum: qSeq,
+          status: 'waiting',
+          priority: journey.priority,
+        });
+      } else {
+        db.updateJourneyStage(existingPharmStage.id, {
+          tokenNumber: pharmOrderCreated.tokenNumber,
+          status: 'waiting',
+          notes: 'Prescriptions updated for dispensing',
+        });
+      }
 
       db.updateJourney(journey.id, {
         currentDepartmentId: pharmDept.id,
         currentStage: 'pharmacy',
-        currentToken: pharmToken,
+        currentToken: pharmOrderCreated.tokenNumber,
+        status: 'active',
       });
 
-      broadcastEvent('PHARMACY_ORDER_CREATED', {
+      broadcastEvent('QUEUE_UPDATED', { departmentId: pharmDept.id });
+      broadcastEvent('PHARMACY_UPDATED', {
+        orderId: pharmOrderCreated.id,
+        status: 'waiting',
         journeyId: journey.id,
-        tokenNumber: pharmToken,
-        counterNumber: pharmDept.roomNumber,
+        patientId: journey.patientId,
       });
 
       await notificationService.sendNotification({
@@ -1285,11 +1449,11 @@ apiRouter.post('/consultations/complete', async (req: Request, res: Response) =>
         targetJourneyId: journey.id,
         title: 'Next Stage: Central Pharmacy',
         titleTa: 'அடுத்த நிலை: மருந்தகம்',
-        message: `Proceed to Pharmacy ${pharmDept.roomNumber} (${pharmDept.blockName}) following PURPLE path. Token: ${pharmToken}.`,
-        messageTa: `ஊதா வழியைப் பின்பற்றி மருந்தகம் ${pharmDept.roomNumber}-க்கு செல்லவும். புதிய டோக்கன்: ${pharmToken}.`,
+        message: `Proceed to Central Pharmacy for medication dispensing. Token: ${pharmOrderCreated.tokenNumber}.`,
+        messageTa: `மருந்துகளைப் பெற மத்திய மருந்தகத்திற்கு செல்லவும். புதிய டோக்கன்: ${pharmOrderCreated.tokenNumber}.`,
         type: 'info',
         phone: patient?.phone,
-        token: pharmToken,
+        token: pharmOrderCreated.tokenNumber,
       });
     } else {
       // Mark Journey Completed
@@ -1329,8 +1493,13 @@ apiRouter.get('/diagnostics', (req: Request, res: Response) => {
     const orders = db.getDiagnosticOrders().map((ord) => {
       const journey = db.getJourneyById(ord.journeyId);
       const patient = journey ? db.getPatientById(journey.patientId) : undefined;
+      const doctor = ord.doctorId ? db.getUserById(ord.doctorId) : (journey?.doctorId ? db.getUserById(journey.doctorId) : undefined);
       return {
         ...ord,
+        patientId: journey ? journey.patientId : (ord.patientId || ''),
+        tokenNumber: ord.tokenNumber || journey?.currentToken || '',
+        doctorId: ord.doctorId || journey?.doctorId || '',
+        doctorName: ord.doctorName || doctor?.fullName || 'Attending Doctor',
         patientName: patient ? patient.name : 'Unknown Patient',
         patientAge: patient ? patient.age : 0,
         patientGender: patient ? patient.gender : 'Male',
@@ -1394,82 +1563,94 @@ apiRouter.post('/diagnostics/complete', async (req: Request, res: Response) => {
     if (diagStage) {
       db.updateJourneyStage(diagStage.id, {
         status: 'completed',
-        notes: findingsSummary || 'X-Ray imaging completed',
+        notes: findingsSummary || 'Diagnostic test completed',
         completedAt: new Date().toISOString(),
       });
     }
 
-    // 2. AUTOMATICALLY ROUTE TO PHARMACY
-    const pharmDept = db.getDepartmentByCode('PHARM') || db.getDepartments()[7];
-    const pharmToken = db.getNextTokenNumber('PHARM');
+    // 2. CHECK IF ALL DIAGNOSTICS FOR THIS JOURNEY ARE FINISHED
+    const allJourneyDiagOrders = db.getDiagnosticOrders().filter((o) => o.journeyId === journey.id);
+    const hasRemainingPending = allJourneyDiagOrders.some((o) => o.status !== 'completed' && o.id !== orderId);
 
-    const consultation = db.getConsultationByJourney(journey.id);
-    const medications = consultation?.medications || [
-      { id: '1', name: 'Tab Amlodipine', dosage: '5mg', frequency: '1-0-0', duration: '30 Days', instructions: 'After breakfast', isDispensed: false },
-      { id: '2', name: 'Tab Atorvastatin', dosage: '10mg', frequency: '0-0-1', duration: '30 Days', instructions: 'At night', isDispensed: false },
-    ];
+    const doctorId = order.doctorId || journey.doctorId || 'usr-doc-1';
+    const doctorUser = db.getUserById(doctorId);
+    const doctorDeptId = doctorUser?.departmentId || 'dept-genmed';
+    const doctorDept = db.getDepartmentById(doctorDeptId) || db.getDepartments()[0];
 
-    db.createPharmacyOrder({
-      consultationId: consultation ? consultation.id : 'CNS-GEN',
-      journeyId: journey.id,
-      tokenNumber: pharmToken,
-      status: 'waiting',
-      counterNumber: pharmDept.roomNumber,
-      medications,
-    });
+    // If all diagnostic tests are completed, route patient back to DOCTOR OPD for clinical review
+    if (!hasRemainingPending) {
+      db.updateJourney(journey.id, {
+        currentDepartmentId: doctorDeptId,
+        currentStage: 'doctor',
+        status: 'active',
+      });
 
-    const pharmStage = db.createJourneyStage({
-      journeyId: journey.id,
-      stageType: 'pharmacy',
-      departmentId: pharmDept.id,
-      tokenNumber: pharmToken,
-      sequenceNum: stages.length + 1,
-      status: 'waiting',
-      roomNumber: pharmDept.roomNumber,
-      blockName: pharmDept.blockName,
-      floorName: pharmDept.floorName,
-      color: 'purple',
-      notes: 'Prescriptions ready for dispensing',
-    });
+      broadcastEvent('DIAGNOSTIC_COMPLETED', {
+        orderId,
+        journeyId: journey.id,
+        patientId: journey.patientId,
+        findingsSummary,
+        allCompleted: true,
+      });
 
-    const qSeq = db.getDepartmentQueue(pharmDept.id).length + 1;
-    db.createQueueEntry({
-      departmentId: pharmDept.id,
-      journeyId: journey.id,
-      journeyStageId: pharmStage.id,
-      patientId: journey.patientId,
-      tokenNumber: pharmToken,
-      sequenceNum: qSeq,
-      status: 'waiting',
-      priority: journey.priority,
-    });
+      broadcastEvent('DIAGNOSTIC_RESULT_READY', {
+        orderId,
+        journeyId: journey.id,
+        patientId: journey.patientId,
+        doctorId,
+        testName: order.testName,
+        findingsSummary,
+      });
 
-    db.updateJourney(journey.id, {
-      currentDepartmentId: pharmDept.id,
-      currentStage: 'pharmacy',
-      currentToken: pharmToken,
-    });
+      await notificationService.sendNotification({
+        targetRole: 'doctor',
+        targetUserId: doctorId,
+        title: `Investigation Results Ready: ${patient?.name || 'Patient'}`,
+        titleTa: `பரிசோதனை முடிவுகள் தயார்: ${patient?.name || 'நோயாளி'}`,
+        message: `Diagnostic results for ${order.testName} (${patient?.name}) are ready for review. Decision required (Emergency vs Normal Revisit).`,
+        messageTa: `${patient?.name} அவர்களின் பரிசோதனை முடிவுகள் தயாராக உள்ளன. மதிப்பாய்வு செய்யவும்.`,
+        type: 'info',
+      });
 
-    broadcastEvent('DIAGNOSTIC_COMPLETED', { orderId, journeyId: journey.id });
-    broadcastEvent('PHARMACY_ORDER_CREATED', {
-      journeyId: journey.id,
-      tokenNumber: pharmToken,
-      counterNumber: pharmDept.roomNumber,
-    });
+      await notificationService.sendNotification({
+        targetRole: 'patient',
+        targetJourneyId: journey.id,
+        title: 'Diagnostic Tests Finished → Return to Doctor',
+        titleTa: 'பரிசோதனைகள் முடிந்தது → மருத்துவரிடம் திரும்பவும்',
+        message: `Your lab/scan tests are completed. Please return to doctor for review and prescriptions.`,
+        messageTa: `பரிசோதனைகள் முடிந்தது. முடிவுகளை மருத்துவரிடம் காண்பித்து மருந்துகளைப் பெறவும்.`,
+        type: 'success',
+        phone: patient?.phone,
+        token: journey.currentToken,
+      });
 
-    await notificationService.sendNotification({
-      targetRole: 'patient',
-      targetJourneyId: journey.id,
-      title: 'X-Ray Completed → Proceed to Pharmacy',
-      titleTa: 'எக்ஸ்-ரே முடிந்தது → மருந்தகத்திற்கு செல்லவும்',
-      message: `Diagnostic scan finished. Proceed to Pharmacy Counter 3 (${pharmDept.blockName}) following PURPLE path. Token: ${pharmToken}.`,
-      messageTa: `பரிசோதனை முடிந்தது. ஊதா வழியைப் பின்பற்றி மருந்தக கவுண்டர் 3-க்கு செல்லவும். புதிய டோக்கன்: ${pharmToken}.`,
-      type: 'success',
-      phone: patient?.phone,
-      token: pharmToken,
-    });
+      return res.json({
+        success: true,
+        data: {
+          orderId,
+          allCompleted: true,
+          nextStage: 'doctor',
+          message: 'Diagnostic tests completed. Returned to doctor for review.',
+        },
+      });
+    } else {
+      broadcastEvent('DIAGNOSTIC_COMPLETED', {
+        orderId,
+        journeyId: journey.id,
+        patientId: journey.patientId,
+        findingsSummary,
+        allCompleted: false,
+      });
 
-    res.json({ success: true, data: { orderId, nextToken: pharmToken } });
+      return res.json({
+        success: true,
+        data: {
+          orderId,
+          allCompleted: false,
+          message: 'Test completed. Waiting for remaining diagnostic tests.',
+        },
+      });
+    }
   } catch (err: any) {
     console.error('Error completing diagnostic order:', err);
     res.status(500).json({ success: false, error: err.message });
@@ -1483,14 +1664,19 @@ apiRouter.get('/pharmacy', (req: Request, res: Response) => {
   try {
     const orders = db.getPharmacyOrders().map((ord) => {
       const journey = db.getJourneyById(ord.journeyId);
-      const patient = journey ? db.getPatientById(journey.patientId) : undefined;
+      const directPatient = (ord as any).patientId ? db.getPatientById((ord as any).patientId) : undefined;
+      const patient = journey ? db.getPatientById(journey.patientId) : directPatient;
       const consultation = db.getConsultationByJourney(ord.journeyId);
+      const doctor = ord.doctorId ? db.getUserById(ord.doctorId) : (journey?.doctorId ? db.getUserById(journey.doctorId) : undefined);
       return {
         ...ord,
+        patientId: journey ? journey.patientId : (ord.patientId || ''),
+        tokenNumber: ord.tokenNumber || journey?.currentToken || '',
+        doctorId: ord.doctorId || journey?.doctorId || '',
         patientName: patient ? patient.name : 'Unknown Patient',
-        patientAge: patient ? patient.age : 0,
+        patientAge: patient ? patient.age : 30,
         patientGender: patient ? patient.gender : 'Male',
-        doctorName: consultation ? consultation.doctorName : 'Medical Officer',
+        doctorName: consultation ? consultation.doctorName : (ord.doctorName || doctor?.fullName || 'Medical Officer'),
         diagnosis: consultation ? consultation.diagnosis : 'General Prescription',
       };
     });
@@ -1517,7 +1703,41 @@ apiRouter.post('/pharmacy/status', (req: Request, res: Response) => {
       status,
     });
 
-    broadcastEvent('PHARMACY_UPDATED', { orderId, status });
+    const journey = db.getJourneyById(order.journeyId);
+    const patient = journey ? db.getPatientById(journey.patientId) : ((order as any).patientId ? db.getPatientById((order as any).patientId) : undefined);
+
+    broadcastEvent('PHARMACY_UPDATED', {
+      orderId,
+      status,
+      journeyId: order.journeyId,
+      patientId: journey?.patientId || (order as any).patientId,
+    });
+    broadcastEvent('QUEUE_UPDATED', { departmentId: journey?.currentDepartmentId || 'dept-pharm' });
+
+    if (status === 'ready') {
+      notificationService.sendNotification({
+        targetRole: 'patient',
+        targetJourneyId: order.journeyId,
+        title: '💊 MEDICATIONS READY FOR PICKUP',
+        titleTa: '💊 மருந்துகள் தயார்: உடனடியாக பெற்றுக்கொள்ளவும்',
+        message: `Token ${order.tokenNumber} (${patient?.name || 'Patient'}): Your prescribed medications are ready at Central Pharmacy.`,
+        messageTa: `டோக்கன் ${order.tokenNumber}: உங்கள் மருந்துகள் மத்திய மருந்தகத்தில் தயாராக உள்ளன. உடனடியாக பெற்றுக்கொள்ளவும்.`,
+        type: 'turn',
+        token: order.tokenNumber,
+      });
+    } else if (status === 'preparing') {
+      notificationService.sendNotification({
+        targetRole: 'patient',
+        targetJourneyId: order.journeyId,
+        title: 'Pharmacist Preparing Prescription',
+        titleTa: 'மருந்துகள் பேக் செய்யப்படுகின்றன',
+        message: `Token ${order.tokenNumber}: Central Pharmacy has begun packaging your prescription.`,
+        messageTa: `டோக்கன் ${order.tokenNumber}: உங்கள் மருந்து சீட்டுக்கான மருந்துகள் பேக் செய்யப்படுகின்றன.`,
+        type: 'info',
+        token: order.tokenNumber,
+      });
+    }
+
     res.json({ success: true, data: updated });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -1538,9 +1758,18 @@ apiRouter.post('/pharmacy/dispense', async (req: Request, res: Response) => {
       dispensedAt: new Date().toISOString(),
     });
 
-    const journey = db.getJourneyById(order.journeyId);
+    let journey = db.getJourneyById(order.journeyId);
+    if (!journey && (order as any).patientId) {
+      journey = db.getActiveJourneyForPatient((order as any).patientId);
+    }
     if (!journey) {
-      return res.status(404).json({ success: false, error: 'Journey not found' });
+      broadcastEvent('PHARMACY_UPDATED', {
+        orderId,
+        status: 'dispensed',
+        journeyId: order.journeyId,
+      });
+      broadcastEvent('PHARMACY_COMPLETED', { orderId, journeyId: order.journeyId });
+      return res.json({ success: true, data: { status: 'dispensed', orderId } });
     }
 
     const patient = db.getPatientById(journey.patientId);
@@ -1572,6 +1801,12 @@ apiRouter.post('/pharmacy/dispense', async (req: Request, res: Response) => {
       completedAt: new Date().toISOString(),
     });
 
+    broadcastEvent('PHARMACY_UPDATED', {
+      orderId,
+      status: 'dispensed',
+      journeyId: journey.id,
+      patientId: journey.patientId,
+    });
     broadcastEvent('PHARMACY_COMPLETED', { orderId, journeyId: journey.id });
     broadcastEvent('QUEUE_UPDATED', { departmentId: journey.currentDepartmentId });
 
@@ -1766,6 +2001,16 @@ apiRouter.post('/admin/reset', (req: Request, res: Response) => {
     broadcastEvent('QUEUE_UPDATED', {});
     broadcastEvent('HOSPITAL_CONFIG_UPDATED', { hospital: db.getHospital() });
     res.json({ success: true, message: 'Database reset and reseeded successfully' });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+apiRouter.post('/admin/clear-all-patients', (req: Request, res: Response) => {
+  try {
+    db.clearAllPatientData();
+    broadcastEvent('QUEUE_UPDATED', {});
+    res.json({ success: true, message: 'All patients, visits, queue entries, and clinical orders wiped clean successfully.' });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }

@@ -299,9 +299,25 @@ export class DatabaseEngine {
   }
 
   // Queue Operations
-  public getDepartmentQueue(departmentId: string): QueueEntry[] {
+  public getDoctorQueue(doctorId: string): QueueEntry[] {
     return this.data.queueEntries
-      .filter((q) => q.departmentId === departmentId && (q.status === 'waiting' || q.status === 'called' || q.status === 'in_service'))
+      .filter((q) => q.doctorId === doctorId && (q.status === 'waiting' || q.status === 'called' || q.status === 'in_service'))
+      .sort((a, b) => {
+        const pMap: Record<string, number> = { emergency: 0, urgent: 1, senior: 2, normal: 3 };
+        if (pMap[a.priority] !== pMap[b.priority]) {
+          return pMap[a.priority] - pMap[b.priority];
+        }
+        return a.sequenceNum - b.sequenceNum;
+      });
+  }
+
+  public getDepartmentQueue(departmentId: string, doctorId?: string): QueueEntry[] {
+    return this.data.queueEntries
+      .filter((q) => {
+        if (q.departmentId !== departmentId) return false;
+        if (doctorId && q.doctorId !== doctorId) return false;
+        return q.status === 'waiting' || q.status === 'called' || q.status === 'in_service';
+      })
       .sort((a, b) => {
         // Priority ordering: Emergency -> Urgent -> Senior -> Normal, then sequence
         const pMap: Record<string, number> = { emergency: 0, urgent: 1, senior: 2, normal: 3 };
@@ -388,7 +404,7 @@ export class DatabaseEngine {
     const deptId = journey.currentDepartmentId;
     const dept = this.getDepartmentById(deptId);
     const doctor = journey.doctorId ? this.getUserById(journey.doctorId) : this.getDoctors().find(d => d.departmentId === deptId);
-    const queue = this.getDepartmentQueue(deptId);
+    const queue = journey.doctorId ? this.getDoctorQueue(journey.doctorId) : this.getDepartmentQueue(deptId);
     const myEntry = queue.find((q) => q.journeyId === journeyId);
 
     // Find currently serving token for this department queue
@@ -405,9 +421,9 @@ export class DatabaseEngine {
         nowServingToken,
         queueStatus: latest ? latest.status : journey.status,
         tokenNumber: journey.currentToken,
-        doctorName: doctor?.fullName || 'Dr. Priya Kumar, MD',
-        departmentName: dept?.name || 'General Medicine',
-        departmentNameTa: dept?.nameTa || 'பொது மருத்துவம்',
+        doctorName: doctor?.fullName || 'Assigned Doctor',
+        departmentName: dept?.name || 'OPD Consultation',
+        departmentNameTa: dept?.nameTa || 'மருத்துவ ஆலோசனை',
         queueAhead: [],
       };
     }
@@ -437,9 +453,9 @@ export class DatabaseEngine {
       nowServingToken,
       queueStatus: myEntry.status,
       tokenNumber: myEntry.tokenNumber,
-      doctorName: doctor?.fullName || 'Dr. Priya Kumar, MD',
-      departmentName: dept?.name || 'General Medicine',
-      departmentNameTa: dept?.nameTa || 'பொது மருத்துவம்',
+      doctorName: doctor?.fullName || 'Assigned Doctor',
+      departmentName: dept?.name || 'OPD Consultation',
+      departmentNameTa: dept?.nameTa || 'மருத்துவ ஆலோசனை',
       queueAhead,
     };
   }
@@ -710,11 +726,11 @@ export class DatabaseEngine {
       .filter((o) => patientJourneys.has(o.journeyId))
       .map((ord) => {
         const journey = this.getJourneyById(ord.journeyId);
-        const doctor = journey?.doctorId ? this.getUserById(journey.doctorId) : undefined;
+        const doctor = ord.doctorId ? this.getUserById(ord.doctorId) : (journey?.doctorId ? this.getUserById(journey.doctorId) : undefined);
         return {
           ...ord,
           patientName: patient?.name,
-          doctorName: doctor?.fullName || 'Dr. Priya Kumar',
+          doctorName: ord.doctorName || doctor?.fullName || 'Attending Doctor',
         };
       });
   }
@@ -726,11 +742,11 @@ export class DatabaseEngine {
       .filter((o) => patientJourneys.has(o.journeyId))
       .map((ord) => {
         const journey = this.getJourneyById(ord.journeyId);
-        const doctor = journey?.doctorId ? this.getUserById(journey.doctorId) : undefined;
+        const doctor = ord.doctorId ? this.getUserById(ord.doctorId) : (journey?.doctorId ? this.getUserById(journey.doctorId) : undefined);
         return {
           ...ord,
           patientName: patient?.name,
-          doctorName: doctor?.fullName || 'Dr. Priya Kumar',
+          doctorName: ord.doctorName || doctor?.fullName || 'Attending Doctor',
         };
       });
   }
@@ -740,6 +756,7 @@ export class DatabaseEngine {
     patientId: string;
     decisionType: 'normal' | 'emergency';
     doctorRemarks?: string;
+    doctorId?: string;
   }): { queueEntry: QueueEntry; tokenNumber: string } {
     const patient = this.getPatientById(params.patientId);
     if (!patient) throw new Error(`Patient ${params.patientId} not found`);
@@ -747,30 +764,76 @@ export class DatabaseEngine {
     const activeJourney = this.getActiveJourneyForPatient(params.patientId) || this.data.journeys.find((j) => j.patientId === params.patientId);
     if (!activeJourney) throw new Error(`No visit journey found for patient ${params.patientId}`);
 
-    const deptId = activeJourney.currentDepartmentId;
+    // Resolve doctor and doctor's OPD department (NOT the lab/scan dept)
+    const effectiveDoctorId = params.doctorId || activeJourney.doctorId || 'usr-doc-1';
+    const doctor = this.getUserById(effectiveDoctorId);
+    const doctorStage = this.getJourneyStages(activeJourney.id).find((s) => s.stageType === 'doctor');
+    const deptId = (doctor && doctor.departmentId) || doctorStage?.departmentId || 'dept-genmed';
     const dept = this.getDepartmentById(deptId) || this.getDepartments()[0];
 
     const tokenNumber = this.getNextTokenNumber(dept.code);
-    const queueSeq = this.getDepartmentQueue(deptId).length + 1;
-    const priority: PatientPriority = params.decisionType === 'emergency' ? 'emergency' : 'normal';
+    const isEmergency = params.decisionType === 'emergency';
+    const queueSeq = isEmergency ? 0 : this.getDepartmentQueue(deptId).length + 1;
+    const priority: PatientPriority = isEmergency ? 'emergency' : 'normal';
+
+    // If emergency: put any currently in_service entry for this doctor on hold so doctor attends this emergency patient immediately
+    if (isEmergency) {
+      const currentInService = this.data.queueEntries.filter(
+        (q) => q.doctorId === effectiveDoctorId && q.status === 'in_service' && q.patientId !== params.patientId
+      );
+      for (const entry of currentInService) {
+        entry.status = 'called';
+      }
+    }
 
     const queueEntry = this.createQueueEntry({
       departmentId: deptId,
-      doctorId: activeJourney.doctorId,
+      doctorId: effectiveDoctorId,
       journeyId: activeJourney.id,
       patientId: params.patientId,
       tokenNumber,
       sequenceNum: queueSeq,
-      status: 'waiting',
+      status: isEmergency ? 'in_service' : 'waiting',
       priority,
+      startedAt: isEmergency ? new Date().toISOString() : undefined,
     });
 
     this.updateJourney(activeJourney.id, {
+      doctorId: effectiveDoctorId,
+      currentDepartmentId: deptId,
       currentStage: 'doctor',
       currentToken: tokenNumber,
       status: 'active',
       priority,
     });
+
+    this.createJourneyStage({
+      journeyId: activeJourney.id,
+      stageType: 'doctor',
+      departmentId: deptId,
+      tokenNumber,
+      sequenceNum: this.getJourneyStages(activeJourney.id).length + 1,
+      status: isEmergency ? 'current' : 'waiting',
+      roomNumber: dept.roomNumber,
+      blockName: dept.blockName,
+      floorName: dept.floorName,
+      color: 'blue',
+      notes: isEmergency
+        ? `EMERGENCY Review Consultation: ${params.doctorRemarks || 'Direct clinical intervention'}`
+        : `Normal OPD Revisit: ${params.doctorRemarks || 'Results review'}`,
+    });
+
+    // Mark all diagnostic orders for this patient/journey as reviewed
+    const diagOrders = this.data.diagnosticOrders.filter(
+      (o) => o.journeyId === activeJourney.id || (o as any).patientId === params.patientId
+    );
+    for (const dOrd of diagOrders) {
+      if (dOrd.status === 'completed' || (dOrd as any).status === 'result_ready') {
+        dOrd.status = 'completed';
+        (dOrd as any).isReviewed = true;
+      }
+    }
+    this.save();
 
     return { queueEntry, tokenNumber };
   }
@@ -787,6 +850,35 @@ export class DatabaseEngine {
       timestamp: new Date().toISOString(),
     };
     this.data.auditLogs.unshift(log);
+    this.save();
+  }
+
+  // Clear all patients and clinical entries
+  public clearAllPatientData() {
+    this.data.patients = [];
+    this.data.journeys = [];
+    this.data.journeyStages = [];
+    this.data.queueEntries = [];
+    this.data.consultations = [];
+    this.data.diagnosticOrders = [];
+    this.data.pharmacyOrders = [];
+    this.data.notifications = [];
+    this.data.serviceCounters = [];
+    this.data.auditLogs = [];
+    this.data.sequences = {
+      journeyCount: 0,
+      tokens: {
+        CARDIO: 0,
+        GENMED: 0,
+        ORTHO: 0,
+        DERMA: 0,
+        'X-RAY': 0,
+        LAB: 0,
+        CT: 0,
+        PHARM: 0,
+        REG: 0,
+      },
+    };
     this.save();
   }
 }

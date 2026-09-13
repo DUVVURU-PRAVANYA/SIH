@@ -70,6 +70,7 @@ export interface Department {
 export interface User {
   id: string;
   username: string;
+  password?: string;
   role: UserRole;
   fullName: string;
   departmentId?: string;
@@ -183,13 +184,15 @@ export interface DiagnosticOrder {
   id: string;
   consultationId: string;
   journeyId: string;
-  modality: 'x-ray' | 'lab' | 'ct' | 'ultrasound';
+  modality: 'x-ray' | 'lab' | 'ct' | 'ultrasound' | 'mri' | 'specialty' | 'pathology';
   testName: string;
   tokenNumber: string;
   status: 'ordered' | 'waiting' | 'in_progress' | 'completed';
   findingsSummary?: string;
   technicianName?: string;
   roomNumber: string;
+  doctorId?: string;
+  doctorName?: string;
   orderedAt: string;
   completedAt?: string;
 }
@@ -202,6 +205,8 @@ export interface PharmacyOrder {
   status: 'waiting' | 'verifying' | 'dispensed';
   counterNumber: string;
   pharmacistName?: string;
+  doctorId?: string;
+  doctorName?: string;
   medications: Medication[];
   createdAt: string;
   dispensedAt?: string;

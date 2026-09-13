@@ -142,7 +142,16 @@ export const RoleAuthScreen: React.FC = () => {
         // Fallback for offline or local staff aliases
         const lower = cleanInput.toLowerCase();
         if (['doctor', 'dr_priya', 'priya'].includes(lower)) {
-          setDetectedStaff({ username: 'dr_priya', fullName: 'Dr. Priya Kumar, MD', role: 'doctor' });
+          setDetectedStaff({ username: 'dr_priya', fullName: 'Dr. Priya Kumar', role: 'doctor' });
+          switchStep('staff_password');
+        } else if (['dr_arun', 'arun'].includes(lower)) {
+          setDetectedStaff({ username: 'dr_arun', fullName: 'Dr. Arun Kumar', role: 'doctor' });
+          switchStep('staff_password');
+        } else if (['dr_meena', 'meena'].includes(lower)) {
+          setDetectedStaff({ username: 'dr_meena', fullName: 'Dr. Meena Sharma', role: 'doctor' });
+          switchStep('staff_password');
+        } else if (['dr_ravi', 'ravi'].includes(lower)) {
+          setDetectedStaff({ username: 'dr_ravi', fullName: 'Dr. Ravi Kumar', role: 'doctor' });
           switchStep('staff_password');
         } else if (['lab', 'scanlab', 'tech_murugan'].includes(lower)) {
           setDetectedStaff({ username: 'tech_murugan', fullName: 'K. Murugan (Lab)', role: 'scan_lab' });
@@ -162,7 +171,16 @@ export const RoleAuthScreen: React.FC = () => {
       // Offline fallback for known demo staff
       const lower = cleanInput.toLowerCase();
       if (['doctor', 'dr_priya', 'priya'].includes(lower)) {
-        setDetectedStaff({ username: 'dr_priya', fullName: 'Dr. Priya Kumar, MD', role: 'doctor' });
+        setDetectedStaff({ username: 'dr_priya', fullName: 'Dr. Priya Kumar', role: 'doctor' });
+        switchStep('staff_password');
+      } else if (['dr_arun', 'arun'].includes(lower)) {
+        setDetectedStaff({ username: 'dr_arun', fullName: 'Dr. Arun Kumar', role: 'doctor' });
+        switchStep('staff_password');
+      } else if (['dr_meena', 'meena'].includes(lower)) {
+        setDetectedStaff({ username: 'dr_meena', fullName: 'Dr. Meena Sharma', role: 'doctor' });
+        switchStep('staff_password');
+      } else if (['dr_ravi', 'ravi'].includes(lower)) {
+        setDetectedStaff({ username: 'dr_ravi', fullName: 'Dr. Ravi Kumar', role: 'doctor' });
         switchStep('staff_password');
       } else if (['lab', 'scanlab', 'tech_murugan'].includes(lower)) {
         setDetectedStaff({ username: 'tech_murugan', fullName: 'K. Murugan (Lab)', role: 'scan_lab' });
@@ -411,7 +429,7 @@ export const RoleAuthScreen: React.FC = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[10px] text-slate-400 pt-0.5">
                     <div>👤 Patient: <span className="font-mono text-blue-300 font-bold">9876543210</span> (OTP: 123456)</div>
-                    <div>🩺 Doctor: <span className="font-mono text-teal-300 font-bold">dr_priya</span> or <span className="font-mono text-teal-300">doctor</span></div>
+                    <div>🩺 Doctors: <span className="font-mono text-teal-300 font-bold">dr_priya</span>, <span className="font-mono text-teal-300 font-bold">dr_senthil</span>, <span className="font-mono text-teal-300 font-bold">dr_arun</span>, <span className="font-mono text-teal-300 font-bold">dr_meena</span>, <span className="font-mono text-teal-300 font-bold">dr_ravi</span></div>
                     <div>🔬 Lab/Scan: <span className="font-mono text-emerald-300 font-bold">tech_murugan</span> or <span className="font-mono text-emerald-300">lab</span></div>
                     <div>💊 Pharmacy: <span className="font-mono text-purple-300 font-bold">pharm_radha</span> or <span className="font-mono text-purple-300">pharmacy</span></div>
                   </div>

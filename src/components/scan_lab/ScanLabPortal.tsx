@@ -19,8 +19,18 @@ export const ScanLabPortal: React.FC = () => {
     labOrders,
     updateLabOrderStatus,
     doctorRevisitDecision,
+    refreshLabOrders,
     lang,
   } = useQueueFlow();
+
+  // Auto-refresh orders every 3 seconds so incoming doctor requests appear immediately
+  React.useEffect(() => {
+    refreshLabOrders?.();
+    const interval = setInterval(() => {
+      refreshLabOrders?.();
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [refreshLabOrders]);
 
   // Status Filter for ONE Dashboard: 'all' | 'pending' | 'in_progress' | 'completed'
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'in_progress' | 'completed'>('all');
@@ -41,12 +51,43 @@ export const ScanLabPortal: React.FC = () => {
   // Selected Order
   const selectedLabOrder = labOrders.find((o) => o.id === selectedOrderId) || filteredOrders[0] || labOrders[0];
 
-  // Numerical Result Form State
+  // Test categorization for selected order
+  const testTitleStr = (selectedLabOrder?.tests?.join(' ') || '').toLowerCase();
+  const isElectrolyteOrder = testTitleStr.includes('electrolyte') || testTitleStr.includes('sodium') || testTitleStr.includes('potassium');
+  const isScanOrXrayOrder =
+    testTitleStr.includes('x-ray') ||
+    testTitleStr.includes('scan') ||
+    testTitleStr.includes('chest') ||
+    testTitleStr.includes('usg') ||
+    testTitleStr.includes('ultrasound') ||
+    testTitleStr.includes('ct') ||
+    testTitleStr.includes('mri') ||
+    testTitleStr.includes('biopsy') ||
+    testTitleStr.includes('dermoscopy') ||
+    testTitleStr.includes('scraping');
+
+  // Track all orders belonging to the selected patient to handle multi-investigations together
+  const patientOrders = selectedLabOrder ? labOrders.filter((o) => o.patientId === selectedLabOrder.patientId) : [];
+  const patientPendingOrders = patientOrders.filter((o) => o.status !== 'result_ready' && o.status !== 'reviewed');
+
+  // Numerical Result Form State - Blood Chemistry
   const [fbsValue, setFbsValue] = useState('154');
   const [ppbsValue, setPpbsValue] = useState('210');
   const [hba1cValue, setHba1cValue] = useState('7.8');
   const [hbValue, setHbValue] = useState('12.4');
-  const [labRemarks, setLabRemarks] = useState('Elevated fasting glucose & HbA1c indicative of poor glycemic regulation.');
+
+  // Numerical Result Form State - Serum Electrolytes
+  const [naValue, setNaValue] = useState('138');
+  const [kValue, setKValue] = useState('4.2');
+  const [clValue, setClValue] = useState('102');
+  const [bicarbValue, setBicarbValue] = useState('24');
+
+  // Radiology / Scan Report State
+  const [scanFindings, setScanFindings] = useState('Bilateral lung fields clear. Cardiac silhouette normal size. Costophrenic sulci sharp. No focal consolidations or pleural effusion.');
+  const [scanImpression, setScanImpression] = useState('Normal chest radiograph (No acute cardiopulmonary disease).');
+
+  // General remarks
+  const [labRemarks, setLabRemarks] = useState('Findings reviewed and verified by laboratory technician.');
 
   // Late turnaround state
   const [isLateResult, setIsLateResult] = useState(false);
@@ -75,42 +116,139 @@ export const ScanLabPortal: React.FC = () => {
       return;
     }
 
-    const numericalResults: LabResultItem[] = [
-      {
-        testName: 'Fasting Blood Sugar (FBS)',
-        value: fbsValue,
-        unit: 'mg/dL',
-        referenceRange: '70 - 99 mg/dL',
-        isAbnormal: parseFloat(fbsValue) > 100,
-        remarks: parseFloat(fbsValue) > 125 ? 'Diabetic range' : 'Normal',
-      },
-      {
-        testName: 'Postprandial Blood Sugar (PPBS)',
-        value: ppbsValue,
-        unit: 'mg/dL',
-        referenceRange: '< 140 mg/dL',
-        isAbnormal: parseFloat(ppbsValue) > 140,
-        remarks: 'Impaired glucose tolerance',
-      },
-      {
-        testName: 'HbA1c Glycated Hemoglobin',
-        value: hba1cValue,
-        unit: '%',
-        referenceRange: '< 5.7 %',
-        isAbnormal: parseFloat(hba1cValue) >= 6.5,
-        remarks: 'Suboptimal glycemic control',
-      },
-      {
-        testName: 'Hemoglobin (Hb)',
-        value: hbValue,
-        unit: 'g/dL',
-        referenceRange: '12.0 - 15.5 g/dL',
-        isAbnormal: false,
-        remarks: 'Normal',
-      },
-    ];
+    let numericalResults: LabResultItem[] = [];
+
+    if (isElectrolyteOrder) {
+      numericalResults = [
+        {
+          testName: 'Serum Sodium (Na+)',
+          value: naValue,
+          unit: 'mEq/L',
+          referenceRange: '135 - 145 mEq/L',
+          isAbnormal: parseFloat(naValue) < 135 || parseFloat(naValue) > 145,
+          remarks: parseFloat(naValue) < 135 ? 'Hyponatremia' : parseFloat(naValue) > 145 ? 'Hypernatremia' : 'Normal',
+        },
+        {
+          testName: 'Serum Potassium (K+)',
+          value: kValue,
+          unit: 'mEq/L',
+          referenceRange: '3.5 - 5.0 mEq/L',
+          isAbnormal: parseFloat(kValue) < 3.5 || parseFloat(kValue) > 5.0,
+          remarks: parseFloat(kValue) < 3.5 ? 'Hypokalemia' : parseFloat(kValue) > 5.0 ? 'Hyperkalemia' : 'Normal',
+        },
+        {
+          testName: 'Serum Chloride (Cl-)',
+          value: clValue,
+          unit: 'mEq/L',
+          referenceRange: '96 - 106 mEq/L',
+          isAbnormal: parseFloat(clValue) < 96 || parseFloat(clValue) > 106,
+          remarks: 'Normal',
+        },
+        {
+          testName: 'Bicarbonate (HCO3-)',
+          value: bicarbValue,
+          unit: 'mEq/L',
+          referenceRange: '22 - 29 mEq/L',
+          isAbnormal: parseFloat(bicarbValue) < 22 || parseFloat(bicarbValue) > 29,
+          remarks: 'Normal',
+        },
+      ];
+    } else if (isScanOrXrayOrder) {
+      numericalResults = [
+        {
+          testName: selectedLabOrder.tests[0] || 'Diagnostic Scan & Imaging Report',
+          value: scanImpression,
+          unit: '',
+          referenceRange: 'Standard Anatomical Study',
+          isAbnormal: false,
+          remarks: scanFindings,
+        },
+      ];
+    } else {
+      numericalResults = [
+        {
+          testName: 'Fasting Blood Sugar (FBS)',
+          value: fbsValue,
+          unit: 'mg/dL',
+          referenceRange: '70 - 99 mg/dL',
+          isAbnormal: parseFloat(fbsValue) > 100,
+          remarks: parseFloat(fbsValue) > 125 ? 'Diabetic range' : 'Normal',
+        },
+        {
+          testName: 'Postprandial Blood Sugar (PPBS)',
+          value: ppbsValue,
+          unit: 'mg/dL',
+          referenceRange: '< 140 mg/dL',
+          isAbnormal: parseFloat(ppbsValue) > 140,
+          remarks: 'Impaired glucose tolerance',
+        },
+        {
+          testName: 'HbA1c Glycated Hemoglobin',
+          value: hba1cValue,
+          unit: '%',
+          referenceRange: '< 5.7 %',
+          isAbnormal: parseFloat(hba1cValue) >= 6.5,
+          remarks: 'Suboptimal glycemic control',
+        },
+        {
+          testName: 'Hemoglobin (Hb)',
+          value: hbValue,
+          unit: 'g/dL',
+          referenceRange: '12.0 - 15.5 g/dL',
+          isAbnormal: false,
+          remarks: 'Normal',
+        },
+      ];
+    }
 
     updateLabOrderStatus(selectedLabOrder.id, 'result_ready', numericalResults);
+    setStatusFilter('completed');
+  };
+
+  // Action: Batch submit all pending investigations for this patient at once
+  const handleBatchSubmitAllPatientOrders = () => {
+    if (!selectedLabOrder) return;
+    const pOrders = labOrders.filter((o) => o.patientId === selectedLabOrder.patientId);
+    for (const ord of pOrders) {
+      if (ord.status !== 'result_ready' && ord.status !== 'reviewed') {
+        const titleStr = (ord.tests?.join(' ') || '').toLowerCase();
+        const isScan =
+          titleStr.includes('x-ray') ||
+          titleStr.includes('scan') ||
+          titleStr.includes('chest') ||
+          titleStr.includes('usg') ||
+          titleStr.includes('ultrasound') ||
+          titleStr.includes('ct') ||
+          titleStr.includes('mri') ||
+          titleStr.includes('biopsy') ||
+          titleStr.includes('dermoscopy');
+        let resItems: LabResultItem[] = [];
+        if (isScan) {
+          resItems = [
+            {
+              testName: ord.tests[0] || 'Diagnostic Scan & Imaging Report',
+              value: scanImpression,
+              unit: '',
+              referenceRange: 'Standard Anatomical Study',
+              isAbnormal: false,
+              remarks: scanFindings,
+            },
+          ];
+        } else {
+          resItems = [
+            {
+              testName: ord.tests[0] || 'Pathology Test Report',
+              value: fbsValue,
+              unit: 'mg/dL',
+              referenceRange: '70 - 99 mg/dL',
+              isAbnormal: parseFloat(fbsValue) > 100,
+              remarks: 'Findings verified by lab technician',
+            },
+          ];
+        }
+        updateLabOrderStatus(ord.id, 'result_ready', resItems);
+      }
+    }
     setStatusFilter('completed');
   };
 
@@ -320,81 +458,220 @@ export const ScanLabPortal: React.FC = () => {
                 </span>
               </div>
 
-              {/* Fast Result Numerical Entry Form */}
+              {/* Multi-Test Notice for same patient */}
+              {patientOrders.length > 1 && (
+                <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-lg text-xs text-emerald-950 flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold flex items-center gap-1.5 text-emerald-900">
+                      <FlaskConical className="w-4 h-4 text-emerald-700" />
+                      <span>This Patient has {patientOrders.length} Ordered Investigations:</span>
+                    </span>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-200/80 text-emerald-950">
+                      {patientOrders.length - patientPendingOrders.length} of {patientOrders.length} Completed
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {patientOrders.map((po) => (
+                      <button
+                        key={po.id}
+                        type="button"
+                        onClick={() => setSelectedOrderId(po.id)}
+                        className={`px-2.5 py-1 rounded text-[11px] border font-medium cursor-pointer transition-colors ${
+                          po.id === selectedLabOrder.id
+                            ? 'bg-emerald-800 text-white border-emerald-900 font-bold shadow-2xs'
+                            : po.status === 'result_ready' || po.status === 'reviewed'
+                            ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                            : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                        }`}
+                      >
+                        {po.tests.join(', ')} {po.status === 'result_ready' || po.status === 'reviewed' ? '✓' : ''}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Fast Result Numerical / Imaging Entry Form */}
               <div className="space-y-3 bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs">
-                <div className="font-bold text-slate-800 uppercase tracking-wider text-[11px] border-b border-slate-200 pb-1">
-                  1. Fasting Blood Sugar & Chemistry Profile
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                      Fasting Blood Sugar (FBS)
-                    </label>
-                    <div className="flex items-center gap-1.5">
-                      <input
-                        type="text"
-                        value={fbsValue}
-                        onChange={(e) => setFbsValue(e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded font-mono font-bold text-xs"
-                      />
-                      <span className="text-slate-500 font-mono text-[10px]">mg/dL</span>
+                {isElectrolyteOrder ? (
+                  <>
+                    <div className="font-bold text-slate-800 uppercase tracking-wider text-[11px] border-b border-slate-200 pb-1">
+                      Serum Electrolytes Panel
                     </div>
-                    <span className="text-[10px] text-slate-400">Ref: 70 - 99 mg/dL</span>
-                  </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Sodium (Na+)
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            value={naValue}
+                            onChange={(e) => setNaValue(e.target.value)}
+                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded font-mono font-bold text-xs"
+                          />
+                          <span className="text-slate-500 font-mono text-[10px]">mEq/L</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">Ref: 135 - 145 mEq/L</span>
+                      </div>
 
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                      Postprandial Sugar (PPBS)
-                    </label>
-                    <div className="flex items-center gap-1.5">
-                      <input
-                        type="text"
-                        value={ppbsValue}
-                        onChange={(e) => setPpbsValue(e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded font-mono font-bold text-xs"
-                      />
-                      <span className="text-slate-500 font-mono text-[10px]">mg/dL</span>
-                    </div>
-                    <span className="text-[10px] text-slate-400">Ref: &lt; 140 mg/dL</span>
-                  </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Potassium (K+)
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            value={kValue}
+                            onChange={(e) => setKValue(e.target.value)}
+                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded font-mono font-bold text-xs"
+                          />
+                          <span className="text-slate-500 font-mono text-[10px]">mEq/L</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">Ref: 3.5 - 5.0 mEq/L</span>
+                      </div>
 
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                      HbA1c Glycated Hb
-                    </label>
-                    <div className="flex items-center gap-1.5">
-                      <input
-                        type="text"
-                        value={hba1cValue}
-                        onChange={(e) => setHba1cValue(e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded font-mono font-bold text-xs"
-                      />
-                      <span className="text-slate-500 font-mono text-[10px]">%</span>
-                    </div>
-                    <span className="text-[10px] text-slate-400">Ref: &lt; 5.7 %</span>
-                  </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Chloride (Cl-)
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            value={clValue}
+                            onChange={(e) => setClValue(e.target.value)}
+                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded font-mono font-bold text-xs"
+                          />
+                          <span className="text-slate-500 font-mono text-[10px]">mEq/L</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">Ref: 96 - 106 mEq/L</span>
+                      </div>
 
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                      Hemoglobin (Hb)
-                    </label>
-                    <div className="flex items-center gap-1.5">
-                      <input
-                        type="text"
-                        value={hbValue}
-                        onChange={(e) => setHbValue(e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded font-mono font-bold text-xs"
-                      />
-                      <span className="text-slate-500 font-mono text-[10px]">g/dL</span>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Bicarbonate (HCO3-)
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            value={bicarbValue}
+                            onChange={(e) => setBicarbValue(e.target.value)}
+                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded font-mono font-bold text-xs"
+                          />
+                          <span className="text-slate-500 font-mono text-[10px]">mEq/L</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">Ref: 22 - 29 mEq/L</span>
+                      </div>
                     </div>
-                    <span className="text-[10px] text-slate-400">Ref: 12.0 - 15.5</span>
-                  </div>
-                </div>
+                  </>
+                ) : isScanOrXrayOrder ? (
+                  <>
+                    <div className="font-bold text-slate-800 uppercase tracking-wider text-[11px] border-b border-slate-200 pb-1">
+                      Diagnostic Imaging & Scan Report
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Imaging Findings Summary
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={scanFindings}
+                          onChange={(e) => setScanFindings(e.target.value)}
+                          className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded text-xs outline-none focus:border-emerald-800 font-mono"
+                        ></textarea>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Radiologist / Technician Impression
+                        </label>
+                        <input
+                          type="text"
+                          value={scanImpression}
+                          onChange={(e) => setScanImpression(e.target.value)}
+                          className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded text-xs font-bold font-mono outline-none focus:border-emerald-800"
+                        />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="font-bold text-slate-800 uppercase tracking-wider text-[11px] border-b border-slate-200 pb-1">
+                      Fasting Blood Sugar & Chemistry Profile
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Fasting Blood Sugar (FBS)
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            value={fbsValue}
+                            onChange={(e) => setFbsValue(e.target.value)}
+                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded font-mono font-bold text-xs"
+                          />
+                          <span className="text-slate-500 font-mono text-[10px]">mg/dL</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">Ref: 70 - 99 mg/dL</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Postprandial Sugar (PPBS)
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            value={ppbsValue}
+                            onChange={(e) => setPpbsValue(e.target.value)}
+                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded font-mono font-bold text-xs"
+                          />
+                          <span className="text-slate-500 font-mono text-[10px]">mg/dL</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">Ref: &lt; 140 mg/dL</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          HbA1c Glycated Hb
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            value={hba1cValue}
+                            onChange={(e) => setHba1cValue(e.target.value)}
+                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded font-mono font-bold text-xs"
+                          />
+                          <span className="text-slate-500 font-mono text-[10px]">%</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">Ref: &lt; 5.7 %</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Hemoglobin (Hb)
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            value={hbValue}
+                            onChange={(e) => setHbValue(e.target.value)}
+                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded font-mono font-bold text-xs"
+                          />
+                          <span className="text-slate-500 font-mono text-[10px]">g/dL</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">Ref: 12.0 - 15.5</span>
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 <div className="pt-2">
                   <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Pathologist / Biochemist Observations
+                    Pathologist / Technician Observations
                   </label>
                   <textarea
                     rows={2}
@@ -442,15 +719,28 @@ export const ScanLabPortal: React.FC = () => {
               </div>
 
               {/* Submit Result Action */}
-              <div className="pt-2 flex items-center justify-end gap-3">
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-end gap-2.5">
+                {patientPendingOrders.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={handleBatchSubmitAllPatientOrders}
+                    className="w-full sm:w-auto px-4 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-bold text-xs rounded-md shadow flex items-center justify-center gap-2 cursor-pointer transition-all"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 text-blue-300" />
+                    <span>Submit All ({patientOrders.length}) Tests for Patient</span>
+                  </button>
+                )}
+
                 <button
                   onClick={handleSubmitLabResults}
-                  className="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs rounded-md shadow flex items-center justify-center gap-2 cursor-pointer transition-all"
+                  className="w-full sm:w-auto px-5 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs rounded-md shadow flex items-center justify-center gap-2 cursor-pointer transition-all"
                 >
                   <Send className="w-3.5 h-3.5" />
                   <span>
                     {isLateResult
                       ? 'Register Late Turnaround & Schedule Return'
+                      : patientPendingOrders.length > 1
+                      ? `Submit This Investigation (${selectedLabOrder.tests[0] || 'Selected'})`
                       : 'Submit Result & Transmit to Doctor'}
                   </span>
                 </button>

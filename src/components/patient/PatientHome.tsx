@@ -19,6 +19,8 @@ import {
   Edit3,
   Save,
   X,
+  RefreshCw,
+  AlertTriangle,
 } from 'lucide-react';
 import { useQueueFlow } from '../../context/QueueFlowContext';
 import { DoctorDepartmentSelection } from './DoctorDepartmentSelection';
@@ -41,7 +43,7 @@ export const PatientHome: React.FC = () => {
 
   const [showDoctorSelection, setShowDoctorSelection] = useState(false);
 
-  const patId = activePatient?.id || currentPatient?.id || 'GH-P-00127';
+  const patId = activePatient?.id || currentPatient?.id || '';
   const [patientHistory, setPatientHistory] = useState<any[]>([]);
   const [patientReports, setPatientReports] = useState<any[]>([]);
   const [patientPrescriptions, setPatientPrescriptions] = useState<any[]>([]);
@@ -50,6 +52,7 @@ export const PatientHome: React.FC = () => {
   const [editAllergies, setEditAllergies] = useState((activePatient?.allergies || currentPatient?.allergies || ['None Reported']).join(', '));
   const [editChronic, setEditChronic] = useState((activePatient?.chronicConditions || currentPatient?.chronicConditions || ['None Reported']).join(', '));
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isRefreshingRx, setIsRefreshingRx] = useState(false);
 
   const loadSubTabRecords = useCallback(async () => {
     if (!patId) return;
@@ -73,13 +76,31 @@ export const PatientHome: React.FC = () => {
     }
   }, [patId]);
 
+  // Immediately reload subtab records on mount, tab switch, or when active visit updates
   useEffect(() => {
     loadSubTabRecords();
-  }, [loadSubTabRecords, activeSection]);
+  }, [loadSubTabRecords, activeSection, activeVisitData?.pharmacyOrder?.id, activeVisitData?.journey?.currentStage, activeVisitData?.consultation?.id]);
+
+  // Periodic background refresh when viewing prescriptions or reports
+  useEffect(() => {
+    if (activeSection === 'prescriptions' || activeSection === 'reports') {
+      const timer = setInterval(() => {
+        loadSubTabRecords();
+      }, 2500);
+      return () => clearInterval(timer);
+    }
+  }, [activeSection, loadSubTabRecords]);
+
+  const handleManualRefreshRx = async () => {
+    setIsRefreshingRx(true);
+    await loadSubTabRecords();
+    if (patId) await loadActiveVisit(patId);
+    setTimeout(() => setIsRefreshingRx(false), 500);
+  };
 
   // If patient has no active visit OR clicked "Start New Visit", render Doctor & Department Selection
   if (!hasActiveVisit || showDoctorSelection) {
-    const patientId = activePatient?.id || currentPatient?.id || 'GH-P-00127';
+    const patientId = activePatient?.id || currentPatient?.id || '';
     const patientName = activePatient?.name || currentPatient?.name || 'Patient';
 
     return (
@@ -129,11 +150,11 @@ export const PatientHome: React.FC = () => {
   const realDoctorName =
     activeVisitData?.doctor?.fullName ||
     activeVisitData?.queueMetrics?.doctorName ||
-    'Dr. Priya Kumar, MD, DM';
+    (currentPat?.doctorName || 'Assigned Doctor');
   const realDeptName =
     activeVisitData?.department?.name ||
     activeVisitData?.queueMetrics?.departmentName ||
-    'General Medicine (OPD)';
+    (currentPat?.departmentName || 'OPD Consultation');
   const realDeptRoom = activeVisitData?.department?.roomNumber || 'Rooms 4-8';
   const realDeptBlock = activeVisitData?.department?.blockName || 'Block B';
   const realNowServing = activeVisitData?.queueMetrics?.nowServingToken || '-';
@@ -321,6 +342,172 @@ export const PatientHome: React.FC = () => {
         {/* ========================================================= */}
         {activeSection === 'queue' && (
           <div className="space-y-6">
+            {/* EMERGENCY CONSULTATION BANNER FOR PATIENT */}
+            {(activeVisitData?.journey?.priority === 'emergency' || activePatient?.priority === 'emergency') && realQueueStatus !== 'completed' && activeVisitData?.journey?.currentStage === 'doctor' && (
+              <div className="bg-red-600 text-white rounded-xl p-5 shadow-lg border-2 border-red-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-pulse">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                    <AlertTriangle className="w-7 h-7 text-white" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-black uppercase tracking-wider bg-white text-red-700 px-2 py-0.5 rounded">
+                      🚨 EMERGENCY PRIORITY: YOUR TURN NOW
+                    </span>
+                    <h3 className="text-base sm:text-lg font-extrabold font-serif mt-1">
+                      Proceed to {realDeptRoom} ({realDoctorName}) Immediately!
+                    </h3>
+                    <p className="text-xs text-red-100">
+                      Doctor has prioritized your consultation directly following test review. Bypass normal waiting line.
+                    </p>
+                  </div>
+                </div>
+                <div className="text-left sm:text-right shrink-0">
+                  <span className="text-[10px] uppercase font-bold text-red-200 block">Emergency Token</span>
+                  <span className="text-2xl font-black font-mono bg-white text-red-950 px-3 py-1 rounded shadow inline-block mt-0.5">
+                    {realToken}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* NEXT STAGE: DIAGNOSTIC SCAN & LAB ALERT */}
+            {(diagnosticOrder || activeVisitData?.journey?.currentStage === 'diagnostic') && (
+              <div className="bg-gradient-to-r from-teal-900 via-emerald-950 to-slate-900 text-white rounded-xl p-6 shadow-md border-2 border-emerald-500/40 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-800/80 pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-600/40 border border-emerald-400/50 flex items-center justify-center text-emerald-200">
+                      <FlaskConical className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300 bg-emerald-800/60 px-2 py-0.5 rounded border border-emerald-600/40">
+                          {lang === 'ta' ? 'அடுத்த நிலை: ஆய்வகம் / ஸ்கேன் மையம்' : 'NEXT STAGE: DIAGNOSTIC SCAN & LAB'}
+                        </span>
+                        <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded uppercase ${
+                          diagnosticOrder?.status === 'completed'
+                            ? 'bg-emerald-500 text-white'
+                            : diagnosticOrder?.status === 'in_progress'
+                            ? 'bg-blue-500 text-white animate-pulse'
+                            : 'bg-emerald-700 text-emerald-200'
+                        }`}>
+                          {diagnosticOrder?.status === 'completed'
+                            ? 'RESULTS READY / COMPLETED ✓'
+                            : diagnosticOrder?.status === 'in_progress'
+                            ? 'TEST IN PROGRESS / SAMPLE COLLECTED'
+                            : 'WAITING / PROCEED TO LAB'}
+                        </span>
+                      </div>
+                      <h3 className="text-base sm:text-lg font-bold font-serif text-white mt-1">
+                        {diagnosticOrder?.status === 'completed'
+                          ? (lang === 'ta' ? 'பரிசோதனை முடிவுகள் தயாராக உள்ளன' : 'Diagnostic Investigation Reports Finalized')
+                          : (lang === 'ta' ? 'பரிசோதனை மையத்திற்கு செல்லவும்' : `Proceed for Investigation: ${diagnosticOrder?.testName || 'Diagnostic Tests'}`)}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-emerald-200">
+                      Token: <strong className="text-white font-mono text-sm bg-emerald-800 px-2 py-0.5 rounded border border-emerald-600">{diagnosticOrder?.tokenNumber || activeVisitData?.journey?.currentToken}</strong>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection('reports')}
+                      className="px-3 py-1.5 bg-white text-emerald-950 hover:bg-emerald-100 rounded text-xs font-bold flex items-center gap-1 shadow transition-colors cursor-pointer"
+                    >
+                      <span>{lang === 'ta' ? 'அறிக்கைகளை பார்க்க' : 'View Reports'}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="text-xs text-emerald-200 flex flex-wrap items-center justify-between gap-2">
+                  <span>Room: <strong className="text-white">{diagnosticOrder?.roomNumber || 'Room 101 (Central Diagnostic Lab, Block C)'}</strong> • Modality: <strong className="text-white">{(diagnosticOrder?.modality || 'Diagnostic').toUpperCase()}</strong></span>
+                  {diagnosticOrder?.findingsSummary && (
+                    <span className="text-xs text-emerald-300 font-mono bg-emerald-950/60 px-2.5 py-1 rounded border border-emerald-800">
+                      Summary: {diagnosticOrder.findingsSummary}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* NEXT STAGE: PHARMACY ALERT & MEDICATION DIRECT PREVIEW */}
+            {(pharmacyOrder || activeVisitData?.journey?.currentStage === 'pharmacy') && (
+              <div className="bg-gradient-to-r from-purple-900 via-purple-950 to-indigo-950 text-white rounded-xl p-6 shadow-md border-2 border-purple-500/40 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-purple-800/80 pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-purple-600/40 border border-purple-400/50 flex items-center justify-center text-purple-200">
+                      <Pill className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-purple-300 bg-purple-800/60 px-2 py-0.5 rounded border border-purple-600/40">
+                          {lang === 'ta' ? 'அடுத்த நிலை: மைய மருந்தகம்' : 'NEXT STAGE: CENTRAL PHARMACY'}
+                        </span>
+                        <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded uppercase ${
+                          pharmacyOrder?.status === 'dispensed'
+                            ? 'bg-emerald-500 text-white'
+                            : pharmacyOrder?.status === 'ready'
+                            ? 'bg-amber-400 text-slate-950 animate-pulse font-black'
+                            : pharmacyOrder?.status === 'preparing'
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-purple-700 text-purple-200'
+                        }`}>
+                          {pharmacyOrder?.status === 'ready'
+                            ? '🚨 READY FOR PICKUP'
+                            : pharmacyOrder?.status === 'preparing'
+                            ? 'PREPARING MEDICINES'
+                            : pharmacyOrder?.status === 'dispensed'
+                            ? 'DISPENSED ✓'
+                            : 'IN QUEUE / WAITING'}
+                        </span>
+                      </div>
+                      <h3 className="text-base sm:text-lg font-bold font-serif text-white mt-1">
+                        {pharmacyOrder?.status === 'ready'
+                          ? (lang === 'ta' ? 'மருந்துகள் தயார்! பெற்றுக்கொள்ளவும்' : 'Prescription Ready! Please collect medications')
+                          : (lang === 'ta' ? 'மருத்துவர் மருந்து சீட்டு வழங்கியுள்ளார்' : 'Doctor Prescribed Medications Issued')}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-purple-200">
+                      Pharmacy Token: <strong className="text-white font-mono text-sm bg-purple-800 px-2 py-0.5 rounded border border-purple-600">{pharmacyOrder?.tokenNumber || activeVisitData?.journey?.currentToken}</strong>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection('prescriptions')}
+                      className="px-3 py-1.5 bg-white text-purple-950 hover:bg-purple-100 rounded text-xs font-bold flex items-center gap-1 shadow transition-colors cursor-pointer"
+                    >
+                      <span>{lang === 'ta' ? 'மருந்துகளை பார்க்க' : 'View Full Prescriptions'}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="text-xs text-purple-200 flex flex-wrap items-center justify-between gap-2">
+                  <span>Prescribed by: <strong className="text-white">{pharmacyOrder?.doctorName || consultation?.doctorName || realDoctorName}</strong></span>
+                  <span className="font-semibold text-purple-300">
+                    Status: <strong className="text-white">{pharmacyOrder?.status ? pharmacyOrder.status.toUpperCase() : 'WAITING'}</strong>
+                  </span>
+                </div>
+
+                {/* Medications preview */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-1">
+                  {(pharmacyOrder?.medications || consultation?.medications || []).map((med: any, idx: number) => (
+                    <div key={idx} className="p-2.5 bg-purple-900/50 border border-purple-700/60 rounded-lg text-xs space-y-1">
+                      <div className="font-bold text-white flex justify-between">
+                        <span>{med.name}</span>
+                        <span className="font-mono text-purple-300">{med.dosage}</span>
+                      </div>
+                      <div className="text-[11px] text-purple-200">
+                        Timing: {med.frequency || '1-0-1'} • {med.instructions || 'After Food'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="bg-white rounded-xl border-2 border-blue-900/40 p-6 sm:p-8 shadow-sm space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                 <div>
@@ -729,6 +916,19 @@ export const PatientHome: React.FC = () => {
                     : 'Medications prescribed by the consulting doctor and pharmacy fulfillment status'}
                 </p>
               </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleManualRefreshRx}
+                  disabled={isRefreshingRx}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                  title="Refresh prescriptions from hospital database"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isRefreshingRx ? 'animate-spin' : ''}`} />
+                  <span>{isRefreshingRx ? 'Refreshing...' : 'Refresh Rx'}</span>
+                </button>
+              </div>
             </div>
 
             {patientPrescriptions.length > 0 ? (
@@ -741,7 +941,7 @@ export const PatientHome: React.FC = () => {
                           Prescription (Token: {order.tokenNumber || realToken})
                         </span>
                         <div className="text-[11px] text-slate-500">
-                          Prescribed by: {order.doctorName || realDoctorName} • Counter: {order.counterNumber || 'Counter 3'}
+                          Prescribed by: {order.doctorName || realDoctorName}
                         </div>
                       </div>
                       <span
@@ -794,7 +994,7 @@ export const PatientHome: React.FC = () => {
                 ))}
 
                 <div className="p-3 bg-purple-100/60 rounded-lg text-[11px] text-purple-900 flex items-center justify-between">
-                  <span>Dispensing Counter: <strong>Counter 3 (Central Pharmacy, Block A)</strong></span>
+                  <span>Pharmacy: <strong>Central Pharmacy</strong></span>
                   <span>TNMSC Free Medicine Scheme Applicable</span>
                 </div>
               </div>
@@ -831,7 +1031,7 @@ export const PatientHome: React.FC = () => {
                 ))}
 
                 <div className="p-3 bg-purple-100/60 rounded-lg text-[11px] text-purple-900 flex items-center justify-between">
-                  <span>Dispensing Counter: <strong>Counter 3 (Central Pharmacy, Block A)</strong></span>
+                  <span>Pharmacy: <strong>Central Pharmacy</strong></span>
                   <span>TNMSC Free Medicine Scheme Applicable</span>
                 </div>
               </div>
@@ -867,8 +1067,8 @@ export const PatientHome: React.FC = () => {
               <div className="space-y-4">
                 {patientHistory.map((item: any, idx: number) => {
                   const c = item.consultation;
-                  const doc = item.doctor?.fullName || c?.doctorName || 'Dr. Priya Kumar';
-                  const dept = item.department?.name || 'General Medicine';
+                  const doc = item.doctor?.fullName || c?.doctorName || 'Consulting Doctor';
+                  const dept = item.department?.name || 'OPD Consultation';
                   const dateStr = item.journey?.createdAt ? new Date(item.journey.createdAt).toLocaleDateString() : new Date().toLocaleDateString();
 
                   return (

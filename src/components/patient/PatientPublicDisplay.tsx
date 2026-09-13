@@ -150,9 +150,9 @@ export const PatientPublicDisplay: React.FC = () => {
       <div className="bg-slate-900 border-t border-slate-800 pt-3 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-          <span>Central Digital Hospital Queue System • Room 204 OPD Screen</span>
+          <span>Central Digital Hospital Queue System • OPD Screen</span>
         </div>
-        <div>Free Generic Medications provided at Pharmacy Counter 03 • TNMSC Scheme</div>
+        <div>Free Generic Medications provided at Central Pharmacy • TNMSC Scheme</div>
       </div>
     </div>
   );

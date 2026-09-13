@@ -10,15 +10,33 @@ import {
   ArrowRight,
   ShieldCheck,
   Check,
+  RefreshCw,
 } from 'lucide-react';
 import { useQueueFlow } from '../../context/QueueFlowContext';
 import { PharmacyOrder } from '../../types';
 
 export const PharmacyPortal: React.FC = () => {
-  const { pharmacyOrders, updatePharmacyStatus, lang } = useQueueFlow();
+  const { pharmacyOrders, updatePharmacyStatus, refreshPharmacyOrders, lang } = useQueueFlow();
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Status Filter for ONE Dashboard: 'all' | 'pending' | 'preparing' | 'ready' | 'dispensed'
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'preparing' | 'ready' | 'dispensed'>('all');
+
+  // Fetch real database orders on mount and background interval
+  React.useEffect(() => {
+    refreshPharmacyOrders();
+    const interval = setInterval(() => {
+      refreshPharmacyOrders();
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [refreshPharmacyOrders]);
+
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshPharmacyOrders();
+    setTimeout(() => setIsRefreshing(false), 500);
+  };
 
   // Real filtering of database records
   const filteredOrders = pharmacyOrders.filter((ord) => {
@@ -31,8 +49,14 @@ export const PharmacyPortal: React.FC = () => {
   });
 
   const [selectedOrderId, setSelectedOrderId] = useState<string>(
-    pharmacyOrders[0]?.id || 'PHARM-ORD-301'
+    pharmacyOrders[0]?.id || ''
   );
+
+  React.useEffect(() => {
+    if (pharmacyOrders.length > 0 && (!selectedOrderId || !pharmacyOrders.some((o) => o.id === selectedOrderId))) {
+      setSelectedOrderId(pharmacyOrders[0].id);
+    }
+  }, [pharmacyOrders, selectedOrderId]);
 
   const selectedOrder = pharmacyOrders.find((o) => o.id === selectedOrderId) || filteredOrders[0] || pharmacyOrders[0];
 
@@ -82,6 +106,16 @@ export const PharmacyPortal: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 text-xs">
+            <button
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+              className="px-3 py-1.5 bg-purple-700/80 hover:bg-purple-600 border border-purple-400/40 rounded text-white font-medium flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+              title="Refresh Pharmacy Orders from Database"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+            </button>
+
             <div className="bg-purple-950/80 px-3 py-1.5 rounded border border-purple-700 text-purple-100">
               <span>{lang === 'ta' ? 'மொத்த மருந்து சீட்டுகள்: ' : 'Total Prescriptions: '}</span>
               <strong className="font-mono text-white">{pharmacyOrders.length} Total</strong>

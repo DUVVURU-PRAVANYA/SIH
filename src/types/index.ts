@@ -124,6 +124,8 @@ export interface LabOrder {
   patientName: string;
   patientToken: string;
   requestedByDoctor: string;
+  doctorId?: string;
+  doctorName?: string;
   tests: string[];
   priority: 'routine' | 'urgent';
   schedule: 'today' | 'next_day';
@@ -140,7 +142,7 @@ export interface DiagnosticOrder {
   patientName: string;
   patientToken: string;
   requestedByDoctor: string;
-  modality: 'x-ray' | 'ultrasound' | 'ct' | 'mri';
+  modality: 'x-ray' | 'ultrasound' | 'ct' | 'mri' | 'specialty' | 'pathology';
   testName: string;
   priority: 'routine' | 'urgent';
   clinicalNotes: string;
@@ -204,12 +206,13 @@ export interface RevisitSchedule {
   time: string;
   department: string;
   doctor: string;
+  doctorId?: string;
   reason: string;
   assignedToken: string;
 }
 
 export interface DiagnosticDetails {
-  modality: 'x-ray' | 'lab' | 'ct' | 'ultrasound' | 'mri';
+  modality: 'x-ray' | 'lab' | 'ct' | 'ultrasound' | 'mri' | 'specialty' | 'pathology';
   token: string;
   testName: string;
   status: 'waiting' | 'in_progress' | 'completed';
@@ -230,8 +233,17 @@ export interface PharmacyDetails {
   completedAt?: string;
 }
 
+export interface StaffUser {
+  id: string;
+  username: string;
+  fullName: string;
+  role: string;
+  departmentId?: string;
+}
+
 export interface Patient {
   id: string;
+  journeyId?: string;
   name: string;
   nameTa: string;
   age: number;
@@ -242,6 +254,10 @@ export interface Patient {
   departmentId: string;
   departmentName: string;
   departmentNameTa: string;
+  doctorId?: string;
+  doctorName?: string;
+  symptoms?: string;
+  chiefComplaint?: string;
   currentStage: JourneyStageId;
   queuePosition: number;
   estimatedWaitMinutes: number;
@@ -289,6 +305,9 @@ export interface DepartmentStats {
   block: string;
   floor: string;
   room: string;
+  blockName?: string;
+  floorName?: string;
+  roomNumber?: string;
   activeCounters: number;
   totalCounters: number;
   waitingCount: number;

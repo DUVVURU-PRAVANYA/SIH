@@ -90,14 +90,16 @@ export const apiClient = {
   getJourney: (journeyId: string) => fetchApi(`/journey/${journeyId}`),
 
   // Queues & Doctor
-  getQueue: (departmentId: string) => fetchApi(`/queues/${departmentId}`),
-  callPatient: (data: { queueEntryId?: string; departmentId?: string }) =>
+  getQueue: (departmentId: string, doctorId?: string) =>
+    fetchApi(`/queues/${departmentId}${doctorId ? `?doctorId=${encodeURIComponent(doctorId)}` : ''}`),
+  getDoctorQueue: (doctorId: string) => fetchApi(`/doctors/${doctorId}/queue`),
+  callPatient: (data: { queueEntryId?: string; departmentId?: string; doctorId?: string }) =>
     fetchApi('/queues/call', { method: 'POST', body: JSON.stringify(data) }),
   startConsultation: (queueEntryId: string, journeyId: string) =>
     fetchApi('/consultations/start', { method: 'POST', body: JSON.stringify({ queueEntryId, journeyId }) }),
   completeConsultation: (data: any) =>
     fetchApi('/consultations/complete', { method: 'POST', body: JSON.stringify(data) }),
-  createRevisit: (data: { patientId: string; decisionType: 'normal' | 'emergency'; doctorRemarks?: string }) =>
+  createRevisit: (data: { patientId: string; decisionType: 'normal' | 'emergency'; doctorRemarks?: string; doctorId?: string }) =>
     fetchApi('/visits/revisit', { method: 'POST', body: JSON.stringify(data) }),
 
   // Diagnostics

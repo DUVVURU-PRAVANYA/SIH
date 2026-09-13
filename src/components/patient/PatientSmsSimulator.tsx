@@ -50,8 +50,7 @@ export const PatientSmsSimulator: React.FC<PatientSmsSimulatorProps> = ({ isOpen
             <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-700 font-mono text-[11px] text-teal-200 space-y-0.5">
               <div>• {p?.queuePosition || 5} Patients ahead</div>
               <div>• Approx Turn: ~{p?.estimatedWaitMinutes || 18} Mins</div>
-              <div>• Next: {p?.location.room} ({p?.location.block})</div>
-              <div>• Follow: {p?.location.pathName.split('→')[0]}</div>
+              <div>• Department: {p?.departmentName || 'Dermatology'}</div>
             </div>
             <div className="text-[9px] text-slate-500 text-right">09:15 AM • Delivered</div>
           </div>
@@ -63,7 +62,7 @@ export const PatientSmsSimulator: React.FC<PatientSmsSimulatorProps> = ({ isOpen
               GH-QueueFlow ALERT: {p?.token || 'CARDIO-042'}
             </div>
             <p className="text-[11px] leading-relaxed">
-              உங்கள் முறை விரைவில் வருகிறது. தயவுசெய்து <strong className="text-white">{p?.location.room}</strong> அருகில் காத்திருக்கவும்.
+              உங்கள் முறை விரைவில் வருகிறது. தயவுசெய்து காத்திருக்கவும்.
             </p>
             <div className="text-[9px] text-slate-500 text-right">Just now • Delivered</div>
           </div>
