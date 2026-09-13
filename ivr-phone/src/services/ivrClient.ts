@@ -1,6 +1,18 @@
 import { IVRActionResponse, DemoCaller } from '../types';
+const getBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api/ivr`;
+  }
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname === 'localhost' && window.location.port === '5175') {
+      return 'http://localhost:4000/api/ivr';
+    }
+    return '/api/ivr';
+  }
+  return 'http://localhost:4000/api/ivr';
+};
 
-const BASE_URL = 'http://localhost:4000/api/ivr';
+const BASE_URL = getBaseUrl();
 
 export class IVRClient {
   public async startCall(phone: string, language: 'en' | 'ta' = 'en'): Promise<IVRActionResponse> {

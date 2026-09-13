@@ -23,6 +23,7 @@ import {
   LabResultItem,
   StaffUser,
 } from '../types';
+import { API_BASE_URL } from '../services/api';
 import {
   initialPatients,
   initialDepartments,
@@ -2139,7 +2140,7 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
 
     try {
-      const res = await fetch('http://localhost:4000/api/auth/identify', {
+      const res = await fetch(`${API_BASE_URL}/auth/identify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier: cleanPhone }),
@@ -2223,7 +2224,7 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const verifyPatientOtp = async (rawPhone: string, otp: string) => {
     const cleanPhone = (rawPhone || '').replace(/[^0-9]/g, '').slice(-10);
     try {
-      const res = await fetch('http://localhost:4000/api/auth/verify-otp', {
+      const res = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: cleanPhone, otp }),
@@ -2305,7 +2306,7 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const loginStaff = async (username: string, password: string = 'password123') => {
     try {
-      const res = await fetch('http://localhost:4000/api/auth/staff-login', {
+      const res = await fetch(`${API_BASE_URL}/auth/staff-login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
@@ -2368,7 +2369,7 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const cleanPhone = data.phone.replace(/[^0-9]/g, '').slice(-10);
 
     try {
-      const res = await fetch('http://localhost:4000/api/auth/register-patient', {
+      const res = await fetch(`${API_BASE_URL}/auth/register-patient`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

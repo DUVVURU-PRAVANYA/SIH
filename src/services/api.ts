@@ -1,4 +1,8 @@
-const API_BASE_URL = 'http://localhost:4000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api`
+  : (typeof window !== 'undefined' && window.location.hostname === 'localhost' && (window.location.port === '5173' || window.location.port === '5175')
+      ? 'http://localhost:4000/api'
+      : '/api');
 
 export interface ApiResponse<T = any> {
   success: boolean;

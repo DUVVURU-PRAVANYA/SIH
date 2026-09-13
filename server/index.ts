@@ -46,9 +46,21 @@ const __dirname = path.dirname(__filename);
 const distPath = path.join(__dirname, '..', 'dist');
 
 if (fs.existsSync(distPath)) {
+  const phoneDistPath = path.join(distPath, 'phone');
+  if (fs.existsSync(phoneDistPath)) {
+    app.use('/phone', express.static(phoneDistPath));
+    app.get('/phone*', (req, res) => {
+      res.sendFile(path.join(phoneDistPath, 'index.html'));
+    });
+    // Alias /ivr to /phone
+    app.get('/ivr', (req, res) => {
+      res.redirect('/phone');
+    });
+  }
+
   app.use(express.static(distPath));
   app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api') || req.path.startsWith('/ws')) {
+    if (req.path.startsWith('/api') || req.path.startsWith('/ws') || req.path.startsWith('/phone')) {
       return next();
     }
     res.sendFile(path.join(distPath, 'index.html'));

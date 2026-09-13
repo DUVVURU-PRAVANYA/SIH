@@ -18,6 +18,7 @@ import {
   Pill,
 } from 'lucide-react';
 import { useQueueFlow } from '../../context/QueueFlowContext';
+import { API_BASE_URL } from '../../services/api';
 
 export const RoleAuthScreen: React.FC = () => {
   const {
@@ -124,7 +125,7 @@ export const RoleAuthScreen: React.FC = () => {
 
     // Case B: Staff Username -> Staff Password Workflow
     try {
-      const res = await fetch('http://localhost:4000/api/auth/identify', {
+      const res = await fetch(`${API_BASE_URL}/auth/identify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier: cleanInput }),
