@@ -89,13 +89,15 @@ export const Header: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setLang(lang === 'ta' ? 'en' : 'ta')}
-            className="flex items-center gap-1.5 px-2.5 py-0.5 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded font-medium text-xs transition-colors border border-slate-700"
-          >
-            <Globe className="w-3.5 h-3.5" />
-            <span>{lang === 'ta' ? 'English' : 'தமிழ் (Tamil)'}</span>
-          </button>
+          {role === 'patient' && (
+            <button
+              onClick={() => setLang(lang === 'ta' ? 'en' : 'ta')}
+              className="flex items-center gap-1.5 px-2.5 py-0.5 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded font-medium text-xs transition-colors border border-slate-700 cursor-pointer"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span>{lang === 'ta' ? 'English' : 'தமிழ் (Tamil)'}</span>
+            </button>
+          )}
         </div>
       </div>
 

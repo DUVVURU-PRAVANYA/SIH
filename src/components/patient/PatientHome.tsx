@@ -33,6 +33,7 @@ export const PatientHome: React.FC = () => {
     hasActiveVisit,
     activeVisitData,
     loadActiveVisit,
+    updatePatientProfile,
     lang,
     logout,
   } = useQueueFlow();
@@ -48,7 +49,10 @@ export const PatientHome: React.FC = () => {
   const [patientReports, setPatientReports] = useState<any[]>([]);
   const [patientPrescriptions, setPatientPrescriptions] = useState<any[]>([]);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [editBloodGroup, setEditBloodGroup] = useState(activePatient?.bloodGroup || currentPatient?.bloodGroup || 'O+ve');
+  const [editName, setEditName] = useState(activePatient?.name || currentPatient?.name || '');
+  const [editAge, setEditAge] = useState<number | string>(activePatient?.age || currentPatient?.age || 35);
+  const [editGender, setEditGender] = useState<'Male' | 'Female' | 'Other'>((activePatient?.gender as any) || (currentPatient?.gender as any) || 'Male');
+  const [editBloodGroup, setEditBloodGroup] = useState(activePatient?.bloodGroup || currentPatient?.bloodGroup || 'O+');
   const [editAllergies, setEditAllergies] = useState((activePatient?.allergies || currentPatient?.allergies || ['None Reported']).join(', '));
   const [editChronic, setEditChronic] = useState((activePatient?.chronicConditions || currentPatient?.chronicConditions || ['None Reported']).join(', '));
   const [isSavingProfile, setIsSavingProfile] = useState(false);
@@ -1189,11 +1193,24 @@ export const PatientHome: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setIsEditingProfile(!isEditingProfile)}
+                  onClick={() => {
+                    if (!isEditingProfile) {
+                      const pat = activePatient || currentPatient;
+                      if (pat) {
+                        setEditName(pat.name || '');
+                        setEditAge(pat.age ?? 35);
+                        setEditGender((pat.gender as any) || 'Male');
+                        setEditBloodGroup(pat.bloodGroup || 'O+');
+                        setEditAllergies((pat.allergies || ['None Reported']).join(', '));
+                        setEditChronic((pat.chronicConditions || ['None Reported']).join(', '));
+                      }
+                    }
+                    setIsEditingProfile(!isEditingProfile);
+                  }}
                   className="px-3 py-1.5 bg-blue-900 hover:bg-blue-800 text-white rounded text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
-                  <span>{isEditingProfile ? 'Cancel Edit' : (lang === 'ta' ? 'சுயவிவரம் திருத்து' : 'Edit Profile')}</span>
+                  <span>{isEditingProfile ? (lang === 'ta' ? 'ரத்து' : 'Cancel Edit') : (lang === 'ta' ? 'சுயவிவரம் திருத்து' : 'Edit Profile')}</span>
                 </button>
                 <button
                   type="button"
@@ -1211,7 +1228,10 @@ export const PatientHome: React.FC = () => {
                   e.preventDefault();
                   setIsSavingProfile(true);
                   try {
-                    const res = await apiClient.updatePatientProfile(patId, {
+                    const res = await updatePatientProfile(patId, {
+                      name: editName.trim(),
+                      age: Number(editAge) || 35,
+                      gender: editGender,
                       bloodGroup: editBloodGroup,
                       allergies: editAllergies,
                       chronicConditions: editChronic,
@@ -1230,24 +1250,74 @@ export const PatientHome: React.FC = () => {
                 }}
                 className="p-5 bg-blue-50/50 border border-blue-200 rounded-xl space-y-4 text-xs"
               >
-                <h3 className="font-bold text-blue-950 text-sm">Update Allowed Medical Profile Information</h3>
+                <h3 className="font-bold text-blue-950 text-sm">
+                  {lang === 'ta' ? 'மருத்துவ சுயவிவர தகவலைப் புதுப்பிக்கவும்' : 'Update Patient Medical Profile Information'}
+                </h3>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">Blood Group:</label>
+                    <label className="font-bold text-slate-700 block mb-1">
+                      {lang === 'ta' ? 'நோயாளி பெயர்' : 'Full Name'} *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-900"
+                      placeholder="e.g. Ramesh Kumar"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">
+                      {lang === 'ta' ? 'வயது' : 'Age'} *
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min={1}
+                      max={120}
+                      value={editAge}
+                      onChange={(e) => setEditAge(e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-900"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">
+                      {lang === 'ta' ? 'பாலினம்' : 'Gender'} *
+                    </label>
+                    <select
+                      value={editGender}
+                      onChange={(e) => setEditGender(e.target.value as any)}
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-900"
+                    >
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">
+                      {lang === 'ta' ? 'இரத்த வகை' : 'Blood Group'}:
+                    </label>
                     <select
                       value={editBloodGroup}
                       onChange={(e) => setEditBloodGroup(e.target.value)}
                       className="w-full px-3 py-2 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-900"
                     >
-                      {['A+ve', 'A-ve', 'B+ve', 'B-ve', 'AB+ve', 'AB-ve', 'O+ve', 'O-ve'].map((bg) => (
+                      {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Unknown'].map((bg) => (
                         <option key={bg} value={bg}>{bg}</option>
                       ))}
                     </select>
                   </div>
 
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">Known Allergies (comma-separated):</label>
+                    <label className="font-bold text-slate-700 block mb-1">
+                      {lang === 'ta' ? 'அறிந்த ஒவ்வாமைகள்' : 'Known Allergies'}:
+                    </label>
                     <input
                       type="text"
                       value={editAllergies}
@@ -1258,7 +1328,9 @@ export const PatientHome: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">Chronic Conditions (comma-separated):</label>
+                    <label className="font-bold text-slate-700 block mb-1">
+                      {lang === 'ta' ? 'நாள்பட்ட பாதிப்புகள்' : 'Chronic Conditions'}:
+                    </label>
                     <input
                       type="text"
                       value={editChronic}
@@ -1275,7 +1347,7 @@ export const PatientHome: React.FC = () => {
                     onClick={() => setIsEditingProfile(false)}
                     className="px-4 py-2 border border-slate-300 rounded text-slate-700 hover:bg-slate-100 font-bold cursor-pointer"
                   >
-                    Cancel
+                    {lang === 'ta' ? 'ரத்து' : 'Cancel'}
                   </button>
                   <button
                     type="submit"
@@ -1283,7 +1355,7 @@ export const PatientHome: React.FC = () => {
                     className="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white rounded font-bold flex items-center gap-1.5 cursor-pointer shadow"
                   >
                     <Save className="w-3.5 h-3.5" />
-                    <span>{isSavingProfile ? 'Saving...' : 'Save Profile Changes'}</span>
+                    <span>{isSavingProfile ? (lang === 'ta' ? 'சேமிக்கிறது...' : 'Saving...') : (lang === 'ta' ? 'சுயவிவர மாற்றங்களைச் சேமி' : 'Save Profile Changes')}</span>
                   </button>
                 </div>
               </form>

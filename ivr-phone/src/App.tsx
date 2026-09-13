@@ -1,0 +1,239 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { PhoneChassis } from './components/PhoneChassis';
+import { IVRSession, IVRCallState } from './types';
+import { ivrClient } from './services/ivrClient';
+import { audioEngine } from './utils/audio';
+
+export const App: React.FC = () => {
+  const [session, setSession] = useState<IVRSession | null>(null);
+  const [callState, setCallState] = useState<IVRCallState>('IDLE');
+  const [callDuration, setCallDuration] = useState(0);
+  const [callerPhone] = useState('9876543210');
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [activeDigit, setActiveDigit] = useState<string | null>(null);
+
+  const timerRef = useRef<any>(null);
+  const ringbackCancelRef = useRef<any>(null);
+
+  // Connect WebSocket on mount for real-time consultation completion & stage updates
+  useEffect(() => {
+
+    const unsubSpeaking = audioEngine.onSpeakingChange((speaking) => {
+      setIsSpeaking(speaking);
+    });
+
+    // Realtime WebSocket listener for doctor consultation completion & stage updates
+    let ws: WebSocket | null = null;
+    try {
+      ws = new WebSocket('ws://localhost:4000/ws');
+      ws.onmessage = async (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          const relevantEvents = [
+            'CONSULTATION_COMPLETED',
+            'CONSULTATION_STARTED',
+            'PATIENT_CALLED',
+            'DIAGNOSTIC_COMPLETED',
+            'PHARMACY_COMPLETED',
+            'PHARMACY_UPDATED',
+            'QUEUE_UPDATED',
+          ];
+
+          if (data.event && relevantEvents.includes(data.event)) {
+            const statusInfo = await ivrClient.checkStatus(callerPhone, session?.language || 'en');
+            if (statusInfo && statusInfo.hasToken) {
+              setSession((prev) => {
+                if (!prev) return prev;
+                return {
+                  ...prev,
+                  currentStage: statusInfo.currentStage,
+                  isCompleted: statusInfo.isCompleted,
+                  stageTitle: statusInfo.stageTitle,
+                  diagnosis: statusInfo.diagnosis,
+                  doctorName: statusInfo.doctorName,
+                  queueStatus: statusInfo.queueStatus,
+                  generatedToken: statusInfo.token,
+                  peopleAhead: statusInfo.peopleAhead,
+                  estimatedWaitMinutes: statusInfo.waitMinutes,
+                  lastSpokenText: (prev.state === 'CHECK_STATUS' || prev.state === 'REPEAT_TOKEN') ? statusInfo.message : prev.lastSpokenText,
+                };
+              });
+            }
+          }
+        } catch {}
+      };
+    } catch (wsErr) {
+      console.warn('Phone WebSocket sync init warning:', wsErr);
+    }
+
+    return () => {
+      unsubSpeaking();
+      if (ws) ws.close();
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (ringbackCancelRef.current) ringbackCancelRef.current();
+      audioEngine.stopSpeaking();
+    };
+  }, [callerPhone, session?.language]);
+
+  // Handle call timer ticking
+  useEffect(() => {
+    const isInCall = callState !== 'IDLE' && callState !== 'CALLING' && callState !== 'CALL_ENDED';
+    if (isInCall) {
+      if (!timerRef.current) {
+        setCallDuration(0);
+        timerRef.current = setInterval(() => {
+          setCallDuration((prev) => prev + 1);
+        }, 1000);
+      }
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+  }, [callState]);
+
+  // Action: Start Call
+  const handleStartCall = async () => {
+    try {
+      setCallState('CALLING');
+      setCallDuration(0);
+
+      // Play ringing sound
+      const stopRinging = audioEngine.playRingbackTone();
+      ringbackCancelRef.current = stopRinging;
+
+      // Make API call
+      const res = await ivrClient.startCall(callerPhone, 'en');
+
+      // Simulate 1.2s connection delay for realism
+      setTimeout(() => {
+        if (ringbackCancelRef.current) {
+          ringbackCancelRef.current();
+          ringbackCancelRef.current = null;
+        }
+
+        setSession(res.session);
+        setCallState(res.state);
+
+        // Speak aloud
+        audioEngine.speak(res.spokenText, res.language);
+      }, 1200);
+    } catch (err: any) {
+      console.error('Failed to start call:', err);
+      if (ringbackCancelRef.current) ringbackCancelRef.current();
+      setCallState('IDLE');
+      alert(`Could not connect to IVR server on port 4000: ${err.message}`);
+    }
+  };
+
+  // Action: Keypress DTMF
+  const handleKeyPress = async (digit: string) => {
+    if (!session) return;
+
+    // Visual Flash
+    setActiveDigit(digit);
+    setTimeout(() => setActiveDigit(null), 350);
+
+    try {
+      const res = await ivrClient.sendDtmf(session.sessionId, digit);
+      if (res.success) {
+        setSession(res.session);
+        setCallState(res.state);
+
+        // Speak response aloud
+        audioEngine.speak(res.spokenText, res.language);
+      }
+    } catch (err) {
+      console.error('Keypress error:', err);
+    }
+  };
+
+  // Action: Symptom Speech Submission
+  const handleSymptomSubmit = async (transcript: string) => {
+    if (!session) return;
+
+    try {
+      const res = await ivrClient.sendSymptom(session.sessionId, transcript);
+      if (res.success) {
+        setSession(res.session);
+        setCallState(res.state);
+
+        // Speak response aloud
+        audioEngine.speak(res.spokenText, res.language);
+      }
+    } catch (err) {
+      console.error('Symptom submit error:', err);
+    }
+  };
+
+  // Action: End Call
+  const handleEndCall = async () => {
+    audioEngine.stopSpeaking();
+    if (ringbackCancelRef.current) {
+      ringbackCancelRef.current();
+      ringbackCancelRef.current = null;
+    }
+
+    if (session) {
+      try {
+        await ivrClient.endCall(session.sessionId);
+      } catch {}
+    }
+
+    setCallState('CALL_ENDED');
+  };
+
+  // Action: Repeat Voice Prompt
+  const handleRepeatVoice = () => {
+    if (session?.lastSpokenText) {
+      audioEngine.speak(session.lastSpokenText, session.language);
+    }
+  };
+
+  // Action: Toggle Audio Mute
+  const handleToggleMute = () => {
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    audioEngine.setMuted(nextMuted);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#020617] text-slate-100 flex flex-col justify-between selection:bg-teal-500 selection:text-white">
+      {/* Clean Minimal Top Header */}
+      <header className="pt-6 pb-2 px-6 flex flex-col items-center justify-center text-center">
+        <h1 className="text-xl font-bold tracking-tight text-white font-serif">
+          GH-QueueFlow
+        </h1>
+        <p className="text-xs text-teal-400 font-medium tracking-wide mt-0.5">
+          Telephone IVR Service
+        </p>
+      </header>
+
+      {/* Main Stage: Center Phone Device as Hero Element */}
+      <main className="flex-1 flex items-center justify-center px-4 py-2">
+        <PhoneChassis
+          session={session}
+          callState={callState}
+          callDuration={callDuration}
+          isSpeaking={isSpeaking}
+          activeDigit={activeDigit}
+          isMuted={isMuted}
+          onToggleMute={handleToggleMute}
+          onKeyPress={handleKeyPress}
+          onStartCall={handleStartCall}
+          onEndCall={handleEndCall}
+          onRepeatVoice={handleRepeatVoice}
+          onSymptomSubmit={handleSymptomSubmit}
+          callerPhone={callerPhone}
+        />
+      </main>
+
+      {/* Subtle Clean Minimal Footer */}
+      <footer className="pb-4 pt-1 text-center text-[11px] text-slate-600">
+        Government Hospital Queue Management System • Telephone IVR Service
+      </footer>
+    </div>
+  );
+};

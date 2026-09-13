@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "phone": "vite --config ivr-phone/vite.config.ts ivr-phone --port 5175",
     "server": "tsx server/index.ts",
     "build": "tsc -b && vite build",
     "preview": "vite preview",

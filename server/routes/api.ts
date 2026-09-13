@@ -677,6 +677,9 @@ apiRouter.put('/patients/:id/profile', (req: Request, res: Response) => {
       ...(chronicConditions !== undefined && { chronicConditions: parseList(chronicConditions) }),
     });
 
+    broadcastEvent('PATIENT_UPDATED', { patient: updated });
+    broadcastEvent('QUEUE_UPDATED', {});
+
     res.json({
       success: true,
       message: 'Patient profile updated successfully',

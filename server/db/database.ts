@@ -404,7 +404,9 @@ export class DatabaseEngine {
     const deptId = journey.currentDepartmentId;
     const dept = this.getDepartmentById(deptId);
     const doctor = journey.doctorId ? this.getUserById(journey.doctorId) : this.getDoctors().find(d => d.departmentId === deptId);
-    const queue = journey.doctorId ? this.getDoctorQueue(journey.doctorId) : this.getDepartmentQueue(deptId);
+    const queue = (journey.currentStage === 'doctor' && journey.doctorId)
+      ? this.getDoctorQueue(journey.doctorId)
+      : this.getDepartmentQueue(deptId);
     const myEntry = queue.find((q) => q.journeyId === journeyId);
 
     // Find currently serving token for this department queue

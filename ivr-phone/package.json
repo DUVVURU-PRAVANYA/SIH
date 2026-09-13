@@ -1,0 +1,11 @@
+{
+  "name": "gh-queueflow-ivr-phone",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5175",
+    "build": "vite build",
+    "preview": "vite preview --port 5175"
+  }
+}

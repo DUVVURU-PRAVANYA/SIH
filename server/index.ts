@@ -21,8 +21,11 @@ if (db.getRawData().hospitals.length === 0) {
   seedDatabase();
 }
 
+import { ivrRouter } from './ivr/ivr.routes';
+
 // Mount REST API
 app.use('/api', apiRouter);
+app.use('/api/ivr', ivrRouter);
 
 app.get('/health', (req, res) => {
   res.json({

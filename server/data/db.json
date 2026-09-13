@@ -422,6 +422,16 @@
   "auditLogs": [],
   "sequences": {
     "journeyCount": 0,
-    "tokens": {}
+    "tokens": {
+      "CARDIO": 0,
+      "GENMED": 0,
+      "ORTHO": 0,
+      "DERMA": 0,
+      "X-RAY": 0,
+      "LAB": 0,
+      "CT": 0,
+      "PHARM": 0,
+      "REG": 0
+    }
   }
 }

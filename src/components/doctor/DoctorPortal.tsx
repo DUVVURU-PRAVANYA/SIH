@@ -658,6 +658,7 @@ export const DoctorPortal: React.FC = () => {
                   </div>
 
                   <button
+                    type="button"
                     onClick={() => setActiveTab('profile')}
                     className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-300 transition-colors cursor-pointer"
                   >
