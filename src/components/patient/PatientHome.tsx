@@ -292,10 +292,16 @@ export const PatientHome: React.FC = () => {
       <div className="bg-[#0b2545] text-white px-4 py-4 sm:py-5 shadow-sm border-b border-slate-700">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-xs text-teal-300 font-medium mb-1">
-              <span>{lang === 'ta' ? 'அரசு தலைமை மருத்துவமனை' : 'Government Hospital Patient Portal'}</span>
-              <span>•</span>
-              <span>{lang === 'ta' ? 'நேரடி தரவுத்தள இணைப்பு' : 'Real Database Connected'}</span>
+            <div className="flex items-center gap-2 text-xs text-teal-300 font-medium mb-1.5">
+              <Building2 className="w-4 h-4 text-teal-400 shrink-0" />
+              <span className="font-semibold tracking-wide">
+                {lang === 'ta' ? 'அரசு தலைமை மருத்துவமனை • புறநோயாளிகள் பிரிவு' : 'Government Headquarter Hospital • OPD Portal'}
+              </span>
+              <span className="text-teal-500">•</span>
+              <span className="inline-flex items-center gap-1 text-[11px] bg-teal-950/70 border border-teal-500/40 text-teal-200 px-2 py-0.5 rounded-full font-sans">
+                <ShieldCheck className="w-3 h-3 text-teal-300" />
+                <span>{lang === 'ta' ? 'அங்கீகரிக்கப்பட்ட சேவை' : 'Official Portal'}</span>
+              </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-bold font-serif tracking-tight text-white flex items-center gap-2">
               <span>
@@ -307,7 +313,7 @@ export const PatientHome: React.FC = () => {
             </h1>
             <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300 mt-1.5">
               <span>
-                Age:{' '}
+                {lang === 'ta' ? 'வயது' : 'Age'}:{' '}
                 <strong className={currentPat?.age && currentPat.age > 0 ? 'text-white font-bold' : 'text-amber-300 font-bold'}>
                   {currentPat?.age && currentPat.age > 0
                     ? `${currentPat.age} yrs`
@@ -317,26 +323,21 @@ export const PatientHome: React.FC = () => {
               </span>
               <span>•</span>
               <span>
-                Blood Group:{' '}
+                {lang === 'ta' ? 'இரத்த வகை' : 'Blood Group'}:{' '}
                 <strong className={currentPat?.bloodGroup && currentPat.bloodGroup !== 'Not Specified' ? 'text-white font-bold' : 'text-amber-300 font-bold'}>
                   {currentPat?.bloodGroup && currentPat.bloodGroup !== 'Not Specified'
                     ? currentPat.bloodGroup
                     : (lang === 'ta' ? 'பதிவு செய்யப்படவில்லை' : 'Not Recorded')}
                 </strong>
               </span>
-              <span>•</span>
-              <span>
-                Mobile: <strong className="text-white">+91 {currentPat?.phone}</strong>
-              </span>
-              <span>•</span>
-              <span>
-                Allergies:{' '}
-                <strong className="text-amber-300">
-                  {currentPat?.allergies?.length
-                    ? currentPat.allergies.join(', ')
-                    : (lang === 'ta' ? 'எதுவுமில்லை' : 'None Reported')}
-                </strong>
-              </span>
+              {currentPat?.allergies && currentPat.allergies.length > 0 && !currentPat.allergies.includes('None Reported') && (
+                <>
+                  <span>•</span>
+                  <span className="text-amber-300">
+                    Allergies: <strong className="font-bold">{currentPat.allergies.join(', ')}</strong>
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
@@ -700,11 +701,6 @@ export const PatientHome: React.FC = () => {
                       <Clock className="w-4 h-4 text-blue-800" />
                       <span>{lang === 'ta' ? 'உங்களுக்கு முன்னுள்ள வரிசை' : 'QUEUE AHEAD OF YOU'}</span>
                     </h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      {lang === 'ta'
-                        ? 'நேரடி தரவுத்தள வரிசை நிலவரம் • தனிப்பட்ட விவரங்கள் பாதுகாக்கப்படுகின்றன'
-                        : 'Live entries currently ahead of your token in this department. Privacy-protected.'}
-                    </p>
                   </div>
                   <div className="text-xs font-semibold text-slate-600">
                     <span>Position: </span>
@@ -790,33 +786,24 @@ export const PatientHome: React.FC = () => {
                   </span>
                 </div>
               </div>
-
-              {/* Real-Time Sync Notice */}
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600 flex items-center gap-2">
-                <Info className="w-4 h-4 text-blue-700 shrink-0" />
-                <span>
-                  {lang === 'ta'
-                    ? 'மருத்துவர் அடுத்த நோயாளியை அழைக்கும் போது அல்லது பரிசோதனை முடிக்கும் போது இந்த வரிசை நிலை தானாகவே புதுப்பிக்கப்படும்.'
-                    : 'This live queue automatically updates as the doctor calls patients and completes consultations in the database.'}
-                </span>
-              </div>
             </div>
           </div>
         )}
 
         {/* ========================================================= */}
-        {/* SECTION 2: MY JOURNEY (Dynamically Generated Steps) */}
+        {/* SECTION 2: MY JOURNEY */}
         {/* ========================================================= */}
         {activeSection === 'journey' && (
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
             <div className="border-b border-slate-200 pb-3">
-              <h2 className="text-lg font-bold text-slate-900 font-serif">
-                {lang === 'ta' ? 'மருத்துவமனை வருகை பணிப்பாதை' : 'Hospital Patient Journey Tracker'}
+              <h2 className="text-lg font-bold text-slate-900 font-serif flex items-center gap-2">
+                <Activity className="w-5 h-5 text-blue-900" />
+                <span>{lang === 'ta' ? 'மருத்துவமனை வருகை பணிப்பாதை' : 'Hospital Patient Journey Tracker'}</span>
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 mt-0.5">
                 {lang === 'ta'
-                  ? 'உங்கள் தற்போதைய மருத்துவமனை வருகை நிலைகளின்படி மட்டுமே காட்டப்படுகிறது'
-                  : 'Dynamically generated from your actual database visit. Only assigned stages are displayed.'}
+                  ? 'மருத்துவர் ஆலோசனை, ஆய்வகம் மற்றும் மருந்தக நிலைகளை நேரலையில் கண்காணிக்கவும்'
+                  : 'Real-time progress for your consultation, diagnostics, and medication pickup.'}
               </p>
             </div>
 
@@ -882,13 +869,14 @@ export const PatientHome: React.FC = () => {
         {activeSection === 'reports' && (
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
             <div className="border-b border-slate-200 pb-3">
-              <h2 className="text-lg font-bold text-slate-900 font-serif">
-                {lang === 'ta' ? 'ஆய்வக & ஸ்கேன் அறிக்கைகள்' : 'Laboratory & Diagnostic Reports'}
+              <h2 className="text-lg font-bold text-slate-900 font-serif flex items-center gap-2">
+                <FlaskConical className="w-5 h-5 text-emerald-800" />
+                <span>{lang === 'ta' ? 'ஆய்வக & ஸ்கேன் அறிக்கைகள்' : 'Laboratory & Diagnostic Reports'}</span>
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 mt-0.5">
                 {lang === 'ta'
-                  ? 'மருத்துவரால் பரிந்துரைக்கப்பட்ட பரிசோதனைகளின் நேரடி முடிவுகள்'
-                  : 'Diagnostic test requests, statuses, and clinical reports from the hospital database'}
+                  ? 'மருத்துவரால் பரிந்துரைக்கப்பட்ட பரிசோதனைகளின் அதிகாரப்பூர்வ முடிவுகள்'
+                  : 'Official diagnostic scan and laboratory investigation reports.'}
               </p>
             </div>
 
@@ -1259,11 +1247,12 @@ export const PatientHome: React.FC = () => {
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
             <div className="border-b border-slate-200 pb-3 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-bold text-slate-900 font-serif">
-                  {lang === 'ta' ? 'நோயாளி சுயவிவரம்' : 'Patient Profile'}
+                <h2 className="text-lg font-bold text-slate-900 font-serif flex items-center gap-2">
+                  <User className="w-5 h-5 text-blue-900" />
+                  <span>{lang === 'ta' ? 'நோயாளி சுயவிவரம்' : 'Patient Profile'}</span>
                 </h2>
-                <p className="text-xs text-slate-500">
-                  {lang === 'ta' ? 'அங்கீகரிக்கப்பட்ட நோயாளி விவரங்கள் • நிரந்தர பதிவு' : 'Permanent hospital patient record in database'}
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {lang === 'ta' ? 'மருத்துவமனை அங்கீகரிக்கப்பட்ட நோயாளி பதிவு' : 'Hospital Registered OPD Patient Record'}
                 </p>
               </div>
               <div className="flex items-center gap-2">

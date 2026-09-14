@@ -403,7 +403,8 @@ export const DoctorPortal: React.FC = () => {
     setPrescriptions(prescriptions.filter((m) => m.id !== id));
   };
 
-  // Diagnostic Investigations & Scans (empty by default unless ordered by doctor)
+  // Diagnostic Investigations & Scans (collapsed by default so tablets are prominently visible)
+  const [orderDiagnosticInvestigations, setOrderDiagnosticInvestigations] = useState(false);
   const [selectedLabTests, setSelectedLabTests] = useState<string[]>([]);
   const [labPriority, setLabPriority] = useState<'routine' | 'urgent'>('routine');
   const [labSchedule, setLabSchedule] = useState<'today' | 'next_day'>('today');
@@ -424,6 +425,7 @@ export const DoctorPortal: React.FC = () => {
   const handleStartConsultation = (pId: string) => {
     setSelectedPatientId(pId);
     setActivePatientId(pId);
+    setOrderDiagnosticInvestigations(false);
     startConsultation(pId);
     setActiveTab('consultation');
   };
@@ -522,6 +524,7 @@ export const DoctorPortal: React.FC = () => {
       );
 
       // Advance to next patient if available
+      setOrderDiagnosticInvestigations(false);
       const remaining = opdPatients.filter((p) => p.id !== patientToSubmit);
       if (remaining.length > 0) {
         setSelectedPatientId(remaining[0].id);
@@ -1172,197 +1175,239 @@ export const DoctorPortal: React.FC = () => {
                     </div>
                   </div>
 
-                {/* DIAGNOSTIC INVESTIGATIONS & SCANS */}
-                <div className="p-4 bg-emerald-50/60 border border-emerald-300 rounded-lg space-y-4">
-                  <div className="flex items-center justify-between border-b border-emerald-200 pb-2">
-                    <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
-                      <FlaskConical className="w-4 h-4 text-emerald-700" />
-                      <span>DIAGNOSTIC INVESTIGATIONS & SCANS</span>
-                    </span>
-                    <div className="flex items-center gap-2 text-xs">
-                      <select
-                        value={labPriority}
-                        onChange={(e) => setLabPriority(e.target.value as any)}
-                        className="px-2 py-1 bg-white border border-emerald-300 rounded text-xs"
-                      >
-                        <option value="routine">Routine Priority</option>
-                        <option value="urgent">Urgent Priority</option>
-                      </select>
-                      <select
-                        value={labSchedule}
-                        onChange={(e) => setLabSchedule(e.target.value as any)}
-                        className="px-2 py-1 bg-white border border-emerald-300 rounded text-xs"
-                      >
-                        <option value="today">Perform Today</option>
-                        <option value="next_day">Schedule Next Day</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Lab Test Checkboxes */}
-                  <div>
-                    <div className="text-[11px] font-bold text-emerald-950 mb-2">Select Pathology & Biochemistry Tests:</div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                      {[
-                        'Fasting Blood Sugar (FBS)',
-                        'Postprandial Blood Sugar (PPBS)',
-                        'HbA1c Glycated Hemoglobin',
-                        'Complete Blood Count (CBC)',
-                        'Serum Electrolytes',
-                        'Routine Urine Analysis',
-                      ].map((tName) => (
-                        <label key={tName} className="flex items-center gap-2 cursor-pointer text-slate-800">
-                          <input
-                            type="checkbox"
-                            checked={selectedLabTests.includes(tName)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setSelectedLabTests([...selectedLabTests, tName]);
-                              } else {
-                                setSelectedLabTests(selectedLabTests.filter((x) => x !== tName));
-                              }
-                            }}
-                            className="rounded text-emerald-600 focus:ring-emerald-500"
-                          />
-                          <span>{tName}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Radiology / Scan Selection with full modalities & multi-procedures */}
-                  <div className="pt-2 border-t border-emerald-200">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                      <label className="text-xs font-bold text-emerald-950 flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={requestDiagnostic}
-                          onChange={(e) => {
-                            setRequestDiagnostic(e.target.checked);
-                            if (!e.target.checked) setSelectedScans([]);
-                          }}
-                          className="rounded text-emerald-600"
-                        />
-                        <span>
-                          Order Diagnostic Scan / Imaging {selectedScans.length > 0 && `(${selectedScans.length} selected)`}
+                {/* DIAGNOSTIC INVESTIGATIONS & SCANS (Expandable on Checkbox Toggle) */}
+                <div className="border border-emerald-300 rounded-lg overflow-hidden bg-white shadow-xs">
+                  <div
+                    onClick={() => {
+                      const next = !orderDiagnosticInvestigations;
+                      setOrderDiagnosticInvestigations(next);
+                      if (!next) {
+                        setSelectedLabTests([]);
+                        setRequestDiagnostic(false);
+                        setSelectedScans([]);
+                      }
+                    }}
+                    className={`p-3.5 flex items-center justify-between cursor-pointer transition-colors ${
+                      orderDiagnosticInvestigations ? 'bg-emerald-50 border-b border-emerald-200' : 'bg-slate-50/80 hover:bg-slate-100/80'
+                    }`}
+                  >
+                    <label className="flex items-center gap-2.5 cursor-pointer pointer-events-none">
+                      <input
+                        type="checkbox"
+                        checked={orderDiagnosticInvestigations}
+                        onChange={() => {}}
+                        className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer"
+                      />
+                      <div className="flex items-center gap-1.5">
+                        <FlaskConical className="w-4 h-4 text-emerald-700" />
+                        <span className="text-xs font-bold text-slate-900">
+                          DIAGNOSTIC INVESTIGATIONS & SCANS
                         </span>
-                      </label>
+                        {(selectedLabTests.length > 0 || selectedScans.length > 0) && (
+                          <span className="ml-2 text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full">
+                            {selectedLabTests.length + selectedScans.length} selected
+                          </span>
+                        )}
+                      </div>
+                    </label>
+                    <span className="text-[11px] font-semibold text-emerald-800">
+                      {orderDiagnosticInvestigations ? '▼ Click to collapse' : '+ Click to add Lab Tests or Scans'}
+                    </span>
+                  </div>
 
-                      {requestDiagnostic && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-[11px] text-emerald-900 font-bold">Modality:</span>
+                  {orderDiagnosticInvestigations && (
+                    <div className="p-4 bg-emerald-50/50 space-y-4">
+                      <div className="flex items-center justify-between border-b border-emerald-200 pb-2">
+                        <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                          <FlaskConical className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>Investigation Priority & Schedule</span>
+                        </span>
+                        <div className="flex items-center gap-2 text-xs">
                           <select
-                            value={diagnosticModality}
-                            onChange={(e) => handleModalityChange(e.target.value as any)}
-                            className="px-2.5 py-1 bg-white border border-emerald-300 rounded text-xs font-semibold text-emerald-950"
+                            value={labPriority}
+                            onChange={(e) => setLabPriority(e.target.value as any)}
+                            className="px-2 py-1 bg-white border border-emerald-300 rounded text-xs"
                           >
-                            <option value="x-ray">Digital X-Ray</option>
-                            <option value="ultrasound">Ultrasound (USG)</option>
-                            <option value="ct">CT Scan</option>
-                            <option value="mri">MRI Scan</option>
-                            <option value="specialty">Specialty / Dermatology Diagnostic</option>
+                            <option value="routine">Routine Priority</option>
+                            <option value="urgent">Urgent Priority</option>
+                          </select>
+                          <select
+                            value={labSchedule}
+                            onChange={(e) => setLabSchedule(e.target.value as any)}
+                            className="px-2 py-1 bg-white border border-emerald-300 rounded text-xs"
+                          >
+                            <option value="today">Perform Today</option>
+                            <option value="next_day">Schedule Next Day</option>
                           </select>
                         </div>
-                      )}
-                    </div>
+                      </div>
 
-                    {requestDiagnostic && (
-                      <div className="space-y-3 mt-2 bg-white p-3.5 rounded-lg border border-emerald-200">
-                        {/* Selected Scans Summary Tags */}
-                        {selectedScans.length > 0 && (
-                          <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-md">
-                            <span className="text-[11px] font-bold text-emerald-900 block mb-1.5">
-                              Prescribed Scans ({selectedScans.length}):
+                      {/* Lab Test Checkboxes */}
+                      <div>
+                        <div className="text-[11px] font-bold text-emerald-950 mb-2">Select Pathology & Biochemistry Tests:</div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                          {[
+                            'Fasting Blood Sugar (FBS)',
+                            'Postprandial Blood Sugar (PPBS)',
+                            'HbA1c Glycated Hemoglobin',
+                            'Complete Blood Count (CBC)',
+                            'Serum Electrolytes',
+                            'Routine Urine Analysis',
+                          ].map((tName) => (
+                            <label key={tName} className="flex items-center gap-2 cursor-pointer text-slate-800">
+                              <input
+                                type="checkbox"
+                                checked={selectedLabTests.includes(tName)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedLabTests([...selectedLabTests, tName]);
+                                  } else {
+                                    setSelectedLabTests(selectedLabTests.filter((x) => x !== tName));
+                                  }
+                                }}
+                                className="rounded text-emerald-600 focus:ring-emerald-500"
+                              />
+                              <span>{tName}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Radiology / Scan Selection with full modalities & multi-procedures */}
+                      <div className="pt-2 border-t border-emerald-200">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                          <label className="text-xs font-bold text-emerald-950 flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={requestDiagnostic}
+                              onChange={(e) => {
+                                setRequestDiagnostic(e.target.checked);
+                                if (!e.target.checked) setSelectedScans([]);
+                              }}
+                              className="rounded text-emerald-600"
+                            />
+                            <span>
+                              Order Diagnostic Scan / Imaging {selectedScans.length > 0 && `(${selectedScans.length} selected)`}
                             </span>
-                            <div className="flex flex-wrap gap-1.5">
-                              {selectedScans.map((scan) => (
-                                <span
-                                  key={scan}
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-700 text-white shadow-xs"
-                                >
-                                  <span>{scan}</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => setSelectedScans(selectedScans.filter((s) => s !== scan))}
-                                    className="hover:text-emerald-200 cursor-pointer font-bold text-xs ml-0.5"
-                                  >
-                                    ✕
-                                  </button>
+                          </label>
+
+                          {requestDiagnostic && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-[11px] text-emerald-900 font-bold">Modality:</span>
+                              <select
+                                value={diagnosticModality}
+                                onChange={(e) => handleModalityChange(e.target.value as any)}
+                                className="px-2.5 py-1 bg-white border border-emerald-300 rounded text-xs font-semibold text-emerald-950"
+                              >
+                                <option value="x-ray">Digital X-Ray</option>
+                                <option value="ultrasound">Ultrasound (USG)</option>
+                                <option value="ct">CT Scan</option>
+                                <option value="mri">MRI Scan</option>
+                                <option value="specialty">Specialty / Dermatology Diagnostic</option>
+                              </select>
+                            </div>
+                          )}
+                        </div>
+
+                        {requestDiagnostic && (
+                          <div className="space-y-3 mt-2 bg-white p-3.5 rounded-lg border border-emerald-200">
+                            {/* Selected Scans Summary Tags */}
+                            {selectedScans.length > 0 && (
+                              <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-md">
+                                <span className="text-[11px] font-bold text-emerald-900 block mb-1.5">
+                                  Prescribed Scans ({selectedScans.length}):
                                 </span>
-                              ))}
+                                <div className="flex flex-wrap gap-1.5">
+                                  {selectedScans.map((scan) => (
+                                    <span
+                                      key={scan}
+                                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-700 text-white shadow-xs"
+                                    >
+                                      <span>{scan}</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => setSelectedScans(selectedScans.filter((s) => s !== scan))}
+                                        className="hover:text-emerald-200 cursor-pointer font-bold text-xs ml-0.5"
+                                      >
+                                        ✕
+                                      </button>
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Available Procedures Grid */}
+                            <div>
+                              <span className="text-[11px] font-bold text-slate-700 block mb-1.5">
+                                Click to select scans ({DIAGNOSTIC_IMAGING_CATALOG[diagnosticModality]?.label}):
+                              </span>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                                {(DIAGNOSTIC_IMAGING_CATALOG[diagnosticModality]?.procedures || []).map((proc) => {
+                                  const isChecked = selectedScans.includes(proc);
+                                  return (
+                                    <button
+                                      key={proc}
+                                      type="button"
+                                      onClick={() => {
+                                        if (isChecked) {
+                                          setSelectedScans(selectedScans.filter((s) => s !== proc));
+                                        } else {
+                                          setSelectedScans([...selectedScans, proc]);
+                                        }
+                                      }}
+                                      className={`px-2.5 py-1.5 rounded text-xs border text-left flex items-center justify-between cursor-pointer transition-all ${
+                                        isChecked
+                                          ? 'bg-emerald-700 text-white border-emerald-800 font-semibold shadow-xs'
+                                          : 'bg-emerald-50/70 text-slate-800 border-emerald-200 hover:bg-emerald-100/80'
+                                      }`}
+                                    >
+                                      <span>{proc}</span>
+                                      <span className="text-xs font-bold ml-2">
+                                        {isChecked ? '✓' : '+'}
+                                      </span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* Custom Scan / Specific View Entry */}
+                            <div className="pt-2 border-t border-slate-100 flex gap-2">
+                              <input
+                                type="text"
+                                value={customScanInput}
+                                onChange={(e) => setCustomScanInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    if (customScanInput.trim() && !selectedScans.includes(customScanInput.trim())) {
+                                      setSelectedScans([...selectedScans, customScanInput.trim()]);
+                                      setCustomScanInput('');
+                                    }
+                                  }
+                                }}
+                                placeholder="Type custom scan name..."
+                                className="flex-1 px-3 py-1.5 text-xs bg-white border border-emerald-300 rounded font-medium outline-none focus:border-emerald-600"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (customScanInput.trim() && !selectedScans.includes(customScanInput.trim())) {
+                                    setSelectedScans([...selectedScans, customScanInput.trim()]);
+                                    setCustomScanInput('');
+                                  }
+                                }}
+                                className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded text-xs font-bold cursor-pointer"
+                              >
+                                + Add Scan
+                              </button>
                             </div>
                           </div>
                         )}
-
-                        {/* Available Procedures Grid */}
-                        <div>
-                          <span className="text-[11px] font-bold text-slate-700 block mb-1.5">
-                            Click to select scans ({DIAGNOSTIC_IMAGING_CATALOG[diagnosticModality]?.label}):
-                          </span>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                            {(DIAGNOSTIC_IMAGING_CATALOG[diagnosticModality]?.procedures || []).map((proc) => {
-                              const isChecked = selectedScans.includes(proc);
-                              return (
-                                <button
-                                  key={proc}
-                                  type="button"
-                                  onClick={() => {
-                                    if (isChecked) {
-                                      setSelectedScans(selectedScans.filter((s) => s !== proc));
-                                    } else {
-                                      setSelectedScans([...selectedScans, proc]);
-                                    }
-                                  }}
-                                  className={`px-2.5 py-1.5 rounded text-xs border text-left flex items-center justify-between cursor-pointer transition-all ${
-                                    isChecked
-                                      ? 'bg-emerald-700 text-white border-emerald-800 font-semibold shadow-xs'
-                                      : 'bg-emerald-50/70 text-slate-800 border-emerald-200 hover:bg-emerald-100/80'
-                                  }`}
-                                >
-                                  <span>{proc}</span>
-                                  <span className="text-xs font-bold ml-2">
-                                    {isChecked ? '✓' : '+'}
-                                  </span>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-
-                        {/* Custom Scan / Specific View Entry */}
-                        <div className="pt-2 border-t border-slate-100 flex gap-2">
-                          <input
-                            type="text"
-                            value={customScanInput}
-                            onChange={(e) => setCustomScanInput(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                if (customScanInput.trim() && !selectedScans.includes(customScanInput.trim())) {
-                                  setSelectedScans([...selectedScans, customScanInput.trim()]);
-                                  setCustomScanInput('');
-                                }
-                              }
-                            }}
-                            placeholder="Type custom scan name..."
-                            className="flex-1 px-3 py-1.5 text-xs bg-white border border-emerald-300 rounded font-medium outline-none focus:border-emerald-600"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (customScanInput.trim() && !selectedScans.includes(customScanInput.trim())) {
-                                setSelectedScans([...selectedScans, customScanInput.trim()]);
-                                setCustomScanInput('');
-                              }
-                            }}
-                            className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded text-xs font-bold cursor-pointer"
-                          >
-                            + Add Scan
-                          </button>
-                        </div>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Submit Action Button */}

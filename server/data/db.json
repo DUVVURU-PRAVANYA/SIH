@@ -470,12 +470,12 @@
   "journeys": [
     {
       "patientId": "GH-P-15130",
-      "doctorId": "usr-doc-1",
+      "doctorId": "usr-doc-2",
       "hospitalId": "hosp-grh-01",
       "initialDepartmentId": "dept-genmed",
       "currentDepartmentId": "dept-genmed",
       "currentStage": "doctor",
-      "currentToken": "GENMED-006",
+      "currentToken": "GENMED-007",
       "symptoms": "IVR Telephone Token",
       "status": "active",
       "priority": "normal",
@@ -485,8 +485,29 @@
         "temp": "98.4 °F",
         "spo2": "99%"
       },
+      "id": "JNY-20260914-00009",
+      "createdAt": "2026-09-14T18:00:19.832Z"
+    },
+    {
+      "patientId": "GH-P-15130",
+      "doctorId": "usr-doc-1",
+      "hospitalId": "hosp-grh-01",
+      "initialDepartmentId": "dept-genmed",
+      "currentDepartmentId": "dept-genmed",
+      "currentStage": "doctor",
+      "currentToken": "GENMED-006",
+      "symptoms": "IVR Telephone Token",
+      "status": "completed",
+      "priority": "normal",
+      "vitals": {
+        "bp": "120/80 mmHg",
+        "pulse": "76 bpm",
+        "temp": "98.4 °F",
+        "spo2": "99%"
+      },
       "id": "JNY-20260914-00008",
-      "createdAt": "2026-09-14T11:40:46.280Z"
+      "createdAt": "2026-09-14T11:40:46.280Z",
+      "completedAt": "2026-09-14T18:00:19.829Z"
     },
     {
       "patientId": "GH-P-15130",
@@ -753,6 +774,21 @@
       "notes": "Chief complaint: IVR Telephone Token",
       "id": "STG-04628198",
       "createdAt": "2026-09-14T11:40:46.281Z"
+    },
+    {
+      "journeyId": "JNY-20260914-00009",
+      "stageType": "doctor",
+      "departmentId": "dept-genmed",
+      "tokenNumber": "GENMED-007",
+      "sequenceNum": 1,
+      "status": "waiting",
+      "roomNumber": "General Medicine OPD",
+      "blockName": "Block B",
+      "floorName": "Ground Floor",
+      "color": "blue",
+      "notes": "Chief complaint: IVR Telephone Token",
+      "id": "STG-81983382",
+      "createdAt": "2026-09-14T18:00:19.833Z"
     }
   ],
   "queueEntries": [
@@ -859,10 +895,24 @@
       "patientId": "GH-P-15130",
       "tokenNumber": "GENMED-006",
       "sequenceNum": 4,
-      "status": "waiting",
+      "status": "completed",
       "priority": "normal",
       "id": "QE-04628371",
-      "createdAt": "2026-09-14T11:40:46.283Z"
+      "createdAt": "2026-09-14T11:40:46.283Z",
+      "completedAt": "2026-09-14T18:00:19.829Z"
+    },
+    {
+      "departmentId": "dept-genmed",
+      "doctorId": "usr-doc-2",
+      "journeyId": "JNY-20260914-00009",
+      "journeyStageId": "STG-81983382",
+      "patientId": "GH-P-15130",
+      "tokenNumber": "GENMED-007",
+      "sequenceNum": 4,
+      "status": "waiting",
+      "priority": "normal",
+      "id": "QE-81983561",
+      "createdAt": "2026-09-14T18:00:19.835Z"
     }
   ],
   "consultations": [],
@@ -870,6 +920,18 @@
   "pharmacyOrders": [],
   "phcReferrals": [],
   "notifications": [
+    {
+      "targetRole": "patient",
+      "targetJourneyId": "JNY-20260914-00009",
+      "title": "IVR Token Issued",
+      "titleTa": "IVR தொலைபேசி டோக்கன் வழங்கப்பட்டது",
+      "message": "Token GENMED-007 generated via IVR phone helpline. 1 patients ahead.",
+      "messageTa": "தொலைபேசி வழியாக டோக்கன் GENMED-007 உருவாக்கப்பட்டது. உங்களுக்கு முன் 1 நோயாளிகள் உள்ளனர்.",
+      "type": "info",
+      "id": "NOTIF-1789408819838-kre",
+      "isRead": false,
+      "createdAt": "2026-09-14T18:00:19.838Z"
+    },
     {
       "targetRole": "patient",
       "targetJourneyId": "JNY-20260914-00008",
@@ -970,10 +1032,10 @@
   "serviceCounters": [],
   "auditLogs": [],
   "sequences": {
-    "journeyCount": 8,
+    "journeyCount": 9,
     "tokens": {
       "CARDIO": 2,
-      "GENMED": 6,
+      "GENMED": 7,
       "ORTHO": 0,
       "DERMA": 0,
       "X-RAY": 0,

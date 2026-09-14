@@ -399,8 +399,9 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
             </div>
 
             <div className="flex items-center justify-between pt-1 text-[11px] text-slate-500">
-              <span>
-                🔒 Reusing profile <strong>{patientId}</strong>. No duplicate patient records are created.
+              <span className="flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
+                <span>Verified Patient Record: <strong>{patientId}</strong></span>
               </span>
               {profileSavedNotice && (
                 <span className="font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
@@ -610,7 +611,7 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
               className="w-full py-3 bg-gradient-to-r from-blue-900 to-indigo-900 hover:from-blue-800 hover:to-indigo-800 text-white rounded-xl font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {submitting ? (
-                <span>Generating Real Token from Database...</span>
+                <span>Generating OPD Token...</span>
               ) : (
                 <>
                   <span>
@@ -623,7 +624,7 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
               )}
             </button>
             <p className="text-[11px] text-center text-slate-500 mt-2">
-              A real OPD visit record and unique sequential queue token will be created in the hospital database.
+              Your official OPD consultation token and queue entry will be generated.
             </p>
           </div>
         </div>
