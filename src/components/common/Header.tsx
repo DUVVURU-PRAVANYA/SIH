@@ -52,7 +52,7 @@ export const Header: React.FC = () => {
       case 'patient':
         return {
           title: lang === 'ta' ? 'நோயாளி போர்டல்' : 'Patient Portal',
-          subtitle: activePatient ? `${activePatient.name} • Token: ${activePatient.token}` : 'Active Patient Session',
+          subtitle: lang === 'ta' ? 'அரசு தலைமை மருத்துவமனை' : 'Government Headquarter Hospital',
           icon: <User className="w-4 h-4 text-blue-300" />,
           badgeColor: 'bg-blue-600',
         };

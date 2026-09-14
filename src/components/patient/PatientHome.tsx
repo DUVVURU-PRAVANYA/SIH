@@ -21,6 +21,8 @@ import {
   X,
   RefreshCw,
   AlertTriangle,
+  Users,
+  UserCheck,
 } from 'lucide-react';
 import { useQueueFlow } from '../../context/QueueFlowContext';
 import { DoctorDepartmentSelection } from './DoctorDepartmentSelection';
@@ -172,6 +174,9 @@ export const PatientHome: React.FC = () => {
 
   // Database-Derived Values for Active Visit
   const currentPat = activePatient || currentPatient;
+  const rawPatName = (lang === 'ta' ? currentPat?.nameTa : currentPat?.name) || currentPat?.name || '';
+  const cleanPatientName =
+    rawPatName.replace(/^Patient\s*\((.*?)\)$/i, '$1').replace(/^Patient\s+/i, '').trim() || rawPatName;
   const realToken =
     activeVisitData?.journey?.currentToken ||
     activeVisitData?.queueMetrics?.tokenNumber ||
@@ -304,8 +309,10 @@ export const PatientHome: React.FC = () => {
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-bold font-serif tracking-tight text-white flex items-center gap-2">
+              <UserCheck className="w-5 h-5 text-teal-300 shrink-0" />
               <span>
-                {lang === 'ta' ? 'நோயாளி:' : 'Patient:'} {lang === 'ta' ? currentPat?.nameTa : currentPat?.name}
+                {lang === 'ta' ? 'நோயாளி: ' : 'Patient: '}
+                {cleanPatientName}
               </span>
               <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-blue-900/80 border border-blue-400/40 text-blue-200">
                 {currentPat?.id}
@@ -592,14 +599,17 @@ export const PatientHome: React.FC = () => {
             <div className="bg-white rounded-xl border-2 border-blue-900/40 p-6 sm:p-8 shadow-sm space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                 <div>
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-900 bg-blue-100 px-2.5 py-1 rounded">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-900 bg-blue-100 px-2.5 py-1 rounded inline-flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
                     {lang === 'ta' ? 'நேரடி OPD வரிசை கண்காணிப்பு' : 'LIVE OPD QUEUE STATUS'}
                   </span>
-                  <h2 className="text-xl font-bold text-slate-900 font-serif mt-2">
-                    {lang === 'ta' ? 'மருத்துவர்:' : 'Doctor:'} {realDoctorName}
+                  <h2 className="text-xl font-bold text-slate-900 font-serif mt-2 flex items-center gap-2">
+                    <Stethoscope className="w-5 h-5 text-blue-800 shrink-0" />
+                    <span>{lang === 'ta' ? 'மருத்துவர்:' : 'Doctor:'} {realDoctorName}</span>
                   </h2>
-                  <p className="text-xs text-slate-600">
-                    {lang === 'ta' ? 'துறை:' : 'Department:'} {realDeptName} • {realDeptRoom} ({realDeptBlock})
+                  <p className="text-xs text-slate-600 flex items-center gap-1.5 mt-1">
+                    <Building2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                    <span>{lang === 'ta' ? 'துறை:' : 'Department:'} {realDeptName} • {realDeptRoom} ({realDeptBlock})</span>
                   </p>
                 </div>
 
@@ -639,51 +649,65 @@ export const PatientHome: React.FC = () => {
               {/* 4 Core Queue Metrics Grid (Calculated directly from Database) */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* 1. Your Token */}
-                <div className="p-4 sm:p-5 bg-gradient-to-br from-blue-900 to-blue-950 text-white rounded-xl shadow-inner space-y-1">
-                  <div className="text-[11px] uppercase tracking-wider text-blue-300 font-bold">
-                    {lang === 'ta' ? 'உங்கள் டோக்கன்' : 'YOUR TOKEN'}
+                <div className="p-4 sm:p-5 bg-gradient-to-br from-blue-900 to-blue-950 text-white rounded-xl shadow-inner space-y-1 relative overflow-hidden">
+                  <div className="flex items-center justify-between">
+                    <div className="text-[11px] uppercase tracking-wider text-blue-300 font-bold">
+                      {lang === 'ta' ? 'உங்கள் டோக்கன்' : 'YOUR TOKEN'}
+                    </div>
+                    <Ticket className="w-4 h-4 text-blue-300/80" />
                   </div>
                   <div className="text-3xl sm:text-4xl font-extrabold font-mono text-white tracking-tight">
                     {realToken}
                   </div>
                   <div className="text-[11px] text-blue-200 font-medium">
-                    {currentPat?.name}
+                    {realDeptName || 'Outpatient Consultation'}
                   </div>
                 </div>
 
                 {/* 2. Currently Serving */}
-                <div className="p-4 sm:p-5 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1">
-                  <div className="text-[11px] uppercase tracking-wider text-emerald-800 font-bold">
-                    {lang === 'ta' ? 'தற்போது பார்ப்பது' : 'NOW SERVING'}
+                <div className="p-4 sm:p-5 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1 relative overflow-hidden">
+                  <div className="flex items-center justify-between">
+                    <div className="text-[11px] uppercase tracking-wider text-emerald-800 font-bold">
+                      {lang === 'ta' ? 'தற்போது பார்ப்பது' : 'NOW SERVING'}
+                    </div>
+                    <Stethoscope className="w-4 h-4 text-emerald-600/80" />
                   </div>
                   <div className="text-3xl sm:text-4xl font-extrabold font-mono text-emerald-950">
                     {realNowServing}
                   </div>
                   <div className="text-[11px] text-emerald-700 font-medium">
-                    Doctor in OPD Consultation
+                    {lang === 'ta' ? 'மருத்துவர் ஆலோசனை' : 'Doctor in OPD Consultation'}
                   </div>
                 </div>
 
                 {/* 3. Patients Ahead */}
-                <div className="p-4 sm:p-5 bg-amber-50 border border-amber-200 rounded-xl space-y-1">
-                  <div className="text-[11px] uppercase tracking-wider text-amber-800 font-bold">
-                    {lang === 'ta' ? 'முன்னுள்ள நோயாளிகள்' : 'PATIENTS AHEAD'}
+                <div className="p-4 sm:p-5 bg-amber-50 border border-amber-200 rounded-xl space-y-1 relative overflow-hidden">
+                  <div className="flex items-center justify-between">
+                    <div className="text-[11px] uppercase tracking-wider text-amber-800 font-bold">
+                      {lang === 'ta' ? 'முன்னுள்ள நோயாளிகள்' : 'PATIENTS AHEAD'}
+                    </div>
+                    <Users className="w-4 h-4 text-amber-600/80" />
                   </div>
                   <div className="text-3xl sm:text-4xl font-extrabold font-mono text-amber-950">
                     {realPatientsAhead}
                   </div>
                   <div className="text-[11px] text-amber-700 font-medium">
-                    {realPatientsAhead === 0 ? 'Your turn next!' : `${realPatientsAhead} patient(s) ahead`}
+                    {realPatientsAhead === 0
+                      ? (lang === 'ta' ? 'அடுத்தது உங்கள் முறை!' : 'Your turn next!')
+                      : `${realPatientsAhead} ${lang === 'ta' ? 'நபர்கள் முன்னால்' : 'patient(s) ahead'}`}
                   </div>
                 </div>
 
                 {/* 4. Estimated Wait Time */}
-                <div className="p-4 sm:p-5 bg-purple-50 border border-purple-200 rounded-xl space-y-1">
-                  <div className="text-[11px] uppercase tracking-wider text-purple-800 font-bold">
-                    {lang === 'ta' ? 'எதிர்பார்க்கப்படும் நேரம்' : 'ESTIMATED WAIT'}
+                <div className="p-4 sm:p-5 bg-purple-50 border border-purple-200 rounded-xl space-y-1 relative overflow-hidden">
+                  <div className="flex items-center justify-between">
+                    <div className="text-[11px] uppercase tracking-wider text-purple-800 font-bold">
+                      {lang === 'ta' ? 'எதிர்பார்க்கப்படும் நேரம்' : 'ESTIMATED WAIT'}
+                    </div>
+                    <Clock className="w-4 h-4 text-purple-600/80" />
                   </div>
                   <div className="text-3xl sm:text-4xl font-extrabold font-mono text-purple-950">
-                    {realEstimatedWait} <span className="text-base font-normal">mins</span>
+                    {realEstimatedWait} <span className="text-base font-normal">{lang === 'ta' ? 'நிமிடங்கள்' : 'mins'}</span>
                   </div>
                   <div className="text-[11px] text-purple-700 font-medium">
                     {realPatientsAhead} ahead × 3m avg
@@ -777,12 +801,10 @@ export const PatientHome: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
-                  <span>
-                    🔒 Strict Patient Privacy: Only queue tokens and waiting statuses are shown.
-                  </span>
-                  <span>
-                    Doctor Avg Consult: <strong>3-5 mins</strong>
+                <div className="flex items-center justify-end text-[11px] text-slate-500 pt-1">
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Average Consultation: <strong>~3-5 mins</strong></span>
                   </span>
                 </div>
               </div>
@@ -800,11 +822,6 @@ export const PatientHome: React.FC = () => {
                 <Activity className="w-5 h-5 text-blue-900" />
                 <span>{lang === 'ta' ? 'மருத்துவமனை வருகை பணிப்பாதை' : 'Hospital Patient Journey Tracker'}</span>
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                {lang === 'ta'
-                  ? 'மருத்துவர் ஆலோசனை, ஆய்வகம் மற்றும் மருந்தக நிலைகளை நேரலையில் கண்காணிக்கவும்'
-                  : 'Real-time progress for your consultation, diagnostics, and medication pickup.'}
-              </p>
             </div>
 
             {/* Stepper */}
