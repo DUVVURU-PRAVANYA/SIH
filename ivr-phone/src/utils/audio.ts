@@ -11,6 +11,7 @@ class AudioEngine {
   private onSpeakingChangeCallbacks: Set<(speaking: boolean) => void> = new Set();
   private isSpeaking: boolean = false;
   private currentAudio: HTMLAudioElement | null = null;
+  private currentBufferSource: AudioBufferSourceNode | null = null;
 
   constructor() {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
@@ -276,42 +277,80 @@ class AudioEngine {
     playNext();
   }
 
-  private playSegment(text: string, lang: 'en' | 'ta', onEnded: () => void) {
-    const audioUrl = `/api/tts?text=${encodeURIComponent(text)}&lang=${lang}`;
-    const audio = new Audio(audioUrl);
-    this.currentAudio = audio;
+  private async playSegment(text: string, lang: 'en' | 'ta', onEnded: () => void) {
+    const seqId = this.activeSequenceId;
+    let finished = false;
+    const safeEnd = () => {
+      if (finished) return;
+      finished = true;
+      if (seqId === this.activeSequenceId) {
+        onEnded();
+      }
+    };
 
-    let fallbackUsed = false;
-    const triggerFallback = () => {
-      if (fallbackUsed) return;
-      fallbackUsed = true;
+    // 1. Primary: Stream natural telephone audio via unlocked Web Audio Context
+    // Bypasses browser autoplay restrictions even after 3-second async pauses
+    const ctx = this.getAudioContext();
+    if (ctx) {
+      const candidates: string[] = [];
+      if (typeof window !== 'undefined') {
+        const host = window.location.hostname || 'localhost';
+        candidates.push(`http://${host}:4000/api/tts?text=${encodeURIComponent(text)}&lang=${lang}`);
+        candidates.push(`http://localhost:4000/api/tts?text=${encodeURIComponent(text)}&lang=${lang}`);
+        candidates.push(`/api/tts?text=${encodeURIComponent(text)}&lang=${lang}`);
+      } else {
+        candidates.push(`/api/tts?text=${encodeURIComponent(text)}&lang=${lang}`);
+      }
 
-      // Direct upstream fallback with no-referrer
-      const directUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=tw-ob&q=${encodeURIComponent(text)}`;
-      const directAudio = new Audio(directUrl);
-      this.currentAudio = directAudio;
+      for (const url of candidates) {
+        try {
+          const res = await fetch(url);
+          if (res.ok) {
+            const arrayBuf = await res.arrayBuffer();
+            if (seqId !== this.activeSequenceId) return;
+            const audioBuf = await ctx.decodeAudioData(arrayBuf.slice(0));
+            if (seqId !== this.activeSequenceId) return;
 
-      directAudio.onended = () => onEnded();
-      directAudio.onerror = () => {
-        this.fallbackSpeechSynthesis(text, lang, onEnded);
+            const source = ctx.createBufferSource();
+            source.buffer = audioBuf;
+            source.connect(ctx.destination);
+            this.currentBufferSource = source;
+
+            source.onended = () => {
+              this.currentBufferSource = null;
+              safeEnd();
+            };
+            source.start(0);
+            return;
+          }
+        } catch {
+          // try next candidate url
+        }
+      }
+    }
+
+    if (seqId !== this.activeSequenceId) return;
+
+    // 2. Secondary: Fallback to HTMLAudio element
+    try {
+      const audioUrl = `/api/tts?text=${encodeURIComponent(text)}&lang=${lang}`;
+      const audio = new Audio(audioUrl);
+      this.currentAudio = audio;
+
+      audio.onended = () => {
+        this.currentAudio = null;
+        safeEnd();
+      };
+      audio.onerror = () => {
+        this.currentAudio = null;
+        this.fallbackSpeechSynthesis(text, lang, safeEnd);
       };
 
-      directAudio.play().catch(() => {
-        this.fallbackSpeechSynthesis(text, lang, onEnded);
-      });
-    };
-
-    audio.onended = () => {
-      onEnded();
-    };
-
-    audio.onerror = () => {
-      triggerFallback();
-    };
-
-    audio.play().catch(() => {
-      triggerFallback();
-    });
+      await audio.play();
+    } catch {
+      this.currentAudio = null;
+      this.fallbackSpeechSynthesis(text, lang, safeEnd);
+    }
   }
 
   private fallbackSpeechSynthesis(text: string, lang: 'en' | 'ta', onEnded: () => void) {
@@ -351,6 +390,13 @@ class AudioEngine {
 
   public stopSpeaking() {
     this.activeSequenceId++;
+    if (this.currentBufferSource) {
+      try {
+        this.currentBufferSource.stop();
+        this.currentBufferSource.disconnect();
+      } catch {}
+      this.currentBufferSource = null;
+    }
     if (this.currentAudio) {
       this.currentAudio.pause();
       this.currentAudio.currentTime = 0;
