@@ -42,14 +42,14 @@ export const PatientEntryModal: React.FC<PatientEntryModalProps> = ({ isOpen, on
   const [entryMode, setEntryMode] = useState<'register' | 'returning'>('register');
 
   // Profile Fields
-  const [name, setName] = useState('Anitha Kumar');
-  const [age, setAge] = useState('46');
+  const [name, setName] = useState('');
+  const [age, setAge] = useState('');
   const [gender, setGender] = useState<'Male' | 'Female' | 'Other'>('Female');
-  const [phone, setPhone] = useState('98401 23456');
-  const [address, setAddress] = useState('14/B, West Masi Street, Madurai');
-  const [bloodGroup, setBloodGroup] = useState('O+ve');
-  const [allergies, setAllergies] = useState('Penicillin');
-  const [existingConditions, setExistingConditions] = useState('Type 2 Diabetes (5 yrs), Mild HTN');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [bloodGroup, setBloodGroup] = useState('');
+  const [allergies, setAllergies] = useState('');
+  const [existingConditions, setExistingConditions] = useState('');
   const [priority, setPriority] = useState<'normal' | 'senior' | 'urgent'>('normal');
 
   // Doctor Choice Flow: 'select' | 'recommend'
@@ -240,6 +240,7 @@ export const PatientEntryModal: React.FC<PatientEntryModalProps> = ({ isOpen, on
                   onChange={(e) => setBloodGroup(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded focus:border-blue-800 outline-none"
                 >
+                  <option value="">{lang === 'ta' ? '-- இரத்த வகையைத் தேர்ந்தெடுக்கவும் --' : '-- Select Blood Group --'}</option>
                   <option value="O+ve">O+ve</option>
                   <option value="A+ve">A+ve</option>
                   <option value="B+ve">B+ve</option>

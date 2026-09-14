@@ -236,7 +236,7 @@ export const PhoneScreen: React.FC<PhoneScreenProps> = ({
                 {isSpeaking && <span className="text-[10px] text-teal-300 font-normal">Speaking aloud...</span>}
               </div>
               <p className="text-xs text-slate-100 italic leading-relaxed font-sans">
-                "{session?.lastSpokenText || 'Connecting...'}"
+                "{(session?.lastSpokenText || 'Connecting...').replace(/\s*\[PAUSE_[^\]]+\]\s*/gi, ' ').trim()}"
               </p>
             </div>
 
@@ -382,11 +382,19 @@ export const PhoneScreen: React.FC<PhoneScreenProps> = ({
                   </div>
 
                   <div className="text-3xl font-black font-mono text-white tracking-wider py-1.5 bg-teal-900/60 rounded-xl border border-teal-500/40 shadow-inner">
-                    {session?.generatedToken || 'CARDIO-001'}
+                    {session?.generatedToken || 'GENMED-001'}
                   </div>
 
-                  <div className="text-sm font-bold text-slate-100 font-serif">
-                    {session?.selectedDeptNameEn || 'Cardiology'}
+                  <div className="space-y-1">
+                    <div className="text-sm font-bold text-slate-100 font-serif">
+                      {session?.selectedDeptNameEn || 'General Medicine'}
+                    </div>
+                    {session?.doctorName && (
+                      <div className="text-xs font-semibold text-teal-300 flex items-center justify-center gap-1.5 bg-teal-950/60 py-1 px-2 rounded-lg border border-teal-500/30">
+                        <Users className="w-3.5 h-3.5 text-teal-400" />
+                        <span>Doctor: <strong className="text-white">{session.doctorName}</strong></span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-center gap-2 text-xs text-slate-300 pt-0.5">

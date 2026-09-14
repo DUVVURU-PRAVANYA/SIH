@@ -50,13 +50,39 @@ export const PatientHome: React.FC = () => {
   const [patientPrescriptions, setPatientPrescriptions] = useState<any[]>([]);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editName, setEditName] = useState(activePatient?.name || currentPatient?.name || '');
-  const [editAge, setEditAge] = useState<number | string>(activePatient?.age || currentPatient?.age || 35);
+  const [editAge, setEditAge] = useState<number | string>(
+    activePatient?.age && activePatient.age > 0
+      ? activePatient.age
+      : (currentPatient?.age && currentPatient.age > 0 ? currentPatient.age : '')
+  );
   const [editGender, setEditGender] = useState<'Male' | 'Female' | 'Other'>((activePatient?.gender as any) || (currentPatient?.gender as any) || 'Male');
-  const [editBloodGroup, setEditBloodGroup] = useState(activePatient?.bloodGroup || currentPatient?.bloodGroup || 'O+');
-  const [editAllergies, setEditAllergies] = useState((activePatient?.allergies || currentPatient?.allergies || ['None Reported']).join(', '));
-  const [editChronic, setEditChronic] = useState((activePatient?.chronicConditions || currentPatient?.chronicConditions || ['None Reported']).join(', '));
+  const [editBloodGroup, setEditBloodGroup] = useState(
+    activePatient?.bloodGroup && activePatient.bloodGroup !== 'Not Specified'
+      ? activePatient.bloodGroup
+      : (currentPatient?.bloodGroup && currentPatient.bloodGroup !== 'Not Specified' ? currentPatient.bloodGroup : '')
+  );
+  const [editAllergies, setEditAllergies] = useState(
+    (activePatient?.allergies || currentPatient?.allergies || []).join(', ')
+  );
+  const [editChronic, setEditChronic] = useState(
+    (activePatient?.chronicConditions || currentPatient?.chronicConditions || []).join(', ')
+  );
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isRefreshingRx, setIsRefreshingRx] = useState(false);
+
+  const startEditProfile = () => {
+    setActiveSection('profile');
+    setIsEditingProfile(true);
+    const pat = activePatient || currentPatient;
+    if (pat) {
+      setEditName(pat.name || '');
+      setEditAge(pat.age && pat.age > 0 ? pat.age : '');
+      setEditGender((pat.gender as any) || 'Male');
+      setEditBloodGroup(pat.bloodGroup && pat.bloodGroup !== 'Not Specified' ? pat.bloodGroup : '');
+      setEditAllergies((pat.allergies || []).join(', '));
+      setEditChronic((pat.chronicConditions || []).join(', '));
+    }
+  };
 
   const loadSubTabRecords = useCallback(async () => {
     if (!patId) return;
@@ -281,11 +307,22 @@ export const PatientHome: React.FC = () => {
             </h1>
             <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300 mt-1.5">
               <span>
-                Age: <strong className="text-white">{currentPat?.age} yrs</strong> ({currentPat?.gender})
+                Age:{' '}
+                <strong className={currentPat?.age && currentPat.age > 0 ? 'text-white font-bold' : 'text-amber-300 font-bold'}>
+                  {currentPat?.age && currentPat.age > 0
+                    ? `${currentPat.age} yrs`
+                    : (lang === 'ta' ? 'பதிவு செய்யப்படவில்லை' : 'Not Set')}
+                </strong>{' '}
+                ({currentPat?.gender || 'Not Specified'})
               </span>
               <span>•</span>
               <span>
-                Blood Group: <strong className="text-white">{currentPat?.bloodGroup || 'O+ve'}</strong>
+                Blood Group:{' '}
+                <strong className={currentPat?.bloodGroup && currentPat.bloodGroup !== 'Not Specified' ? 'text-white font-bold' : 'text-amber-300 font-bold'}>
+                  {currentPat?.bloodGroup && currentPat.bloodGroup !== 'Not Specified'
+                    ? currentPat.bloodGroup
+                    : (lang === 'ta' ? 'பதிவு செய்யப்படவில்லை' : 'Not Recorded')}
+                </strong>
               </span>
               <span>•</span>
               <span>
@@ -293,12 +330,26 @@ export const PatientHome: React.FC = () => {
               </span>
               <span>•</span>
               <span>
-                Allergies: <strong className="text-amber-300">{currentPat?.allergies?.join(', ') || 'None Reported'}</strong>
+                Allergies:{' '}
+                <strong className="text-amber-300">
+                  {currentPat?.allergies?.length
+                    ? currentPat.allergies.join(', ')
+                    : (lang === 'ta' ? 'எதுவுமில்லை' : 'None Reported')}
+                </strong>
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={startEditProfile}
+              className="px-3 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 rounded text-xs font-bold text-amber-200 flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Click to edit Age, Blood Group, and Health Details"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>{lang === 'ta' ? 'விவரம் திருத்து' : 'Edit Profile'}</span>
+            </button>
             <button
               type="button"
               onClick={() => setShowDoctorSelection(true)}
@@ -310,6 +361,31 @@ export const PatientHome: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Profile Incomplete Attention Banner */}
+      {(!currentPat?.age || currentPat.age === 0 || !currentPat?.bloodGroup || currentPat.bloodGroup === 'Not Specified') && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2.5">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-2 text-amber-900">
+              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>
+                <strong>{lang === 'ta' ? 'சுயவிவரம் முழுமையடையவில்லை:' : 'Profile Incomplete:'}</strong>{' '}
+                {lang === 'ta'
+                  ? 'உங்கள் வயது மற்றும் இரத்த வகை இன்னும் பதிவு செய்யப்படவில்லை. மருத்துவ ஆலோசனைக்கு இவை மிகவும் முக்கியம்.'
+                  : 'Your Age and Blood Group have not been recorded yet. Please update them so your doctor has accurate records.'}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={startEditProfile}
+              className="self-start sm:self-auto px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded font-bold cursor-pointer transition-colors shadow-xs flex items-center gap-1.5"
+            >
+              <Edit3 className="w-3 h-3" />
+              <span>{lang === 'ta' ? 'இப்போதே திருத்து' : 'Update Profile Now'}</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Navigation Tabs (ONE Single Dashboard) */}
       <div className="bg-white border-b border-slate-200 shadow-xs sticky top-[48px] z-20">
@@ -1195,17 +1271,10 @@ export const PatientHome: React.FC = () => {
                   type="button"
                   onClick={() => {
                     if (!isEditingProfile) {
-                      const pat = activePatient || currentPatient;
-                      if (pat) {
-                        setEditName(pat.name || '');
-                        setEditAge(pat.age ?? 35);
-                        setEditGender((pat.gender as any) || 'Male');
-                        setEditBloodGroup(pat.bloodGroup || 'O+');
-                        setEditAllergies((pat.allergies || ['None Reported']).join(', '));
-                        setEditChronic((pat.chronicConditions || ['None Reported']).join(', '));
-                      }
+                      startEditProfile();
+                    } else {
+                      setIsEditingProfile(false);
                     }
-                    setIsEditingProfile(!isEditingProfile);
                   }}
                   className="px-3 py-1.5 bg-blue-900 hover:bg-blue-800 text-white rounded text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
                 >
@@ -1230,11 +1299,11 @@ export const PatientHome: React.FC = () => {
                   try {
                     const res = await updatePatientProfile(patId, {
                       name: editName.trim(),
-                      age: Number(editAge) || 35,
+                      age: Number(editAge) > 0 ? Number(editAge) : 0,
                       gender: editGender,
-                      bloodGroup: editBloodGroup,
-                      allergies: editAllergies,
-                      chronicConditions: editChronic,
+                      bloodGroup: editBloodGroup || 'Not Specified',
+                      allergies: editAllergies ? editAllergies.split(',').map((s) => s.trim()).filter(Boolean) : [],
+                      chronicConditions: editChronic ? editChronic.split(',').map((s) => s.trim()).filter(Boolean) : [],
                     });
                     if (res.success) {
                       await loadActiveVisit(patId);
@@ -1271,7 +1340,7 @@ export const PatientHome: React.FC = () => {
 
                   <div>
                     <label className="font-bold text-slate-700 block mb-1">
-                      {lang === 'ta' ? 'வயது' : 'Age'} *
+                      {lang === 'ta' ? 'வயது' : 'Age (Years)'} *
                     </label>
                     <input
                       type="number"
@@ -1280,6 +1349,7 @@ export const PatientHome: React.FC = () => {
                       max={120}
                       value={editAge}
                       onChange={(e) => setEditAge(e.target.value)}
+                      placeholder="Enter age in years"
                       className="w-full px-3 py-2 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-900"
                     />
                   </div>
@@ -1308,6 +1378,7 @@ export const PatientHome: React.FC = () => {
                       onChange={(e) => setEditBloodGroup(e.target.value)}
                       className="w-full px-3 py-2 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-900"
                     >
+                      <option value="">{lang === 'ta' ? '-- இரத்த வகையைத் தேர்ந்தெடுக்கவும் --' : '-- Select Blood Group --'}</option>
                       {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Unknown'].map((bg) => (
                         <option key={bg} value={bg}>{bg}</option>
                       ))}
@@ -1378,12 +1449,23 @@ export const PatientHome: React.FC = () => {
 
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
                   <span className="text-slate-500 font-bold">Age & Gender:</span>
-                  <div className="text-sm font-bold text-slate-900">{currentPat?.age} yrs • {currentPat?.gender}</div>
+                  <div className="text-sm font-bold text-slate-900">
+                    {currentPat?.age && currentPat.age > 0 ? `${currentPat.age} yrs` : (
+                      <span className="text-amber-600 font-semibold">{lang === 'ta' ? 'பதிவு செய்யப்படவில்லை' : 'Not Recorded'}</span>
+                    )}{' '}
+                    • {currentPat?.gender || 'Not Specified'}
+                  </div>
                 </div>
 
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
                   <span className="text-slate-500 font-bold">Blood Group:</span>
-                  <div className="text-sm font-bold text-slate-900">{currentPat?.bloodGroup || 'O+ve'}</div>
+                  <div className="text-sm font-bold text-slate-900">
+                    {currentPat?.bloodGroup && currentPat.bloodGroup !== 'Not Specified' ? (
+                      currentPat.bloodGroup
+                    ) : (
+                      <span className="text-amber-600 font-semibold">{lang === 'ta' ? 'பதிவு செய்யப்படவில்லை (மாற்ற திருத்தவும்)' : 'Not Recorded (Click Edit to Add)'}</span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">

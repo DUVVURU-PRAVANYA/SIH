@@ -8,8 +8,8 @@ export interface PromptSet {
   symptomPrompt: string;
   symptomResult: (deptName: string) => string;
   confirmDept: (deptName: string) => string;
-  tokenGenerated: (token: string, peopleAhead: number, waitMinutes: number) => string;
-  tokenStatus: (token: string, peopleAhead: number, waitMinutes: number) => string;
+  tokenGenerated: (token: string, peopleAhead: number, waitMinutes: number, doctorName?: string) => string;
+  tokenStatus: (token: string, peopleAhead: number, waitMinutes: number, doctorName?: string) => string;
   consultationCompleted: (token: string, diagnosis?: string) => string;
   routedToPharmacy: (token: string, peopleAhead: number, waitMinutes: number) => string;
   routedToDiagnostics: (token: string, peopleAhead: number, waitMinutes: number) => string;
@@ -21,17 +21,17 @@ export interface PromptSet {
 }
 
 export const PROMPTS_EN: PromptSet = {
-  welcome: 'Welcome to GH-QueueFlow.',
-  languageSelect: 'Welcome to GH-QueueFlow. For English, press 1. For Tamil, press 2.',
+  welcome: 'Welcome to Government Hospital OPD Appointment Service.',
+  languageSelect: 'Welcome to Government Hospital OPD Appointment Service. Press 1 for English.',
   mainMenu: 'For a new token, press 1. To check your token status, press 2. To repeat your token, press 3.',
   deptMenu: 'For General Medicine, press 1. For Cardiology, press 2. For Orthopedics, press 3. For Dermatology, press 4. To help me choose a department, press 5.',
   symptomPrompt: 'Please briefly tell us your health problem after the tone.',
   symptomResult: (deptName: string) => `Based on your symptoms, ${deptName} is recommended. Press 1 to confirm.`,
   confirmDept: (deptName: string) => `You selected ${deptName}. Press 1 to confirm.`,
-  tokenGenerated: (token: string, peopleAhead: number, waitMinutes: number) =>
-    `Your token number is ${token}. There are ${peopleAhead} patients ahead of you. Your estimated waiting time is ${waitMinutes} minutes.`,
-  tokenStatus: (token: string, peopleAhead: number, waitMinutes: number) =>
-    `Your token number is ${token}. There are ${peopleAhead} patients ahead of you. Your estimated waiting time is ${waitMinutes} minutes.`,
+  tokenGenerated: (token: string, peopleAhead: number, waitMinutes: number, doctorName?: string) =>
+    `Your token number is ${token}, assigned to ${doctorName || 'Doctor'}. There are ${peopleAhead} patients ahead of you. Your estimated waiting time is ${waitMinutes} minutes.`,
+  tokenStatus: (token: string, peopleAhead: number, waitMinutes: number, doctorName?: string) =>
+    `Your token number is ${token}, assigned to ${doctorName || 'Doctor'}. There are ${peopleAhead} patients ahead of you. Your estimated waiting time is ${waitMinutes} minutes.`,
   consultationCompleted: (token: string, diagnosis?: string) =>
     diagnosis
       ? `Your doctor consultation for token ${token} is completed. Diagnosis: ${diagnosis}. Your hospital visit has been concluded successfully.`
@@ -46,21 +46,21 @@ export const PROMPTS_EN: PromptSet = {
   repeatToken: (token: string, peopleAhead: number) =>
     `Your token number is ${token}. There are ${peopleAhead} patients ahead of you.`,
   invalidChoice: 'Invalid choice. Please try again.',
-  callEnded: 'Thank you for calling GH-QueueFlow. Call ended.',
+  callEnded: 'Thank you for calling Government Hospital OPD Service. Call ended.',
 };
 
 export const PROMPTS_TA: PromptSet = {
-  welcome: 'GH-QueueFlow-விற்கு நல்வரவு.',
-  languageSelect: 'GH-QueueFlow-விற்கு நல்வரவு. ஆங்கிலத்திற்கு 1-ஐ அழுத்தவும். தமிழுக்கு 2-ஐ அழுத்தவும்.',
+  welcome: 'அரசு தலைமை மருத்துவமனைக்கு நல்வரவு.',
+  languageSelect: 'அரசு தலைமை மருத்துவமனைக்கு நல்வரவு. தமிழுக்கு 2-ஐ அழுத்தவும்.',
   mainMenu: 'புதிய டோக்கன் பெற 1-ஐ அழுத்தவும். உங்கள் டோக்கன் நிலையை அறிய 2-ஐ அழுத்தவும். உங்கள் டோக்கனை மீண்டும் கேட்க 3-ஐ அழுத்தவும்.',
   deptMenu: 'பொது மருத்துவத்திற்கு 1-ஐ அழுத்தவும். இதயவியலுக்கு 2-ஐ அழுத்தவும். எலும்பியல் பிரிவுக்கு 3-ஐ அழுத்தவும். தோல் மருத்துவத்திற்கு 4-ஐ அழுத்தவும். பிரிவை தேர்வு செய்ய உதவி பெற 5-ஐ அழுத்தவும்.',
   symptomPrompt: 'தயவுசெய்து உங்கள் உடல்நலப் பிரச்சனையை சுருக்கமாகக் கூறுங்கள்.',
   symptomResult: (deptName: string) => `உங்கள் அறிகுறிகளின்படி, ${deptName} பரிந்துரைக்கப்படுகிறது. உறுதிப்படுத்த 1-ஐ அழுத்தவும்.`,
   confirmDept: (deptName: string) => `நீங்கள் ${deptName} தேர்ந்தெடுத்துள்ளீர்கள். உறுதிப்படுத்த 1-ஐ அழுத்தவும்.`,
-  tokenGenerated: (token: string, peopleAhead: number, waitMinutes: number) =>
-    `உங்கள் டோக்கன் எண் ${token}. உங்களுக்கு முன் ${peopleAhead} நோயாளிகள் உள்ளனர். உங்கள் காத்திருப்பு நேரம் தோராயமாக ${waitMinutes} நிமிடங்கள்.`,
-  tokenStatus: (token: string, peopleAhead: number, waitMinutes: number) =>
-    `உங்கள் டோக்கன் எண் ${token}. உங்களுக்கு முன் ${peopleAhead} நோயாளிகள் உள்ளனர். உங்கள் காத்திருப்பு நேரம் தோராயமாக ${waitMinutes} நிமிடங்கள்.`,
+  tokenGenerated: (token: string, peopleAhead: number, waitMinutes: number, doctorName?: string) =>
+    `உங்கள் டோக்கன் எண் ${token}. ${doctorName || 'மருத்துவர்'} ஒதுக்கப்பட்டுள்ளது. உங்களுக்கு முன் ${peopleAhead} நோயாளிகள் உள்ளனர். உங்கள் காத்திருப்பு நேரம் தோராயமாக ${waitMinutes} நிமிடங்கள்.`,
+  tokenStatus: (token: string, peopleAhead: number, waitMinutes: number, doctorName?: string) =>
+    `உங்கள் டோக்கன் எண் ${token}. ${doctorName || 'மருத்துவர்'} ஒதுக்கப்பட்டுள்ளது. உங்களுக்கு முன் ${peopleAhead} நோயாளிகள் உள்ளனர். உங்கள் காத்திருப்பு நேரம் தோராயமாக ${waitMinutes} நிமிடங்கள்.`,
   consultationCompleted: (token: string, diagnosis?: string) =>
     diagnosis
       ? `உங்கள் டோக்கன் ${token}-க்கான மருத்துவர் ஆலோசனை முடிவடைந்தது. பரிசோதனை முடிவு: ${diagnosis}. உங்கள் வருகை நிறைவு பெற்றது.`

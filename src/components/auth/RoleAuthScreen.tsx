@@ -48,9 +48,9 @@ export const RoleAuthScreen: React.FC = () => {
     name: '',
     age: '',
     gender: 'Female' as 'Male' | 'Female' | 'Other',
-    bloodGroup: 'O+ve',
-    allergies: 'Penicillin',
-    chronicConditions: 'None Reported',
+    bloodGroup: '',
+    allergies: '',
+    chronicConditions: '',
     phone: '',
   });
 
@@ -274,11 +274,11 @@ export const RoleAuthScreen: React.FC = () => {
     try {
       const res = await registerPatientWithPhone({
         name: regForm.name.trim(),
-        age: Number(regForm.age) || 35,
+        age: Number(regForm.age) > 0 ? Number(regForm.age) : 0,
         gender: regForm.gender,
-        bloodGroup: regForm.bloodGroup,
-        allergies: regForm.allergies ? [regForm.allergies] : ['None Reported'],
-        chronicConditions: regForm.chronicConditions ? [regForm.chronicConditions] : ['None Reported'],
+        bloodGroup: regForm.bloodGroup || 'Not Specified',
+        allergies: regForm.allergies ? [regForm.allergies.trim()] : [],
+        chronicConditions: regForm.chronicConditions ? [regForm.chronicConditions.trim()] : [],
         phone: cleanPhone,
       });
 
@@ -751,6 +751,7 @@ export const RoleAuthScreen: React.FC = () => {
                     onChange={(e) => setRegForm({ ...regForm, bloodGroup: e.target.value })}
                     className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md text-white focus:outline-none focus:border-teal-500"
                   >
+                    <option value="">{lang === 'ta' ? '-- இரத்த வகையைத் தேர்ந்தெடுக்கவும் --' : '-- Select Blood Group --'}</option>
                     <option value="O+ve">O +ve</option>
                     <option value="O-ve">O -ve</option>
                     <option value="A+ve">A +ve</option>

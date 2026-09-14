@@ -83,9 +83,9 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
   // Part 2: Patient Profile Form (Prefilled from database)
   const [profileForm, setProfileForm] = useState({
     name: patientName,
-    age: '46',
-    gender: 'Female',
-    bloodGroup: 'O+ve',
+    age: '',
+    gender: 'Male',
+    bloodGroup: '',
     allergies: '',
     chronicConditions: '',
   });
@@ -108,9 +108,9 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
             const pat = patRes.data;
             setProfileForm({
               name: pat.name || patientName,
-              age: String(pat.age || 46),
-              gender: pat.gender || 'Female',
-              bloodGroup: pat.bloodGroup || 'O+ve',
+              age: pat.age && pat.age > 0 ? String(pat.age) : '',
+              gender: pat.gender && pat.gender !== 'Not Specified' ? pat.gender : 'Male',
+              bloodGroup: pat.bloodGroup && pat.bloodGroup !== 'Not Specified' && pat.bloodGroup !== 'Unknown' ? pat.bloodGroup : '',
               allergies: Array.isArray(pat.allergies) ? pat.allergies.join(', ') : (pat.allergies || ''),
               chronicConditions: Array.isArray(pat.chronicConditions) ? pat.chronicConditions.join(', ') : (pat.chronicConditions || ''),
             });
@@ -329,6 +329,7 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
                     type="number"
                     value={profileForm.age}
                     onChange={(e) => setProfileForm({ ...profileForm, age: e.target.value })}
+                    placeholder="e.g. 35"
                     className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 font-medium focus:ring-2 focus:ring-blue-600 focus:outline-none"
                   />
                 </div>
@@ -342,8 +343,8 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
                     onChange={(e) => setProfileForm({ ...profileForm, gender: e.target.value })}
                     className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 font-medium focus:ring-2 focus:ring-blue-600 focus:outline-none"
                   >
-                    <option value="Female">Female</option>
                     <option value="Male">Male</option>
+                    <option value="Female">Female</option>
                     <option value="Other">Other</option>
                   </select>
                 </div>
@@ -358,6 +359,7 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
                   onChange={(e) => setProfileForm({ ...profileForm, bloodGroup: e.target.value })}
                   className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 font-medium focus:ring-2 focus:ring-blue-600 focus:outline-none"
                 >
+                  <option value="">{lang === 'ta' ? 'தேர்ந்தெடுக்கவும் (Select)' : 'Select Blood Group'}</option>
                   <option value="O+ve">O+ve</option>
                   <option value="O-ve">O-ve</option>
                   <option value="A+ve">A+ve</option>

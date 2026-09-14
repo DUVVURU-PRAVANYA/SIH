@@ -136,6 +136,7 @@ interface QueueFlowContextType {
       labSchedule?: 'today' | 'next_day';
       diagnosticModality?: 'x-ray' | 'ultrasound' | 'ct' | 'mri' | 'specialty' | 'pathology';
       diagnosticTestName?: string;
+      diagnosticTests?: string[];
       diagnosticPriority?: 'routine' | 'urgent';
       diagnosticNotes?: string;
       prescriptions?: { name: string; dosage: string; frequency: string; duration: string; instructions: string; quantity?: number }[];
@@ -1122,6 +1123,7 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       labSchedule?: 'today' | 'next_day';
       diagnosticModality?: 'x-ray' | 'ultrasound' | 'ct' | 'mri' | 'specialty' | 'pathology';
       diagnosticTestName?: string;
+      diagnosticTests?: string[];
       diagnosticPriority?: 'routine' | 'urgent';
       diagnosticNotes?: string;
       prescriptions?: { name: string; dosage: string; frequency: string; duration: string; instructions: string; quantity?: number }[];
@@ -1131,6 +1133,12 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   ) => {
     const patId = patientId || currentPatient?.id || activePatient?.id || '';
     const targetPatient = patients.find((p) => p.id === patId) || currentPatient || activePatient;
+
+    // Aggregate all diagnostic scan procedures (single or multi-scan)
+    const scanTests: string[] = [
+      ...(orders.diagnosticTests || []),
+      ...(orders.diagnosticTestName && !orders.diagnosticTests?.includes(orders.diagnosticTestName) ? [orders.diagnosticTestName] : []),
+    ];
 
     // Call Backend API to save Consultation, Prescription, and Diagnostic Orders to database
     const targetJourneyId = (targetPatient as any)?.journeyId || activeVisitData?.journey?.id || `JNY-${patId}`;
@@ -1158,17 +1166,17 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         })),
         investigations: [
           ...(orders.labTests || []),
-          ...(orders.diagnosticTestName ? [orders.diagnosticTestName] : []),
-          ...((!orders.labTests && !orders.diagnosticTestName) ? (notes.investigations || []) : []),
+          ...scanTests,
+          ...((!orders.labTests?.length && !scanTests.length) ? (notes.investigations || []) : []),
         ],
         labTests: orders.labTests,
-        diagnosticTestName: orders.diagnosticTestName,
+        diagnosticTestName: scanTests.join(', '),
         diagnosticModality: orders.diagnosticModality,
-        routeTo: (orders.labTests && orders.labTests.length > 0 && orders.diagnosticTestName)
+        routeTo: (orders.labTests && orders.labTests.length > 0 && scanTests.length > 0)
           ? 'both'
           : (orders.labTests && orders.labTests.length > 0)
           ? 'lab'
-          : (orders.diagnosticTestName ? 'x-ray' : (orders.prescriptions && orders.prescriptions.length > 0 ? 'pharmacy' : 'complete')),
+          : (scanTests.length > 0 ? 'x-ray' : (orders.prescriptions && orders.prescriptions.length > 0 ? 'pharmacy' : 'complete')),
       });
 
       await refreshDoctorQueue(currentUser?.departmentId, currentUser?.id);
@@ -1182,7 +1190,6 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     if (!targetPatient) return;
 
-    // Handle Lab Order
     // Handle Lab Order (Single consolidated order with all tests)
     if (orders.labTests && orders.labTests.length > 0) {
       const newLabOrder: LabOrder = {
@@ -1210,9 +1217,9 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       });
     }
 
-    // Handle Diagnostic / Scan Order
-    if (orders.diagnosticTestName || orders.diagnosticModality) {
-      const scanTestTitle = orders.diagnosticTestName || `${(orders.diagnosticModality || 'x-ray').toUpperCase()} Scan`;
+    // Handle Diagnostic / Scan Order (Supports Multi-Scan)
+    if (scanTests.length > 0 || orders.diagnosticModality) {
+      const scanTestTitle = scanTests.length > 0 ? scanTests.join(', ') : `${(orders.diagnosticModality || 'x-ray').toUpperCase()} Scan`;
       const newScanOrder: LabOrder = {
         id: `DIAG-ORD-${Date.now().toString().slice(-4)}`,
         patientId,
@@ -1220,7 +1227,7 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         patientToken: targetPatient.token,
         requestedByDoctor: docName,
         doctorId: docId,
-        tests: [scanTestTitle],
+        tests: scanTests.length > 0 ? scanTests : [scanTestTitle],
         priority: orders.diagnosticPriority || 'routine',
         schedule: 'today',
         status: 'pending',
@@ -1239,7 +1246,7 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         priority: orders.diagnosticPriority || 'routine',
         clinicalNotes: orders.diagnosticNotes || notes.clinicalNotes,
         status: 'waiting',
-        room: orders.diagnosticModality === 'x-ray' ? 'Room 108' : 'Room 112',
+        room: 'Diagnostic Station',
         createdAt: new Date().toISOString(),
       };
       setDiagnosticOrders((prev) => [newDiagOrder, ...prev]);
@@ -1252,6 +1259,16 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         type: 'warning',
         targetRole: 'scan_lab',
       });
+
+      addNotification({
+        title: 'Diagnostic Scan Prescribed',
+        titleTa: 'ஸ்கேன் பரிசோதனை பரிந்துரைக்கப்பட்டது',
+        message: `Your doctor has requested: ${scanTestTitle}. Please proceed to Diagnostic Station.`,
+        messageTa: `மருத்துவர் தங்களுக்கு ${scanTestTitle} பரிந்துரைத்துள்ளார். ஸ்கேன் பிரிவுக்கு செல்லவும்.`,
+        type: 'info',
+        targetRole: 'patient',
+        targetPatientId: targetPatient.id,
+      } as any);
     }
 
     // Handle Pharmacy Order (merge into existing active pharmacy order if present)
@@ -1295,7 +1312,7 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             doctorName: docName,
             medications: newMedItems,
             status: 'waiting',
-            counterNumber: 'Counter 03',
+            counterNumber: 'Pharmacy Dispensing',
             tokenNumber: `PH-${(targetPatient?.token || '').slice(-3)}`,
             totalAmount: 0,
             isPaid: true,
@@ -1308,11 +1325,21 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       addNotification({
         title: 'Prescription Transmitted to Pharmacy',
         titleTa: 'மருந்தகத்திற்கு மருந்து சீட்டு அனுப்பப்பட்டது',
-        message: `Prescription for ${targetPatient?.name || 'Patient'} received at Pharmacy.`,
+        message: `Prescription for ${targetPatient?.name || 'Patient'} received at Central Pharmacy.`,
         messageTa: `${targetPatient?.name || 'நோயாளி'} அவர்களின் மருந்து சீட்டு மருந்தகத்திற்கு அனுப்பப்பட்டது.`,
         type: 'info',
         targetRole: 'pharmacy',
       });
+
+      addNotification({
+        title: 'Medicines Prescribed',
+        titleTa: 'மருந்துகள் பரிந்துரைக்கப்பட்டன',
+        message: `Your prescription (${newMedItems.length} items) has been sent to Central Pharmacy. Please proceed to Pharmacy.`,
+        messageTa: `மருத்துவ சீட்டு (${newMedItems.length} மருந்துகள்) மருந்தகத்திற்கு அனுப்பப்பட்டுள்ளது. மருந்தக பிரிவுக்கு செல்லவும்.`,
+        type: 'info',
+        targetRole: 'patient',
+        targetPatientId: targetPatient.id,
+      } as any);
     }
 
     // Handle Revisit
@@ -2345,14 +2372,42 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       // Local fallback for staff aliases
       const norm = username.toLowerCase().trim();
       let assignedRole: UserRole = 'doctor';
-      if (norm === 'lab' || norm === 'scanlab' || norm === 'tech_murugan') assignedRole = 'scan_lab';
-      else if (norm === 'pharmacy' || norm === 'pharm_radha') assignedRole = 'pharmacy';
-      else assignedRole = 'doctor';
+      let staffUser: StaffUser = {
+        id: 'usr-doc-1',
+        username: 'dr_priya',
+        fullName: 'Dr. Priya Kumar',
+        role: 'doctor',
+        departmentId: 'dept-genmed',
+      };
+
+      if (norm === 'lab' || norm === 'scanlab' || norm === 'tech_murugan') {
+        assignedRole = 'scan_lab';
+        staffUser = { id: 'usr-lab-1', username: 'tech_murugan', fullName: 'K. Murugan', role: 'scan_lab', departmentId: 'dept-lab' };
+      } else if (norm === 'pharmacy' || norm === 'pharm_radha') {
+        assignedRole = 'pharmacy';
+        staffUser = { id: 'usr-pharm-1', username: 'pharm_radha', fullName: 'S. Radha', role: 'pharmacy', departmentId: 'dept-pharm' };
+      } else if (norm.includes('ravi')) {
+        assignedRole = 'doctor';
+        staffUser = { id: 'usr-doc-ravi', username: 'dr_ravi', fullName: 'Dr. Ravi Kumar', role: 'doctor', departmentId: 'dept-derma' };
+      } else if (norm.includes('arun')) {
+        assignedRole = 'doctor';
+        staffUser = { id: 'usr-doc-arun', username: 'dr_arun', fullName: 'Dr. Arun Kumar', role: 'doctor', departmentId: 'dept-cardio' };
+      } else if (norm.includes('senthil')) {
+        assignedRole = 'doctor';
+        staffUser = { id: 'usr-doc-senthil', username: 'dr_senthil', fullName: 'Dr. Senthil Nathan', role: 'doctor', departmentId: 'dept-ortho' };
+      } else if (norm.includes('meena')) {
+        assignedRole = 'doctor';
+        staffUser = { id: 'usr-doc-meena', username: 'dr_meena', fullName: 'Dr. Meena Sharma', role: 'doctor', departmentId: 'dept-pedia' };
+      } else {
+        assignedRole = 'doctor';
+        staffUser = { id: 'usr-doc-1', username: 'dr_priya', fullName: 'Dr. Priya Kumar', role: 'doctor', departmentId: 'dept-genmed' };
+      }
 
       setAuthStatus('AUTHENTICATED');
       setRole(assignedRole);
+      setCurrentUser(staffUser);
       navigate(`/${assignedRole}/dashboard`);
-      localStorage.setItem('gh_session', JSON.stringify({ role: assignedRole, username }));
+      localStorage.setItem('gh_session', JSON.stringify({ role: assignedRole, username, user: staffUser }));
       return { success: true, role: assignedRole };
     }
   };
@@ -2439,20 +2494,20 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         estimatedWaitMinutes: 0,
         status: 'normal',
         priority: data.age >= 60 ? 'senior' : 'normal',
-        bloodGroup: data.bloodGroup || 'O+ve',
-        allergies: data.allergies || ['None Reported'],
-        existingConditions: data.chronicConditions || ['None Reported'],
-        address: 'District Government Hospital Jurisdiction',
+        bloodGroup: data.bloodGroup || 'Not Specified',
+        allergies: data.allergies?.length ? data.allergies : [],
+        existingConditions: data.chronicConditions?.length ? data.chronicConditions : [],
+        address: 'Government Hospital Jurisdiction',
         emergencyContact: 'Family Member',
-        vitals: { bp: '120/80 mmHg', pulse: '76 bpm', temp: '98.4 °F', weight: '62 kg', spo2: '99%' },
+        vitals: { bp: '', pulse: '', temp: '', weight: '', spo2: '' },
         stagesHistory: [],
         location: {
-          block: 'Block B',
-          floor: 'Ground Floor',
-          room: 'Rooms 4-8',
+          block: 'OPD Building',
+          floor: 'Main Floor',
+          room: '',
           pathColor: 'blue',
-          pathName: 'Follow Blue Path',
-          pathNameTa: 'நீல வழித்தடம்',
+          pathName: 'Follow Blue Signage',
+          pathNameTa: 'நீல வழித்தடத்தைப் பின்பற்றவும்',
         },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

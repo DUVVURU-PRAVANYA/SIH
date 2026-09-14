@@ -77,31 +77,51 @@ class VoiceSynthesizer {
       utterance.rate = this.speechRate;
       utterance.pitch = 1.0;
 
-      // Try to find a matching Tamil or Indian English voice
+      // Try to find a matching Tamil voice
       const voices = window.speechSynthesis.getVoices();
+      const taVoice = voices.find(v => v.lang.toLowerCase().startsWith('ta') || v.name.toLowerCase().includes('tamil') || v.name.toLowerCase().includes('valluvar'));
+
+      if (lang === 'ta' && !taVoice) {
+        // Stream natural Tamil voice directly via our proxy so announcement plays aloud without Referer/CORS blocks
+        const ttsUrl = `/api/tts?text=${encodeURIComponent(text.slice(0, 150))}&lang=ta`;
+        const audio = new Audio(ttsUrl);
+        audio.onended = () => { if (onEnd) onEnd(); };
+        audio.onerror = () => {
+          // Fallback to direct URL if needed
+          const fallbackUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ta&client=tw-ob&q=${encodeURIComponent(text.slice(0, 150))}`;
+          const fallbackAudio = new Audio(fallbackUrl);
+          fallbackAudio.onended = () => { if (onEnd) onEnd(); };
+          fallbackAudio.onerror = () => { if (onEnd) onEnd(); };
+          fallbackAudio.play().catch(() => { if (onEnd) onEnd(); });
+        };
+        audio.play().catch(() => {
+          if (onEnd) onEnd();
+        });
+        return;
+      }
+
       if (lang === 'ta') {
         utterance.lang = 'ta-IN';
-        const taVoice = voices.find(v => v.lang.includes('ta') || v.lang.includes('Tamil') || v.name.includes('Tamil'));
-        if (taVoice) {
-          utterance.voice = taVoice;
-        } else {
-          // Fallback to Indian English if Tamil voice isn't installed in the OS
-          const inVoice = voices.find(v => v.lang.includes('en-IN') || v.name.includes('India'));
-          if (inVoice) utterance.voice = inVoice;
-        }
+        if (taVoice) utterance.voice = taVoice;
       } else {
         utterance.lang = 'en-IN';
         const inVoice = voices.find(v => v.lang.includes('en-IN') || v.name.includes('India'));
-        if (inVoice) {
-          utterance.voice = inVoice;
-        }
+        if (inVoice) utterance.voice = inVoice;
       }
 
       utterance.onend = () => {
         if (onEnd) onEnd();
       };
       utterance.onerror = () => {
-        if (onEnd) onEnd();
+        if (lang === 'ta') {
+          const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ta&client=tw-ob&q=${encodeURIComponent(text.slice(0, 150))}`;
+          const audio = new Audio(url);
+          audio.onended = () => { if (onEnd) onEnd(); };
+          audio.onerror = () => { if (onEnd) onEnd(); };
+          audio.play().catch(() => { if (onEnd) onEnd(); });
+        } else if (onEnd) {
+          onEnd();
+        }
       };
 
       window.speechSynthesis.speak(utterance);

@@ -23,6 +23,7 @@ export const Header: React.FC = () => {
     notifications,
     dismissNotification,
     activePatient,
+    currentUser,
     logout,
   } = useQueueFlow();
 
@@ -30,9 +31,22 @@ export const Header: React.FC = () => {
 
   if (role === 'auth') return null;
 
-  const unreadNotifs = notifications.filter((n) => !n.read);
+  // Filter notifications strictly by role and current patient to avoid cross-role noise & maintain privacy
+  const filteredNotifs = notifications.filter((n) => {
+    if (n.targetRole === 'all') return true;
+    if (role === 'patient') {
+      if (n.targetRole !== 'patient') return false;
+      if ((n as any).targetPatientId && activePatient?.id) {
+        return (n as any).targetPatientId === activePatient.id;
+      }
+      return true;
+    }
+    return n.targetRole === role;
+  });
 
-  // Role info display (no room/location in doctor header)
+  const unreadNotifs = filteredNotifs.filter((n) => !n.read);
+
+  // Role info display (no room/counter in header)
   const getRoleHeaderInfo = () => {
     switch (role) {
       case 'patient':
@@ -42,24 +56,26 @@ export const Header: React.FC = () => {
           icon: <User className="w-4 h-4 text-blue-300" />,
           badgeColor: 'bg-blue-600',
         };
-      case 'doctor':
+      case 'doctor': {
+        const docName = currentUser?.fullName || (lang === 'ta' ? 'மருத்துவர் OPD' : 'Doctor OPD');
         return {
           title: lang === 'ta' ? 'மருத்துவர் OPD' : 'Doctor OPD',
-          subtitle: lang === 'ta' ? 'மருத்துவர் பிரியா குமார் (MD) • பொது மருத்துவம்' : 'Dr. Priya Kumar (MD) • General Medicine',
+          subtitle: docName,
           icon: <Stethoscope className="w-4 h-4 text-teal-300" />,
           badgeColor: 'bg-teal-600',
         };
+      }
       case 'scan_lab':
         return {
-          title: lang === 'ta' ? 'ஸ்கேன் & ஆய்வக பணிப்பிரிவு' : 'Diagnostic Lab & Scan Workstation',
-          subtitle: 'Pathology, Biochemistry & Radiology',
+          title: lang === 'ta' ? 'ஸ்கேன் & ஆய்வக பிரிவு' : 'Diagnostic Lab & Imaging',
+          subtitle: lang === 'ta' ? 'ஸ்கேன் மற்றும் ஆய்வக சேவைகள்' : 'Clinical Pathology & Radiology',
           icon: <FlaskConical className="w-4 h-4 text-emerald-300" />,
           badgeColor: 'bg-emerald-600',
         };
       case 'pharmacy':
         return {
           title: lang === 'ta' ? 'மைய மருந்தகம்' : 'Central Pharmacy',
-          subtitle: 'TNMSC Generic Dispensing Counter 03',
+          subtitle: lang === 'ta' ? 'மருந்து வழங்கும் பிரிவு' : 'Medicine Dispensing Unit',
           icon: <Pill className="w-4 h-4 text-purple-300" />,
           badgeColor: 'bg-purple-600',
         };
@@ -146,14 +162,14 @@ export const Header: React.FC = () => {
                 <div className="absolute right-0 mt-2 w-80 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl py-2 z-50 text-xs">
                   <div className="px-3 py-1.5 border-b border-slate-800 flex items-center justify-between text-slate-400">
                     <span className="font-bold text-[11px] uppercase tracking-wider">Live System Alerts</span>
-                    <span>{notifications.length} Total</span>
+                    <span>{filteredNotifs.length} Total</span>
                   </div>
 
                   <div className="max-h-72 overflow-y-auto divide-y divide-slate-800">
-                    {notifications.length === 0 ? (
+                    {filteredNotifs.length === 0 ? (
                       <div className="p-4 text-center text-slate-400">No active notifications</div>
                     ) : (
-                      notifications.map((n) => (
+                      filteredNotifs.map((n) => (
                         <div key={n.id} className="p-3 hover:bg-slate-800/60 transition-colors flex gap-2">
                           <div className="mt-0.5">
                             {n.type === 'critical' ? (

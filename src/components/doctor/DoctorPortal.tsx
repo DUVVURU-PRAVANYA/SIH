@@ -157,13 +157,21 @@ export const DoctorPortal: React.FC = () => {
   // Dynamic doctor identity from authenticated user
   const doctorId = currentUser?.id || 'usr-doc-1';
   const doctorName = currentUser?.fullName || 'Doctor';
-  const doctorDeptId = currentUser?.departmentId || 'dept-genmed';
+  const doctorDeptId = currentUser?.departmentId || (
+    currentUser?.username?.includes('ravi') || doctorName.toLowerCase().includes('ravi') ? 'dept-derma'
+    : currentUser?.username?.includes('arun') || doctorName.toLowerCase().includes('arun') ? 'dept-cardio'
+    : currentUser?.username?.includes('senthil') || doctorName.toLowerCase().includes('senthil') ? 'dept-ortho'
+    : currentUser?.username?.includes('meena') || doctorName.toLowerCase().includes('meena') ? 'dept-pedia'
+    : 'dept-genmed'
+  );
   const doctorDeptName = doctorDeptId === 'dept-cardio'
     ? 'Cardiology'
     : doctorDeptId === 'dept-ortho'
     ? 'Orthopedics'
     : doctorDeptId === 'dept-derma'
     ? 'Dermatology'
+    : doctorDeptId === 'dept-pedia'
+    ? 'Pediatrics'
     : 'General Medicine';
 
   // Real database fetch on mount & when doctorId or department changes
@@ -202,10 +210,10 @@ export const DoctorPortal: React.FC = () => {
   const [chiefComplaint, setChiefComplaint] = useState(
     currentPat?.symptoms || 'Routine medical evaluation'
   );
-  const [bp, setBp] = useState('120/80');
-  const [pulse, setPulse] = useState('72');
-  const [temp, setTemp] = useState('98.4');
-  const [weight, setWeight] = useState('65');
+  const [bp, setBp] = useState('');
+  const [pulse, setPulse] = useState('');
+  const [temp, setTemp] = useState('');
+  const [weight, setWeight] = useState('');
   const [doctorDiagnosis, setDoctorDiagnosis] = useState('');
   const [clinicalNotes, setClinicalNotes] = useState('');
 
@@ -306,12 +314,20 @@ export const DoctorPortal: React.FC = () => {
       setDoctorDiagnosis('');
       setClinicalNotes('');
       setPrescriptions([]);
+      setSelectedLabTests([]);
+      setSelectedScans([]);
+      setCustomScanInput('');
     }
     if (currentPat?.vitals) {
-      if (currentPat.vitals.bp) setBp(currentPat.vitals.bp);
-      if (currentPat.vitals.pulse) setPulse(currentPat.vitals.pulse);
-      if (currentPat.vitals.temp) setTemp(currentPat.vitals.temp);
-      if (currentPat.vitals.weight) setWeight(currentPat.vitals.weight);
+      setBp(currentPat.vitals.bp || '');
+      setPulse(currentPat.vitals.pulse || '');
+      setTemp(currentPat.vitals.temp || '');
+      setWeight(currentPat.vitals.weight || '');
+    } else {
+      setBp('');
+      setPulse('');
+      setTemp('');
+      setWeight('');
     }
   }, [currentPat?.id]);
 
@@ -394,12 +410,11 @@ export const DoctorPortal: React.FC = () => {
 
   const [requestDiagnostic, setRequestDiagnostic] = useState(false);
   const [diagnosticModality, setDiagnosticModality] = useState<'x-ray' | 'ultrasound' | 'ct' | 'mri' | 'specialty'>('x-ray');
-  const [diagnosticTestName, setDiagnosticTestName] = useState('Chest Digital X-Ray (PA View)');
+  const [selectedScans, setSelectedScans] = useState<string[]>([]);
+  const [customScanInput, setCustomScanInput] = useState('');
 
   const handleModalityChange = (mod: 'x-ray' | 'ultrasound' | 'ct' | 'mri' | 'specialty') => {
     setDiagnosticModality(mod);
-    const defaultProc = DIAGNOSTIC_IMAGING_CATALOG[mod]?.procedures[0] || '';
-    setDiagnosticTestName(defaultProc);
   };
 
   // Review & Revisit Tab State
@@ -462,19 +477,24 @@ export const DoctorPortal: React.FC = () => {
 
     // Unified routing: auto-detect prescriptions, lab tests, and scans
     const hasLabs = selectedLabTests.length > 0;
-    const hasDiag = requestDiagnostic && Boolean(diagnosticTestName);
+    const hasDiag = requestDiagnostic && selectedScans.length > 0;
     const hasMeds = finalPrescriptions.length > 0;
 
     const notes: DoctorNotes = {
       chiefComplaint,
-      vitals: { bp, pulse, temp, weight },
+      vitals: {
+        bp: bp.trim() || 'Not Measured',
+        pulse: pulse.trim() || 'Not Measured',
+        temp: temp.trim() || 'Not Measured',
+        weight: weight.trim() || 'Not Measured',
+      },
       provisionalDiagnosis: doctorDiagnosis || 'Clinical OPD Assessment',
       diagnosis: doctorDiagnosis || 'Clinical OPD Assessment',
       clinicalNotes,
       medications: hasMeds ? finalPrescriptions : [],
       investigations: [
         ...(hasLabs ? selectedLabTests : []),
-        ...(hasDiag ? [diagnosticTestName] : []),
+        ...(hasDiag ? selectedScans : []),
       ],
       followUpDays: 14,
     };
@@ -485,18 +505,19 @@ export const DoctorPortal: React.FC = () => {
         labPriority,
         labSchedule,
         diagnosticModality: hasDiag ? diagnosticModality : undefined,
-        diagnosticTestName: hasDiag ? diagnosticTestName : undefined,
+        diagnosticTests: hasDiag ? selectedScans : undefined,
+        diagnosticTestName: hasDiag ? selectedScans.join(', ') : undefined,
         diagnosticPriority: 'routine',
         prescriptions: hasMeds ? finalPrescriptions : undefined,
       });
 
       setConsultationSuccessNotice(
         hasMeds && (hasLabs || hasDiag)
-          ? `✓ Consultation completed! Prescriptions transmitted to Pharmacy (${finalPrescriptions.length} items) and investigations routed to Diagnostic Lab.`
+          ? `✓ Consultation completed! Prescriptions transmitted to Pharmacy (${finalPrescriptions.length} items) and ${hasDiag ? `${selectedScans.length} scans ` : ''}investigations routed to Diagnostic Lab.`
           : hasMeds
           ? `✓ Prescriptions transmitted to Central Pharmacy (${finalPrescriptions.length} items). Patient routed to Pharmacy.`
           : (hasLabs || hasDiag)
-          ? `✓ Diagnostic investigations ordered. Patient routed to Diagnostic Station.`
+          ? `✓ Diagnostic investigations ordered (${selectedScans.length} scans, ${selectedLabTests.length} tests). Patient routed to Diagnostic Station.`
           : '✓ Consultation completed and clinical records saved.'
       );
 
@@ -528,12 +549,9 @@ export const DoctorPortal: React.FC = () => {
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-bold font-serif text-white">{doctorName}</h1>
                 <span className="text-xs px-2.5 py-0.5 rounded bg-teal-500/20 text-teal-300 font-semibold border border-teal-500/40">
-                  {lang === 'ta' ? doctorDeptName : doctorDeptName}
+                  {doctorDeptName}
                 </span>
               </div>
-              <p className="text-xs text-slate-300 mt-0.5">
-                {lang === 'ta' ? 'அரசு தலைமை பொது மருத்துவமனை • OPD மருத்துவர் பணிப்பிரிவு' : 'District Headquarter Government Hospital • Doctor OPD Consultation'}
-              </p>
             </div>
           </div>
 
@@ -641,11 +659,11 @@ export const DoctorPortal: React.FC = () => {
                   <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-slate-100">
                     <div>
                       <span className="text-slate-500">{lang === 'ta' ? 'வயது / பாலினம்:' : 'Age / Gender:'}</span>
-                      <div className="font-bold text-slate-800">{currentPat.age} yrs / {currentPat.gender}</div>
+                      <div className="font-bold text-slate-800">{currentPat.age > 0 ? `${currentPat.age} yrs` : (lang === 'ta' ? 'குறிப்பிடப்படவில்லை' : 'Not Set')} / {currentPat.gender || 'Not Specified'}</div>
                     </div>
                     <div>
                       <span className="text-slate-500">{lang === 'ta' ? 'இரத்த வகை:' : 'Blood Group:'}</span>
-                      <div className="font-bold text-slate-800">{currentPat.bloodGroup || 'O+'}</div>
+                      <div className="font-bold text-slate-800">{currentPat.bloodGroup && currentPat.bloodGroup !== 'Not Specified' ? currentPat.bloodGroup : (lang === 'ta' ? 'குறிப்பிடப்படவில்லை' : 'Not Specified')}</div>
                     </div>
                     <div>
                       <span className="text-slate-500">{lang === 'ta' ? 'ஒவ்வாமைகள்:' : 'Allergies:'}</span>
@@ -820,43 +838,61 @@ export const DoctorPortal: React.FC = () => {
                 );
               })()}
 
-              {/* Vitals Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3.5 rounded-lg border border-slate-200">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Blood Pressure (mmHg)</label>
-                  <input
-                    type="text"
-                    value={bp}
-                    onChange={(e) => setBp(e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs font-mono font-bold bg-white border border-slate-300 rounded focus:border-blue-800 outline-none"
-                  />
+              {/* Vitals Grid with Clean Placeholders & Status */}
+              <div className="bg-slate-50 p-3.5 rounded-lg border border-slate-200 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-700">Patient Vitals</span>
+                  {currentPat?.vitals?.bp ? (
+                    <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded border border-emerald-300">
+                      ✓ Recorded at Triage
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-slate-500 italic">
+                      (Enter measured vitals below or leave blank)
+                    </span>
+                  )}
                 </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Pulse Rate (bpm)</label>
-                  <input
-                    type="text"
-                    value={pulse}
-                    onChange={(e) => setPulse(e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs font-mono font-bold bg-white border border-slate-300 rounded focus:border-blue-800 outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Temperature (°F)</label>
-                  <input
-                    type="text"
-                    value={temp}
-                    onChange={(e) => setTemp(e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs font-mono font-bold bg-white border border-slate-300 rounded focus:border-blue-800 outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Weight (kg)</label>
-                  <input
-                    type="text"
-                    value={weight}
-                    onChange={(e) => setWeight(e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs font-mono font-bold bg-white border border-slate-300 rounded focus:border-blue-800 outline-none"
-                  />
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Blood Pressure (mmHg)</label>
+                    <input
+                      type="text"
+                      value={bp}
+                      onChange={(e) => setBp(e.target.value)}
+                      placeholder="e.g. 120/80"
+                      className="w-full px-2.5 py-1.5 text-xs font-mono font-bold bg-white border border-slate-300 rounded focus:border-blue-800 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Pulse Rate (bpm)</label>
+                    <input
+                      type="text"
+                      value={pulse}
+                      onChange={(e) => setPulse(e.target.value)}
+                      placeholder="e.g. 72"
+                      className="w-full px-2.5 py-1.5 text-xs font-mono font-bold bg-white border border-slate-300 rounded focus:border-blue-800 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Temperature (°F)</label>
+                    <input
+                      type="text"
+                      value={temp}
+                      onChange={(e) => setTemp(e.target.value)}
+                      placeholder="e.g. 98.4"
+                      className="w-full px-2.5 py-1.5 text-xs font-mono font-bold bg-white border border-slate-300 rounded focus:border-blue-800 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Weight (kg)</label>
+                    <input
+                      type="text"
+                      value={weight}
+                      onChange={(e) => setWeight(e.target.value)}
+                      placeholder="e.g. 65"
+                      className="w-full px-2.5 py-1.5 text-xs font-mono font-bold bg-white border border-slate-300 rounded focus:border-blue-800 outline-none"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -1194,17 +1230,22 @@ export const DoctorPortal: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Radiology / Scan Selection with full modalities & procedures */}
+                  {/* Radiology / Scan Selection with full modalities & multi-procedures */}
                   <div className="pt-2 border-t border-emerald-200">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                       <label className="text-xs font-bold text-emerald-950 flex items-center gap-2 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={requestDiagnostic}
-                          onChange={(e) => setRequestDiagnostic(e.target.checked)}
+                          onChange={(e) => {
+                            setRequestDiagnostic(e.target.checked);
+                            if (!e.target.checked) setSelectedScans([]);
+                          }}
                           className="rounded text-emerald-600"
                         />
-                        <span>Order Diagnostic Scan / Imaging</span>
+                        <span>
+                          Order Diagnostic Scan / Imaging {selectedScans.length > 0 && `(${selectedScans.length} selected)`}
+                        </span>
                       </label>
 
                       {requestDiagnostic && (
@@ -1227,55 +1268,97 @@ export const DoctorPortal: React.FC = () => {
 
                     {requestDiagnostic && (
                       <div className="space-y-3 mt-2 bg-white p-3.5 rounded-lg border border-emerald-200">
-                        <div>
-                          <label className="block text-[11px] font-bold text-emerald-950 mb-1">
-                            Select Scan / Procedure ({DIAGNOSTIC_IMAGING_CATALOG[diagnosticModality]?.label}):
-                          </label>
-                          <select
-                            value={diagnosticTestName}
-                            onChange={(e) => setDiagnosticTestName(e.target.value)}
-                            className="w-full px-2.5 py-1.5 bg-white border border-emerald-300 rounded text-xs font-medium text-slate-900"
-                          >
-                            {(DIAGNOSTIC_IMAGING_CATALOG[diagnosticModality]?.procedures || []).map((proc) => (
-                              <option key={proc} value={proc}>{proc}</option>
-                            ))}
-                          </select>
-                        </div>
+                        {/* Selected Scans Summary Tags */}
+                        {selectedScans.length > 0 && (
+                          <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-md">
+                            <span className="text-[11px] font-bold text-emerald-900 block mb-1.5">
+                              Prescribed Scans ({selectedScans.length}):
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {selectedScans.map((scan) => (
+                                <span
+                                  key={scan}
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-700 text-white shadow-xs"
+                                >
+                                  <span>{scan}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setSelectedScans(selectedScans.filter((s) => s !== scan))}
+                                    className="hover:text-emerald-200 cursor-pointer font-bold text-xs ml-0.5"
+                                  >
+                                    ✕
+                                  </button>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
 
-                        {/* Quick Chips for fast 1-click selection */}
+                        {/* Available Procedures Grid */}
                         <div>
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                            Available Procedures (1-Click Select):
+                          <span className="text-[11px] font-bold text-slate-700 block mb-1.5">
+                            Click to select scans ({DIAGNOSTIC_IMAGING_CATALOG[diagnosticModality]?.label}):
                           </span>
-                          <div className="flex flex-wrap gap-1.5">
-                            {(DIAGNOSTIC_IMAGING_CATALOG[diagnosticModality]?.procedures || []).map((proc) => (
-                              <button
-                                key={proc}
-                                type="button"
-                                onClick={() => setDiagnosticTestName(proc)}
-                                className={`px-2.5 py-1 rounded text-xs border cursor-pointer transition-colors ${
-                                  diagnosticTestName === proc
-                                    ? 'bg-emerald-700 text-white border-emerald-800 font-bold shadow-2xs'
-                                    : 'bg-emerald-50 text-emerald-900 border-emerald-200 hover:bg-emerald-100'
-                                }`}
-                              >
-                                {proc}
-                              </button>
-                            ))}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                            {(DIAGNOSTIC_IMAGING_CATALOG[diagnosticModality]?.procedures || []).map((proc) => {
+                              const isChecked = selectedScans.includes(proc);
+                              return (
+                                <button
+                                  key={proc}
+                                  type="button"
+                                  onClick={() => {
+                                    if (isChecked) {
+                                      setSelectedScans(selectedScans.filter((s) => s !== proc));
+                                    } else {
+                                      setSelectedScans([...selectedScans, proc]);
+                                    }
+                                  }}
+                                  className={`px-2.5 py-1.5 rounded text-xs border text-left flex items-center justify-between cursor-pointer transition-all ${
+                                    isChecked
+                                      ? 'bg-emerald-700 text-white border-emerald-800 font-semibold shadow-xs'
+                                      : 'bg-emerald-50/70 text-slate-800 border-emerald-200 hover:bg-emerald-100/80'
+                                  }`}
+                                >
+                                  <span>{proc}</span>
+                                  <span className="text-xs font-bold ml-2">
+                                    {isChecked ? '✓' : '+'}
+                                  </span>
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
 
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                            Custom Scan Procedure / Specific Clinical View:
-                          </label>
+                        {/* Custom Scan / Specific View Entry */}
+                        <div className="pt-2 border-t border-slate-100 flex gap-2">
                           <input
                             type="text"
-                            value={diagnosticTestName}
-                            onChange={(e) => setDiagnosticTestName(e.target.value)}
-                            placeholder="e.g. Chest Digital X-Ray (PA View)"
-                            className="w-full px-3 py-1.5 text-xs bg-white border border-emerald-300 rounded font-medium"
+                            value={customScanInput}
+                            onChange={(e) => setCustomScanInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                if (customScanInput.trim() && !selectedScans.includes(customScanInput.trim())) {
+                                  setSelectedScans([...selectedScans, customScanInput.trim()]);
+                                  setCustomScanInput('');
+                                }
+                              }
+                            }}
+                            placeholder="Type custom scan name..."
+                            className="flex-1 px-3 py-1.5 text-xs bg-white border border-emerald-300 rounded font-medium outline-none focus:border-emerald-600"
                           />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (customScanInput.trim() && !selectedScans.includes(customScanInput.trim())) {
+                                setSelectedScans([...selectedScans, customScanInput.trim()]);
+                                setCustomScanInput('');
+                              }
+                            }}
+                            className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded text-xs font-bold cursor-pointer"
+                          >
+                            + Add Scan
+                          </button>
                         </div>
                       </div>
                     )}
@@ -1465,11 +1548,11 @@ export const DoctorPortal: React.FC = () => {
                     </div>
                     <div>
                       <span className="text-slate-500">Age / Gender:</span>
-                      <strong className="block text-slate-900 font-bold">{currentPat.age} yrs ({currentPat.gender})</strong>
+                      <strong className="block text-slate-900 font-bold">{currentPat.age > 0 ? `${currentPat.age} yrs` : 'Not Set'} ({currentPat.gender || 'Not Specified'})</strong>
                     </div>
                     <div>
                       <span className="text-slate-500">Blood Group:</span>
-                      <strong className="block text-slate-900 font-bold">{currentPat.bloodGroup || 'O+'}</strong>
+                      <strong className="block text-slate-900 font-bold">{currentPat.bloodGroup && currentPat.bloodGroup !== 'Not Specified' ? currentPat.bloodGroup : 'Not Specified'}</strong>
                     </div>
                     <div>
                       <span className="text-slate-500">Known Allergies:</span>

@@ -19,6 +19,48 @@ const DEPT_MAP: Record<string, DeptMeta> = {
   '4': { id: 'dept-derma', code: 'DERMA', nameEn: 'Dermatology', nameTa: 'தோல் மருத்துவம்' },
 };
 
+export const DOCTOR_VOICE_MAP: Record<string, { en: string; ta: string }> = {
+  'usr-doc-1': { en: 'Doctor Priya Kumar', ta: 'டாக்டர் பிரியா குமார்' },
+  'dr_priya': { en: 'Doctor Priya Kumar', ta: 'டாக்டர் பிரியா குமார்' },
+  'Dr. Priya Kumar': { en: 'Doctor Priya Kumar', ta: 'டாக்டர் பிரியா குமார்' },
+
+  'usr-doc-2': { en: 'Doctor Senthil Nathan', ta: 'டாக்டர் செந்தில் நாதன்' },
+  'dr_senthil': { en: 'Doctor Senthil Nathan', ta: 'டாக்டர் செந்தில் நாதன்' },
+  'Dr. M. Senthil Nathan': { en: 'Doctor Senthil Nathan', ta: 'டாக்டர் செந்தில் நாதன்' },
+
+  'usr-doc-arun': { en: 'Doctor Arun Kumar', ta: 'டாக்டர் அருண் குமார்' },
+  'dr_arun': { en: 'Doctor Arun Kumar', ta: 'டாக்டர் அருண் குமார்' },
+  'Dr. Arun Kumar': { en: 'Doctor Arun Kumar', ta: 'டாக்டர் அருண் குமார்' },
+
+  'usr-doc-meena': { en: 'Doctor Meena Sharma', ta: 'டாக்டர் மீனா சர்மா' },
+  'dr_meena': { en: 'Doctor Meena Sharma', ta: 'டாக்டர் மீனா சர்மா' },
+  'Dr. Meena Sharma': { en: 'Doctor Meena Sharma', ta: 'டாக்டர் மீனா சர்மா' },
+
+  'usr-doc-ravi': { en: 'Doctor Ravi Kumar', ta: 'டாக்டர் ரவி குமார்' },
+  'dr_ravi': { en: 'Doctor Ravi Kumar', ta: 'டாக்டர் ரவி குமார்' },
+  'Dr. Ravi Kumar': { en: 'Doctor Ravi Kumar', ta: 'டாக்டர் ரவி குமார்' },
+};
+
+export function formatDoctorNameForVoice(doctorInput?: string, lang: IVRLanguage = 'en'): string {
+  if (!doctorInput) {
+    return lang === 'ta' ? 'டாக்டர்' : 'Doctor';
+  }
+  const clean = doctorInput.trim();
+  const direct = DOCTOR_VOICE_MAP[clean];
+  if (direct) {
+    return direct[lang];
+  }
+  for (const [key, mapping] of Object.entries(DOCTOR_VOICE_MAP)) {
+    if (clean.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(clean.toLowerCase())) {
+      return mapping[lang];
+    }
+  }
+  if (lang === 'en') {
+    return clean.replace(/^Dr\.?\s*/i, 'Doctor ');
+  }
+  return clean.startsWith('டாக்டர்') ? clean : `டாக்டர் ${clean}`;
+}
+
 export class IVRService {
   /**
    * 1. Start a new IVR Call
@@ -38,14 +80,14 @@ export class IVRService {
     session.state = 'LANGUAGE_MENU';
     session.lastPromptTextEn = promptTextEn;
     session.lastPromptTextTa = promptTextTa;
-    session.lastSpokenText = initialLang === 'ta' ? promptTextTa : promptTextEn;
+    session.lastSpokenText = `${promptTextEn} ${promptTextTa}`;
 
     ivrSessionManager.updateSession(session.sessionId, session);
 
     return {
       success: true,
       session,
-      spokenText: session.lastSpokenText,
+      spokenText: `${promptTextEn} [PAUSE_3S] ${promptTextTa}`,
       language: session.language,
       state: session.state,
     };
@@ -279,13 +321,16 @@ export class IVRService {
     session.generatedToken = result.tokenNumber;
     session.peopleAhead = result.metrics.peopleAhead;
     session.estimatedWaitMinutes = result.metrics.estimatedWaitMinutes;
+    session.doctorName = result.doctor?.fullName || 'Assigned Specialist';
 
     const lang = session.language;
     const prompts = getPrompt(lang);
+    const spokenDoctor = formatDoctorNameForVoice(result.doctor?.fullName, lang);
     const spokenText = prompts.tokenGenerated(
       result.tokenNumber,
       result.metrics.peopleAhead,
-      result.metrics.estimatedWaitMinutes
+      result.metrics.estimatedWaitMinutes,
+      spokenDoctor
     );
 
     return this.respondWithPrompt(
@@ -402,7 +447,10 @@ export class IVRService {
 
     // Sub-case: Doctor OPD - Called / In Consultation
     if (metrics.queueStatus === 'in_service' || metrics.queueStatus === 'called') {
-      const message = prompts.calledForConsultation(latestJourney.currentToken);
+      const spokenDoctor = formatDoctorNameForVoice(metrics.doctorName, lang);
+      const message = lang === 'ta'
+        ? `உங்கள் டோக்கன் ${latestJourney.currentToken}-க்கான முறை வந்துவிட்டது. ${spokenDoctor} ஆலோசனைக்கு அழைக்கப்பட்டுள்ளீர்கள்.`
+        : `Your turn has arrived. You are currently called for consultation with ${spokenDoctor} for token ${latestJourney.currentToken}.`;
       return {
         hasToken: true,
         isCompleted: false,
@@ -419,10 +467,12 @@ export class IVRService {
     }
 
     // Sub-case: Doctor OPD - Waiting in queue
+    const spokenDoctor = formatDoctorNameForVoice(metrics.doctorName, lang);
     const message = prompts.tokenStatus(
       latestJourney.currentToken,
       metrics.peopleAhead,
-      metrics.estimatedWaitMinutes
+      metrics.estimatedWaitMinutes,
+      spokenDoctor
     );
 
     return {
@@ -457,11 +507,11 @@ export class IVRService {
       patient = db.createPatient({
         phone: cleanPhone,
         name: `Patient (+91 ${cleanPhone})`,
-        age: 35,
-        gender: 'Male',
-        bloodGroup: 'O+',
-        allergies: ['None Reported'],
-        chronicConditions: ['None Reported'],
+        age: 0,
+        gender: 'Not Specified',
+        bloodGroup: 'Not Specified',
+        allergies: [],
+        chronicConditions: [],
       });
     }
 

@@ -15,6 +15,34 @@ export const App: React.FC = () => {
 
   const timerRef = useRef<any>(null);
   const ringbackCancelRef = useRef<any>(null);
+  const languageRepeatTimeoutRef = useRef<any>(null);
+  const callStateRef = useRef<IVRCallState>(callState);
+
+  useEffect(() => {
+    callStateRef.current = callState;
+  }, [callState]);
+
+  const clearLanguageRepeat = () => {
+    if (languageRepeatTimeoutRef.current) {
+      clearTimeout(languageRepeatTimeoutRef.current);
+      languageRepeatTimeoutRef.current = null;
+    }
+  };
+
+  const scheduleLanguageRepeat = () => {
+    clearLanguageRepeat();
+    if (callStateRef.current === 'LANGUAGE_MENU') {
+      languageRepeatTimeoutRef.current = setTimeout(() => {
+        if (callStateRef.current === 'LANGUAGE_MENU') {
+          // Repeat asking in Tamil after 3 seconds
+          const tamilPrompt = 'அரசு தலைமை மருத்துவமனைக்கு நல்வரவு. தமிழுக்கு 2-ஐ அழுத்தவும்.';
+          audioEngine.speak(tamilPrompt, 'ta', () => {
+            scheduleLanguageRepeat();
+          });
+        }
+      }, 3000);
+    }
+  };
 
   // Connect WebSocket on mount for real-time consultation completion & stage updates
   useEffect(() => {
@@ -72,6 +100,7 @@ export const App: React.FC = () => {
       if (ws) ws.close();
       if (timerRef.current) clearInterval(timerRef.current);
       if (ringbackCancelRef.current) ringbackCancelRef.current();
+      clearLanguageRepeat();
       audioEngine.stopSpeaking();
     };
   }, [callerPhone, session?.language]);
@@ -97,7 +126,9 @@ export const App: React.FC = () => {
   // Action: Start Call
   const handleStartCall = async () => {
     try {
+      clearLanguageRepeat();
       setCallState('CALLING');
+      callStateRef.current = 'CALLING';
       setCallDuration(0);
 
       // Play ringing sound
@@ -116,14 +147,21 @@ export const App: React.FC = () => {
 
         setSession(res.session);
         setCallState(res.state);
+        callStateRef.current = res.state;
 
-        // Speak aloud
-        audioEngine.speak(res.spokenText, res.language);
+        clearLanguageRepeat();
+
+        // Speak aloud: English prompt -> [3-second pause] -> Tamil prompt
+        // Once completed, if user has not pressed a key, repeat asking in Tamil after 3 seconds
+        audioEngine.speak(res.spokenText, res.language, () => {
+          scheduleLanguageRepeat();
+        });
       }, 1200);
     } catch (err: any) {
       console.error('Failed to start call:', err);
       if (ringbackCancelRef.current) ringbackCancelRef.current();
       setCallState('IDLE');
+      callStateRef.current = 'IDLE';
       alert(`Could not connect to IVR server on port 4000: ${err.message}`);
     }
   };
@@ -131,6 +169,10 @@ export const App: React.FC = () => {
   // Action: Keypress DTMF
   const handleKeyPress = async (digit: string) => {
     if (!session) return;
+
+    // Immediately stop pending language repeat and ongoing speech on keypress
+    clearLanguageRepeat();
+    audioEngine.stopSpeaking();
 
     // Visual Flash
     setActiveDigit(digit);
@@ -141,6 +183,7 @@ export const App: React.FC = () => {
       if (res.success) {
         setSession(res.session);
         setCallState(res.state);
+        callStateRef.current = res.state;
 
         // Speak response aloud
         audioEngine.speak(res.spokenText, res.language);
@@ -159,6 +202,7 @@ export const App: React.FC = () => {
       if (res.success) {
         setSession(res.session);
         setCallState(res.state);
+        callStateRef.current = res.state;
 
         // Speak response aloud
         audioEngine.speak(res.spokenText, res.language);
@@ -170,6 +214,7 @@ export const App: React.FC = () => {
 
   // Action: End Call
   const handleEndCall = async () => {
+    clearLanguageRepeat();
     audioEngine.stopSpeaking();
     if (ringbackCancelRef.current) {
       ringbackCancelRef.current();
@@ -183,12 +228,21 @@ export const App: React.FC = () => {
     }
 
     setCallState('CALL_ENDED');
+    callStateRef.current = 'CALL_ENDED';
   };
 
   // Action: Repeat Voice Prompt
   const handleRepeatVoice = () => {
     if (session?.lastSpokenText) {
-      audioEngine.speak(session.lastSpokenText, session.language);
+      clearLanguageRepeat();
+      const textToSpeak = session.state === 'LANGUAGE_MENU'
+        ? `${session.lastPromptTextEn || ''} [PAUSE_3S] ${session.lastPromptTextTa || ''}`.trim()
+        : session.lastSpokenText;
+      audioEngine.speak(textToSpeak, session.language, () => {
+        if (callStateRef.current === 'LANGUAGE_MENU') {
+          scheduleLanguageRepeat();
+        }
+      });
     }
   };
 

@@ -440,7 +440,14 @@ export class DatabaseEngine {
       : [];
     const peopleAhead = entriesAhead.length;
     const position = peopleAhead + 1;
-    const estimatedWaitMinutes = Math.max(0, Math.round((peopleAhead * avgMins) / counters));
+
+    // Dynamic wait time algorithm:
+    // When assigned to a specific doctor, each patient ahead takes avg consultation duration directly.
+    // When in a shared department queue, distributed across active counters.
+    const isDoctorQueue = journey.currentStage === 'doctor' && !!journey.doctorId;
+    const estimatedWaitMinutes = isDoctorQueue
+      ? (peopleAhead > 0 ? Math.round(peopleAhead * avgMins) : (inServiceEntry ? 3 : 1))
+      : Math.max(0, Math.round((peopleAhead * avgMins) / counters));
 
     // Privacy-Safe Queue: ONLY tokenNumber and clean queue status. Absolutely NO personal medical or demographic data.
     const queueAhead = entriesAhead.map((e) => ({
@@ -475,7 +482,30 @@ export class DatabaseEngine {
     const dept = this.getDepartmentById(params.departmentId);
     if (!dept) throw new Error(`Department ${params.departmentId} not found`);
 
-    const doctor = params.doctorId ? this.getUserById(params.doctorId) : this.getDoctors().find(d => d.departmentId === dept.id);
+    // Intelligent Doctor Assignment & Load Balancing:
+    // If doctorId is specified, use that doctor.
+    // Otherwise, find all active doctors in this department and pick the doctor with the fewest waiting patients!
+    let doctor: User | undefined;
+    if (params.doctorId) {
+      doctor = this.getUserById(params.doctorId);
+    }
+    if (!doctor) {
+      const deptDoctors = this.getDoctors().filter((d) => d.departmentId === dept.id && d.isActive);
+      if (deptDoctors.length === 1) {
+        doctor = deptDoctors[0];
+      } else if (deptDoctors.length > 1) {
+        let minQueue = Infinity;
+        let bestDoc = deptDoctors[0];
+        for (const doc of deptDoctors) {
+          const docQueueLen = this.getDoctorQueue(doc.id).length;
+          if (docQueueLen < minQueue) {
+            minQueue = docQueueLen;
+            bestDoc = doc;
+          }
+        }
+        doctor = bestDoc;
+      }
+    }
     const priority = params.priority || (patient.age >= 60 ? 'senior' : 'normal');
 
     // Archive / complete any prior active journeys and waiting queue entries for this patient

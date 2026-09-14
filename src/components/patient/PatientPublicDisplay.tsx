@@ -28,7 +28,7 @@ export const PatientPublicDisplay: React.FC = () => {
   const playChimeAndVoice = () => {
     voiceService.playChime('turn');
     voiceService.speak(
-      `Attention please. Token OP-035. Please enter Room 204 for General Medicine consultation.`,
+      `Attention please. Token OP-035. Please proceed to General Medicine OPD consultation.`,
       'en'
     );
   };
@@ -82,7 +82,7 @@ export const PatientPublicDisplay: React.FC = () => {
 
           <div>
             <span className="inline-block px-4 py-1.5 rounded-full bg-teal-400/20 text-teal-300 font-extrabold text-sm sm:text-base tracking-widest uppercase border border-teal-400/40">
-              GENERAL MEDICINE OPD • ROOM 204
+              GENERAL MEDICINE OPD
             </span>
 
             <div className="text-sm sm:text-lg font-bold text-slate-300 mt-4 uppercase tracking-wider">
@@ -94,9 +94,9 @@ export const PatientPublicDisplay: React.FC = () => {
             </div>
 
             <div className="text-xl sm:text-2xl font-bold text-slate-200">
-              Please Proceed Directly to <span className="text-amber-300 font-extrabold">Room 204</span> (2nd Floor)
+              Please Proceed Directly for <span className="text-amber-300 font-extrabold">Doctor Consultation</span>
             </div>
-            <div className="text-sm text-slate-400 mt-1">Attending Physician: <strong>Dr. Priya Kumar (MD)</strong></div>
+            <div className="text-sm text-slate-400 mt-1">Attending Physician on Duty</div>
           </div>
 
           <div className="pt-6 border-t border-blue-400/30 flex flex-col sm:flex-row items-center justify-between text-sm text-slate-300 gap-2">

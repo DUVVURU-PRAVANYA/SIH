@@ -86,7 +86,7 @@ export const PatientWayfindingModal: React.FC<PatientWayfindingModalProps> = ({ 
               <p className="text-xs text-white/90 font-medium">
                 {lang === 'ta'
                   ? 'தரைப்பகுதியில் வரையப்பட்ட வண்ணக் கோடுகளை பின்தொடரவும்'
-                  : 'Follow the colored painted floor track line directly to room'}
+                  : 'Follow the colored painted floor track line directly to your department'}
               </p>
             </div>
           </div>
@@ -136,18 +136,18 @@ export const PatientWayfindingModal: React.FC<PatientWayfindingModalProps> = ({ 
             <ArrowUp className="w-7 h-7 text-teal-600 animate-bounce" />
           </div>
 
-          {/* Step 3: ROOM NUMBER (Giant Target) */}
+          {/* Step 3: DESTINATION (Giant Target) */}
           <div className="p-5 rounded-3xl bg-gradient-to-r from-blue-700 to-indigo-800 text-white shadow-lg border-2 border-blue-400 text-center space-y-1">
             <span className="text-xs font-bold text-blue-200 uppercase tracking-widest">
-              {lang === 'ta' ? 'இலக்கு அறை எண்' : 'TARGET DESTINATION ROOM'}
+              {lang === 'ta' ? 'இலக்கு பிரிவு' : 'TARGET DESTINATION'}
             </span>
-            <div className="text-4xl sm:text-5xl font-black tracking-tight text-white">
+            <div className="text-3xl sm:text-4xl font-black tracking-tight text-white">
               {p.location.room}
             </div>
             <div className="text-sm font-bold text-blue-100 mt-1">
-              {p.currentStage === 'doctor' && (lang === 'ta' ? 'மருத்துவர் பிரியா குமார்' : 'Dr. Priya Kumar (Cardiology)')}
-              {p.currentStage === 'diagnostic' && (lang === 'ta' ? 'டிஜிட்டல் எக்ஸ்-ரே பிரிவு' : 'Digital Chest X-Ray Suite')}
-              {p.currentStage === 'pharmacy' && (lang === 'ta' ? 'மைய மருந்தக கவுண்டர்' : 'Medicine Dispensing Counter')}
+              {p.currentStage === 'doctor' && (p.doctorName || (lang === 'ta' ? 'மருத்துவர் ஆலோசனை பிரிவு' : 'Doctor Consultation'))}
+              {p.currentStage === 'diagnostic' && (lang === 'ta' ? 'ஸ்கேன் & ஆய்வக பிரிவு' : 'Diagnostic Imaging & Lab')}
+              {p.currentStage === 'pharmacy' && (lang === 'ta' ? 'மைய மருந்தகம்' : 'Central Pharmacy Dispensing')}
             </div>
           </div>
 

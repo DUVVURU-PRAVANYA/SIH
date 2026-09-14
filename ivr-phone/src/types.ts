@@ -35,6 +35,12 @@ export interface IVRSession {
   lastPromptTextTa: string;
   lastSpokenText: string;
   needsSpeechInput?: boolean;
+  doctorName?: string;
+  currentStage?: 'doctor' | 'diagnostic' | 'pharmacy' | 'completed';
+  stageTitle?: string;
+  diagnosis?: string;
+  isCompleted?: boolean;
+  queueStatus?: string;
 }
 
 export interface IVRActionResponse {
