@@ -1,74 +1,98 @@
 import { IVRActionResponse, DemoCaller } from '../types';
-const getBaseUrl = () => {
-  if (import.meta.env.VITE_API_URL) {
-    return `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api/ivr`;
-  }
-  if (typeof window !== 'undefined') {
-    if (window.location.hostname === 'localhost' && window.location.port === '5175') {
-      return 'http://localhost:4000/api/ivr';
-    }
-    return '/api/ivr';
-  }
-  return 'http://localhost:4000/api/ivr';
-};
+async function safeIvrFetch<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const candidates: string[] = [];
 
-const BASE_URL = getBaseUrl();
+  if (import.meta.env.VITE_API_URL) {
+    candidates.push(`${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api/ivr`);
+  }
+
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname || 'localhost';
+    // Prioritize direct backend on port 4000
+    candidates.push(`http://${host}:4000/api/ivr`);
+    candidates.push('http://localhost:4000/api/ivr');
+    candidates.push('http://127.0.0.1:4000/api/ivr');
+    // Also include relative proxy path
+    candidates.push('/api/ivr');
+  } else {
+    candidates.push('http://localhost:4000/api/ivr');
+  }
+
+  const uniqueCandidates = Array.from(new Set(candidates));
+  let lastError: any = null;
+
+  for (const base of uniqueCandidates) {
+    try {
+      const url = `${base}${endpoint}`;
+      const res = await fetch(url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(options.headers || {}),
+        },
+      });
+
+      if (!res.ok) {
+        const errBody = await res.text().catch(() => '');
+        lastError = new Error(`Server returned ${res.status}: ${errBody || res.statusText}`);
+        continue;
+      }
+
+      const text = await res.text();
+      if (!text || !text.trim()) {
+        lastError = new Error('Empty response from IVR server');
+        continue;
+      }
+
+      try {
+        return JSON.parse(text) as T;
+      } catch {
+        lastError = new Error(`Invalid JSON received: ${text.slice(0, 100)}`);
+        continue;
+      }
+    } catch (err: any) {
+      lastError = err;
+    }
+  }
+
+  throw lastError || new Error('Could not connect to IVR server on port 4000');
+}
 
 export class IVRClient {
   public async startCall(phone: string, language: 'en' | 'ta' = 'en'): Promise<IVRActionResponse> {
-    const res = await fetch(`${BASE_URL}/call/start`, {
+    return safeIvrFetch<IVRActionResponse>('/call/start', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone, language }),
     });
-    if (!res.ok) {
-      throw new Error(`Failed to start call: ${res.statusText}`);
-    }
-    return res.json();
   }
 
   public async sendDtmf(sessionId: string, digit: string): Promise<IVRActionResponse> {
-    const res = await fetch(`${BASE_URL}/call/dtmf`, {
+    return safeIvrFetch<IVRActionResponse>('/call/dtmf', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId, digit }),
     });
-    if (!res.ok) {
-      throw new Error(`Failed to process key: ${res.statusText}`);
-    }
-    return res.json();
   }
 
   public async sendSymptom(sessionId: string, transcript: string): Promise<IVRActionResponse> {
-    const res = await fetch(`${BASE_URL}/call/symptom`, {
+    return safeIvrFetch<IVRActionResponse>('/call/symptom', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId, transcript }),
     });
-    if (!res.ok) {
-      throw new Error(`Failed to submit symptoms: ${res.statusText}`);
-    }
-    return res.json();
   }
 
   public async endCall(sessionId: string): Promise<IVRActionResponse> {
-    const res = await fetch(`${BASE_URL}/call/end`, {
+    return safeIvrFetch<IVRActionResponse>('/call/end', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId }),
     });
-    if (!res.ok) {
-      throw new Error(`Failed to end call: ${res.statusText}`);
-    }
-    return res.json();
   }
 
   public async checkStatus(phone: string, language: 'en' | 'ta' = 'en'): Promise<any> {
     try {
-      const res = await fetch(`${BASE_URL}/call/status/${encodeURIComponent(phone)}?lang=${language}`);
-      if (!res.ok) return null;
-      const data = await res.json();
-      return data.data;
+      const data = await safeIvrFetch<any>(`/call/status/${encodeURIComponent(phone)}?lang=${language}`, {
+        method: 'GET',
+      });
+      return data?.data || data;
     } catch {
       return null;
     }
@@ -76,10 +100,10 @@ export class IVRClient {
 
   public async getDemoCallers(): Promise<DemoCaller[]> {
     try {
-      const res = await fetch(`${BASE_URL}/demo-callers`);
-      if (!res.ok) return [];
-      const data = await res.json();
-      return data.callers || [];
+      const data = await safeIvrFetch<any>('/demo-callers', {
+        method: 'GET',
+      });
+      return data?.callers || [];
     } catch {
       return [
         { label: 'Default Demo Caller (New/Clean)', phone: '9876543210', type: 'default' },
