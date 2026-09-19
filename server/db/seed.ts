@@ -230,15 +230,12 @@ export function seedDatabase() {
 
   const defaultPatient: Patient = {
     id: 'pat-demo-01',
-    name: 'Arun Kumar',
-    nameTa: 'அருண் குமார்',
-    age: 34,
-    gender: 'Male',
+    name: '9876543210',
+    nameTa: '9876543210',
+    age: 30,
+    gender: 'Other',
     phone: '9876543210',
     abhaId: '91-1234-5678-9012',
-    bloodGroup: 'O+ve',
-    allergies: ['Penicillin'],
-    chronicConditions: ['Hypertension'],
     preferredLanguage: 'ta',
     isSynthetic: false,
   };

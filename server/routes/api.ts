@@ -51,11 +51,11 @@ apiRouter.post('/auth/identify', (req: Request, res: Response) => {
 
       if (!patient) {
         patient = db.createPatient({
-          name: phone === '9876543210' ? 'Arun Kumar' : `Patient (${phone.slice(-4)})`,
-          nameTa: phone === '9876543210' ? 'அருண் குமார்' : `நோயாளி (${phone.slice(-4)})`,
+          name: phone,
+          nameTa: phone,
           phone,
-          age: 34,
-          gender: 'Male',
+          age: 30,
+          gender: 'Other',
           abhaId: `91-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`,
           preferredLanguage: 'ta',
           isSynthetic: false,

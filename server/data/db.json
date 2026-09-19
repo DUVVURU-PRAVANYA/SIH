@@ -10,7 +10,7 @@
       "emergencyBedsAvailable": 12,
       "contactPhone": "+91 452 2532535",
       "emergencyStatus": "normal",
-      "createdAt": "2026-09-19T19:51:06.745Z"
+      "createdAt": "2026-09-19T20:08:12.815Z"
     }
   ],
   "blocks": [
@@ -412,19 +412,12 @@
   "patients": [
     {
       "id": "pat-demo-01",
-      "name": "Arun Kumar",
-      "nameTa": "அருண் குமார்",
-      "age": 34,
-      "gender": "Male",
+      "name": "9876543210",
+      "nameTa": "9876543210",
+      "age": 30,
+      "gender": "Other",
       "phone": "9876543210",
       "abhaId": "91-1234-5678-9012",
-      "bloodGroup": "O+ve",
-      "allergies": [
-        "Penicillin"
-      ],
-      "chronicConditions": [
-        "Hypertension"
-      ],
       "preferredLanguage": "ta",
       "isSynthetic": false
     }

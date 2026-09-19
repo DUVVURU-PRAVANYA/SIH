@@ -105,7 +105,7 @@ export class IVRService {
 
     // Look up caller or ensure demo patient exists so call connects immediately
     const patient = this.ensurePatientRecord(cleanPhone);
-    session.callerName = patient.name;
+    session.callerName = cleanPhone;
 
     const promptTextEn = PROMPTS_EN.languageSelect;
     const promptTextTa = PROMPTS_TA.languageSelect;
@@ -542,11 +542,11 @@ export class IVRService {
     let patient = db.getPatientByPhone(cleanPhone);
     if (!patient) {
       patient = db.createPatient({
-        name: cleanPhone === '9876543210' ? 'Arun Kumar' : `Patient (${cleanPhone.slice(-4)})`,
-        nameTa: cleanPhone === '9876543210' ? 'அருண் குமார்' : `நோயாளி (${cleanPhone.slice(-4)})`,
+        name: cleanPhone,
+        nameTa: cleanPhone,
         phone: cleanPhone,
-        age: 34,
-        gender: 'Male',
+        age: 30,
+        gender: 'Other',
         abhaId: `91-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`,
         preferredLanguage: 'ta',
         isSynthetic: false,
