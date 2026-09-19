@@ -2210,7 +2210,7 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (!res.ok || !data.success) {
         return {
           success: false,
-          error: data.error || 'Patient account not found. Please register as a new patient.',
+          error: data.error || (lang === 'ta' ? 'இந்த மொபைல் எண் பதிவு செய்யப்படவில்லை. முதலில் புதிய நோயாளியாக பதிவு செய்யவும்.' : 'This mobile number is not registered. Please register as a new patient first.'),
         };
       }
 

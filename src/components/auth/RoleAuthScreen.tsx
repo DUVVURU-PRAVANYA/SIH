@@ -594,18 +594,18 @@ export const RoleAuthScreen: React.FC = () => {
                   </div>
 
                   {errorMessage && (
-                    <div className="mb-3 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex flex-col gap-1.5">
-                      <div className="flex items-center gap-2 font-semibold">
-                        <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+                    <div className="mb-3 p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs flex flex-col gap-1.5">
+                      <div className="flex items-center gap-2 font-bold">
+                        <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
                         <span>{errorMessage}</span>
                       </div>
-                      {errorMessage.toLowerCase().includes('register') && (
+                      {errorMessage.toLowerCase().includes('not registered') && (
                         <button
                           type="button"
                           onClick={() => switchStep('register')}
-                          className="text-left text-xs font-bold text-sky-700 hover:text-sky-900 underline cursor-pointer pl-6"
+                          className="self-start text-[11px] font-bold text-teal-800 bg-teal-100 hover:bg-teal-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
                         >
-                          {lang === 'ta' ? 'இப்போதே புதிய நோயாளியாக பதிவு செய்யவும் →' : 'Click here to Register as New Patient →'}
+                          {lang === 'ta' ? 'புதிய நோயாளியாக பதிவு செய்க →' : 'Register as New Patient →'}
                         </button>
                       )}
                     </div>

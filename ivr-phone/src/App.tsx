@@ -9,7 +9,7 @@ export const App: React.FC = () => {
   const [session, setSession] = useState<IVRSession | null>(null);
   const [callState, setCallState] = useState<IVRCallState>('IDLE');
   const [callDuration, setCallDuration] = useState(0);
-  const [callerPhone] = useState('9876543210');
+  const [callerPhone, setCallerPhone] = useState('9876543210');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [activeDigit, setActiveDigit] = useState<string | null>(null);
@@ -161,11 +161,9 @@ export const App: React.FC = () => {
 
         clearLanguageRepeat();
 
-        if (res.notRegistered) {
-          // If caller is not registered in hospital database, announce notice and disconnect
-          audioEngine.speak(res.spokenText, res.language, () => {
-            audioEngine.playBeep('low');
-          });
+        if (res.state === 'CALL_ENDED') {
+          // Unregistered caller prompt: speak rejection announcement
+          audioEngine.speak(res.spokenText, 'en');
           return;
         }
 
@@ -180,7 +178,7 @@ export const App: React.FC = () => {
       if (ringbackCancelRef.current) ringbackCancelRef.current();
       setCallState('IDLE');
       callStateRef.current = 'IDLE';
-      alert(`Could not connect to IVR telephony server: ${err.message || 'Server unreachable'}`);
+      alert(`Could not connect to IVR telephony service: ${err.message}`);
     }
   };
 
@@ -314,7 +312,40 @@ export const App: React.FC = () => {
       </header>
 
       {/* Main Stage: Center Phone Device as Hero Element */}
-      <main className="flex-1 flex items-center justify-center px-4 py-4 relative z-10">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-2 relative z-10 gap-2">
+        {/* Caller SIM Switcher */}
+        <div className="w-full max-w-[350px] sm:max-w-[370px] px-3.5 py-1.5 bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xs flex items-center justify-between gap-2 text-xs select-none">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="font-semibold text-slate-500 text-[11px] shrink-0">Caller SIM:</span>
+            <input
+              type="text"
+              value={callerPhone}
+              onChange={(e) => setCallerPhone(e.target.value.replace(/[^0-9]/g, '').slice(0, 10))}
+              placeholder="10-digit phone"
+              className="w-24 font-mono font-bold text-slate-800 bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5 text-xs focus:outline-teal-500"
+              disabled={callState !== 'IDLE'}
+            />
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={() => setCallerPhone('9876543210')}
+              disabled={callState !== 'IDLE'}
+              title="Registered Patient (Arun Kumar)"
+              className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${callerPhone === '9876543210' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+            >
+              Registered
+            </button>
+            <button
+              onClick={() => setCallerPhone('9999900000')}
+              disabled={callState !== 'IDLE'}
+              title="Unregistered Number"
+              className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${callerPhone === '9999900000' ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+            >
+              Unregistered
+            </button>
+          </div>
+        </div>
+
         <PhoneChassis
           session={session}
           callState={callState}

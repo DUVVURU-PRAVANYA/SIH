@@ -41,7 +41,6 @@ export interface IVRSession {
   diagnosis?: string;
   isCompleted?: boolean;
   queueStatus?: string;
-  notRegistered?: boolean;
 }
 
 export interface IVRActionResponse {
@@ -50,7 +49,6 @@ export interface IVRActionResponse {
   spokenText: string;
   language: IVRLanguage;
   state: IVRCallState;
-  notRegistered?: boolean;
   error?: string;
 }
 
