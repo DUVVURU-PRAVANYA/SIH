@@ -37,18 +37,18 @@ export const PhoneChassis: React.FC<PhoneChassisProps> = ({
   const isInCall = callState !== 'IDLE' && callState !== 'CALL_ENDED';
 
   return (
-    <div className="relative mx-auto my-4 w-full max-w-[340px] sm:max-w-[360px] aspect-[9/18.5] max-h-[760px] bg-slate-900 rounded-[44px] p-3 shadow-2xl border-4 border-slate-700/80 ring-1 ring-slate-600/50 flex flex-col justify-between select-none">
+    <div className="relative mx-auto my-2 w-full max-w-[350px] sm:max-w-[370px] aspect-[9/18.5] max-h-[770px] bg-slate-900 rounded-[48px] p-3.5 shadow-2xl shadow-slate-400/40 border-4 border-slate-800 ring-1 ring-slate-700/70 flex flex-col justify-between select-none">
       {/* Outer Metallic Edge Highlight */}
-      <div className="absolute inset-0 rounded-[40px] border border-white/10 pointer-events-none"></div>
+      <div className="absolute inset-0 rounded-[44px] border border-white/15 pointer-events-none"></div>
 
       {/* Top Ear Speaker & Front Camera Dot */}
-      <div className="w-full flex items-center justify-center gap-3 pt-1 pb-2 shrink-0">
+      <div className="w-full flex items-center justify-center gap-3 pt-0.5 pb-2 shrink-0">
         <div className="w-12 h-1 bg-slate-700 rounded-full"></div>
         <div className="w-2.5 h-2.5 bg-slate-800 rounded-full border border-slate-700"></div>
       </div>
 
       {/* Inner Screen Display */}
-      <div className="w-full flex-1 rounded-[24px] overflow-hidden border border-slate-800 shadow-inner bg-slate-950 flex flex-col">
+      <div className="w-full flex-1 rounded-[26px] overflow-hidden border border-slate-800/90 shadow-inner bg-[#040e1b] flex flex-col">
         <PhoneScreen
           session={session}
           callState={callState}

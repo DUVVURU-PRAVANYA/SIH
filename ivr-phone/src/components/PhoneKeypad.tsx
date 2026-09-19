@@ -61,7 +61,7 @@ export const PhoneKeypad: React.FC<PhoneKeypadProps> = ({
               disabled={!isInCall}
               className={`h-12 sm:h-13 rounded-xl flex flex-col items-center justify-center transition-all cursor-pointer select-none relative overflow-hidden active:scale-95 ${
                 isPressed
-                  ? 'bg-teal-500 text-slate-950 font-bold scale-95 ring-2 ring-teal-300 shadow-lg'
+                  ? 'bg-[#00A272] text-white font-bold scale-95 ring-2 ring-emerald-300 shadow-lg'
                   : isInCall
                   ? 'bg-slate-800/90 hover:bg-slate-700/90 text-slate-100 border border-slate-700/80 active:bg-slate-600 shadow-sm'
                   : 'bg-slate-900/40 text-slate-500 border border-slate-800/60 cursor-not-allowed opacity-60'
@@ -97,7 +97,7 @@ export const PhoneKeypad: React.FC<PhoneKeypadProps> = ({
         {!isInCall ? (
           <button
             onClick={onStartCall}
-            className="flex-1 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-teal-950/60 border border-teal-400/40 transition-all cursor-pointer"
+            className="flex-1 py-3 bg-gradient-to-r from-[#00A272] to-[#12B8A6] hover:from-[#008f64] hover:to-[#0f9f8f] active:scale-95 text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-teal-950/60 border border-teal-400/40 transition-all cursor-pointer"
           >
             <Phone className="w-5 h-5 fill-current" />
             <span className="tracking-wide text-sm font-semibold">START CALL</span>

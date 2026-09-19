@@ -10,6 +10,7 @@ import {
   Activity,
   Calendar,
   Check,
+  ChevronDown,
 } from 'lucide-react';
 import { useQueueFlow } from '../../context/QueueFlowContext';
 import { LabResultItem, LabOrder } from '../../types';
@@ -20,7 +21,6 @@ export const ScanLabPortal: React.FC = () => {
     updateLabOrderStatus,
     doctorRevisitDecision,
     refreshLabOrders,
-    lang,
   } = useQueueFlow();
 
   // Auto-refresh orders every 3 seconds so incoming doctor requests appear immediately
@@ -53,6 +53,7 @@ export const ScanLabPortal: React.FC = () => {
 
   // Test categorization for selected order
   const testTitleStr = (selectedLabOrder?.tests?.join(' ') || '').toLowerCase();
+  const isCbcOrder = testTitleStr.includes('cbc') || testTitleStr.includes('complete blood count') || testTitleStr.includes('blood count');
   const isElectrolyteOrder = testTitleStr.includes('electrolyte') || testTitleStr.includes('sodium') || testTitleStr.includes('potassium');
   const isScanOrXrayOrder =
     testTitleStr.includes('x-ray') ||
@@ -69,6 +70,11 @@ export const ScanLabPortal: React.FC = () => {
   // Track all orders belonging to the selected patient to handle multi-investigations together
   const patientOrders = selectedLabOrder ? labOrders.filter((o) => o.patientId === selectedLabOrder.patientId) : [];
   const patientPendingOrders = patientOrders.filter((o) => o.status !== 'result_ready' && o.status !== 'reviewed');
+
+  // Numerical Result Form State - Complete Blood Count (CBC)
+  const [cbcHbValue, setCbcHbValue] = useState('13.8');
+  const [cbcWbcValue, setCbcWbcValue] = useState('7,200');
+  const [cbcPlateletsValue, setCbcPlateletsValue] = useState('2.45');
 
   // Numerical Result Form State - Blood Chemistry
   const [fbsValue, setFbsValue] = useState('154');
@@ -109,16 +115,41 @@ export const ScanLabPortal: React.FC = () => {
         revisitTime: returnTime,
       });
       alert(
-        lang === 'ta'
-          ? `முடிவு எதிர்பார்க்கப்படும் நேரம்: ${expectedTime}. நோயாளி ${returnTime}-க்கு வர அறிவுறுத்தப்பட்டார்.`
-          : `Late test turnaround registered. Patient notified to return at ${returnTime} (Expected result: ${expectedTime}).`
+        `Late test turnaround registered. Patient notified to return at ${returnTime} (Expected result: ${expectedTime}).`
       );
       return;
     }
 
     let numericalResults: LabResultItem[] = [];
 
-    if (isElectrolyteOrder) {
+    if (isCbcOrder) {
+      numericalResults = [
+        {
+          testName: 'Hemoglobin (Hb)',
+          value: cbcHbValue,
+          unit: 'g/dL',
+          referenceRange: '13.0 - 17.0 g/dL',
+          isAbnormal: false,
+          remarks: 'Normal adult range',
+        },
+        {
+          testName: 'Total WBC Count',
+          value: cbcWbcValue,
+          unit: '/µL',
+          referenceRange: '4,000 - 11,000 /µL',
+          isAbnormal: false,
+          remarks: 'Normal range',
+        },
+        {
+          testName: 'Platelet Count',
+          value: `${cbcPlateletsValue} lakh`,
+          unit: '/µL',
+          referenceRange: '1.5 - 4.5 lakh /µL',
+          isAbnormal: false,
+          remarks: 'Adequate',
+        },
+      ];
+    } else if (isElectrolyteOrder) {
       numericalResults = [
         {
           testName: 'Serum Sodium (Na+)',
@@ -258,35 +289,33 @@ export const ScanLabPortal: React.FC = () => {
   const completedCount = labOrders.filter((o) => o.status === 'result_ready' || o.status === 'reviewed').length;
 
   return (
-    <div className="bg-[#f8fafc] flex-1 pb-16">
-      {/* Top Banner (No Location / Room Information) */}
-      <div className="bg-[#064e3b] text-white px-4 py-4 border-b border-emerald-800 shadow-sm">
+    <div className="bg-transparent flex-1 pb-16 relative z-10">
+      {/* Top Banner (CareNexus Institutional Style) */}
+      <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-4 shadow-xs">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-lg bg-emerald-700/50 border border-emerald-400/40 flex items-center justify-center text-emerald-200">
-              <FlaskConical className="w-6 h-6" />
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-purple-50 border border-purple-200 flex items-center justify-center text-[#7C3AED] shadow-2xs">
+              <FlaskConical className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold font-serif text-white">
-                  {lang === 'ta' ? 'ஆய்வகம் & ஸ்கேன் பரிசோதனை மையம்' : 'Diagnostic Lab & Scan Workstation'}
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-xl font-black text-[#0A2342] tracking-tight">
+                  Central Pathology & Diagnostic Laboratory
                 </h1>
-                <span className="text-xs px-2.5 py-0.5 rounded bg-emerald-500/30 text-emerald-200 font-bold border border-emerald-400/40">
-                  {lang === 'ta' ? 'நோயியல் & கதிரியக்கவியல்' : 'Pathology & Radiology'}
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#7C3AED]/10 text-[#7C3AED] font-bold border border-[#7C3AED]/20">
+                  Clinical Pathology
                 </span>
               </div>
-              <p className="text-xs text-emerald-200 mt-0.5">
-                {lang === 'ta'
-                  ? 'பரிசோதனை கோரிக்கைகள், மாதிரி செயலாக்கம் மற்றும் மருத்துவர் மறுஆய்வு முடிவுகள்'
-                  : 'Diagnostic requests, specimen processing, and doctor report transmission'}
+              <p className="text-xs text-slate-500 mt-0.5">
+                Laboratory investigation requests, specimen processing, and doctor report transmission
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3 text-xs">
-            <div className="bg-emerald-950/80 px-3 py-1.5 rounded border border-emerald-700 text-emerald-100">
-              <span>{lang === 'ta' ? 'செயலில் உள்ள கோரிக்கைகள்: ' : 'Active Requests: '}</span>
-              <strong className="font-mono text-white">{labOrders.length} Total</strong>
+            <div className="bg-slate-50 px-3.5 py-1.5 rounded-xl border border-slate-200 text-slate-700 shadow-2xs">
+              <span className="text-slate-500 font-medium">Active Requests: </span>
+              <strong className="font-mono text-[#0066FF] font-bold">{labOrders.length} Total</strong>
             </div>
           </div>
         </div>
@@ -294,41 +323,37 @@ export const ScanLabPortal: React.FC = () => {
 
       {/* Main Single Dashboard Container */}
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        {/* Real Working Status Filter */}
-        <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-xs flex flex-wrap items-center justify-between gap-3">
-          <div className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-            {lang === 'ta' ? 'கோரிக்கை நிலை வடிகட்டி:' : 'Filter Requests by Status:'}
-          </div>
-
-          <div className="flex flex-wrap gap-2 text-xs font-bold">
+        {/* Simple Segmented Status Filter */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="inline-flex flex-wrap bg-slate-100/90 p-1 rounded-xl gap-1 text-xs font-semibold shadow-2xs border border-slate-200/60">
             <button
               onClick={() => setStatusFilter('all')}
-              className={`px-3 py-1.5 rounded cursor-pointer transition-colors ${
+              className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-xs ${
                 statusFilter === 'all'
-                  ? 'bg-emerald-900 text-white shadow-xs'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  ? 'bg-white text-blue-950 font-bold shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              All ({labOrders.length})
+              All Requests ({labOrders.length})
             </button>
 
             <button
               onClick={() => setStatusFilter('pending')}
-              className={`px-3 py-1.5 rounded cursor-pointer transition-colors ${
+              className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-xs ${
                 statusFilter === 'pending'
-                  ? 'bg-amber-800 text-white shadow-xs'
-                  : 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100'
+                  ? 'bg-white text-blue-950 font-bold shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Pending / Incoming ({pendingCount})
+              Pending ({pendingCount})
             </button>
 
             <button
               onClick={() => setStatusFilter('in_progress')}
-              className={`px-3 py-1.5 rounded cursor-pointer transition-colors ${
+              className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-xs ${
                 statusFilter === 'in_progress'
-                  ? 'bg-blue-800 text-white shadow-xs'
-                  : 'bg-blue-50 text-blue-900 border border-blue-200 hover:bg-blue-100'
+                  ? 'bg-white text-blue-950 font-bold shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               In Progress ({inProgressCount})
@@ -336,40 +361,44 @@ export const ScanLabPortal: React.FC = () => {
 
             <button
               onClick={() => setStatusFilter('completed')}
-              className={`px-3 py-1.5 rounded cursor-pointer transition-colors ${
+              className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-xs ${
                 statusFilter === 'completed'
-                  ? 'bg-emerald-800 text-white shadow-xs'
-                  : 'bg-emerald-50 text-emerald-900 border border-emerald-200 hover:bg-emerald-100'
+                  ? 'bg-white text-blue-950 font-bold shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Completed / Sent to Doctor ({completedCount})
+              Completed ({completedCount})
             </button>
           </div>
         </div>
 
         {/* Orders Table & Result Entry Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column: Orders Queue Table */}
-          <div className="lg:col-span-6 bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
-            <h2 className="text-base font-bold text-slate-900 flex items-center justify-between border-b border-slate-200 pb-2">
-              <span>{lang === 'ta' ? 'பரிசோதனை கோரிக்கைகள்' : 'Laboratory & Scan Requests'}</span>
-              <span className="text-xs text-slate-500 font-normal">Showing {filteredOrders.length} of {labOrders.length}</span>
-            </h2>
+          {/* Left Column: Orders Queue Table (7 cols for ample investigation name width) */}
+          <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
+              <h2 className="text-sm font-bold text-slate-900 tracking-tight">
+                Laboratory & Scan Requests
+              </h2>
+              <span className="text-xs text-slate-500 font-medium">
+                {filteredOrders.length} request(s)
+              </span>
+            </div>
 
             {filteredOrders.length === 0 ? (
               <div className="p-8 text-center text-slate-500 text-xs">
-                No orders matching the selected status ({statusFilter}).
+                No orders matching the selected status ({statusFilter.replace('_', ' ')}).
               </div>
             ) : (
-              <div className="border border-slate-200 rounded-lg overflow-hidden">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+              <div className="border border-slate-200 rounded-xl overflow-x-auto shadow-2xs">
+                <table className="w-full text-left text-xs min-w-[560px]">
+                  <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
                     <tr>
-                      <th className="p-3">Token</th>
-                      <th className="p-3">Patient Name</th>
-                      <th className="p-3">Tests Requested</th>
-                      <th className="p-3">Status</th>
-                      <th className="p-3 text-right">Action</th>
+                      <th className="py-3 px-3.5 w-20">Token</th>
+                      <th className="py-3 px-3.5 w-36">Patient Name</th>
+                      <th className="py-3 px-3.5">Investigation / Test</th>
+                      <th className="py-3 px-3.5 w-28">Status</th>
+                      <th className="py-3 px-3.5 w-32 text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -378,59 +407,70 @@ export const ScanLabPortal: React.FC = () => {
                         key={ord.id}
                         onClick={() => setSelectedOrderId(ord.id)}
                         className={`cursor-pointer transition-colors ${
-                          ord.id === selectedLabOrder?.id ? 'bg-emerald-50 font-semibold' : 'hover:bg-slate-50'
+                          ord.id === selectedLabOrder?.id
+                            ? 'bg-purple-50/70 font-semibold'
+                            : 'hover:bg-slate-50/80'
                         }`}
                       >
-                        <td className="p-3 font-mono font-bold text-emerald-950">{ord.patientToken}</td>
-                        <td className="p-3 font-bold text-slate-900">{ord.patientName}</td>
-                        <td className="p-3 text-slate-600">
-                          <span className="truncate block max-w-[140px]">{ord.tests.join(', ')}</span>
+                        <td className="py-3 px-3.5 font-mono font-bold text-purple-950 whitespace-nowrap">
+                          {ord.patientToken}
                         </td>
-                        <td className="p-3">
+                        <td className="py-3 px-3.5 font-bold text-slate-900 whitespace-nowrap">
+                          {ord.patientName}
+                        </td>
+                        <td className="py-3 px-3.5 text-slate-700 font-medium break-words leading-relaxed">
+                          {ord.tests.join(', ')}
+                        </td>
+                        <td className="py-3 px-3.5 whitespace-nowrap">
                           <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                               ord.status === 'result_ready' || ord.status === 'reviewed'
-                                ? 'bg-emerald-100 text-emerald-900'
+                                ? 'bg-emerald-100 text-emerald-800'
                                 : ord.status === 'sample_collected' || ord.status === 'processing'
-                                ? 'bg-blue-100 text-blue-900'
-                                : 'bg-amber-100 text-amber-900'
+                                ? 'bg-sky-100 text-sky-800'
+                                : 'bg-amber-100 text-amber-800'
                             }`}
                           >
                             {ord.status === 'pending'
-                              ? 'PENDING'
-                              : ord.status === 'sample_collected'
-                              ? 'IN PROGRESS'
-                              : ord.status === 'result_ready'
-                              ? 'RESULT READY'
-                              : ord.status.replace('_', ' ').toUpperCase()}
+                              ? 'Pending'
+                              : ord.status === 'sample_collected' || ord.status === 'processing'
+                              ? 'In Progress'
+                              : ord.status === 'result_ready' || ord.status === 'reviewed'
+                              ? 'Completed'
+                              : String(ord.status).replace('_', ' ')}
                           </span>
                         </td>
-                        <td className="p-3 text-right">
+                        <td className="py-3 px-3.5 text-right whitespace-nowrap">
                           {ord.status === 'pending' && (
                             <button
+                              type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleStartProcessing(ord.id);
                                 setSelectedOrderId(ord.id);
                               }}
-                              className="px-2.5 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded text-xs font-bold cursor-pointer"
+                              className="px-3 py-1.5 bg-purple-700 hover:bg-purple-800 text-white rounded-lg text-xs font-bold cursor-pointer transition-colors shadow-2xs"
                             >
                               Start Test
                             </button>
                           )}
                           {(ord.status === 'sample_collected' || ord.status === 'processing') && (
                             <button
+                              type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedOrderId(ord.id);
                               }}
-                              className="px-2.5 py-1 bg-blue-800 hover:bg-blue-700 text-white rounded text-xs font-bold cursor-pointer"
+                              className="px-3 py-1.5 bg-sky-700 hover:bg-sky-800 text-white rounded-lg text-xs font-bold cursor-pointer transition-colors shadow-2xs"
                             >
                               Enter Result
                             </button>
                           )}
                           {(ord.status === 'result_ready' || ord.status === 'reviewed') && (
-                            <span className="text-[11px] text-emerald-700 font-bold">Sent to Doctor ✓</span>
+                            <span className="text-[11px] text-emerald-700 font-bold inline-flex items-center gap-1">
+                              <span>Sent to Doctor</span>
+                              <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            </span>
                           )}
                         </td>
                       </tr>
@@ -441,59 +481,124 @@ export const ScanLabPortal: React.FC = () => {
             )}
           </div>
 
-          {/* Right Column: Result Entry Form (Inline on SAME Dashboard) */}
+          {/* Right Column: Result Entry Form (5 cols) */}
           {selectedLabOrder && (
-            <div className="lg:col-span-6 bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
+            <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
               <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">
-                    {lang === 'ta' ? 'முடிவு உள்ளீடு & அறிக்கை தயாரிப்பு' : 'Diagnostic Result Entry & Transmission'}
+                  <h3 className="text-sm font-bold text-slate-900">
+                    Diagnostic Result Entry
                   </h3>
-                  <div className="text-xs text-slate-500">
-                    Patient: <strong className="text-slate-900">{selectedLabOrder.patientName}</strong> • Token: <strong className="font-mono text-emerald-950">{selectedLabOrder.patientToken}</strong>
+                  <div className="text-xs text-slate-500 mt-0.5">
+                    Patient: <strong className="text-slate-900">{selectedLabOrder.patientName}</strong> • Token: <strong className="font-mono text-purple-900">{selectedLabOrder.patientToken}</strong>
                   </div>
                 </div>
-                <span className="px-2.5 py-1 rounded bg-slate-100 text-slate-700 text-xs font-bold">
-                  Ordered by: {selectedLabOrder.requestedByDoctor}
+                <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-bold">
+                  {selectedLabOrder.requestedByDoctor || 'OPD Doctor'}
                 </span>
               </div>
 
-              {/* Multi-Test Notice for same patient */}
-              {patientOrders.length > 1 && (
-                <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-lg text-xs text-emerald-950 flex flex-col gap-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold flex items-center gap-1.5 text-emerald-900">
-                      <FlaskConical className="w-4 h-4 text-emerald-700" />
-                      <span>This Patient has {patientOrders.length} Ordered Investigations:</span>
-                    </span>
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-200/80 text-emerald-950">
-                      {patientOrders.length - patientPendingOrders.length} of {patientOrders.length} Completed
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {patientOrders.map((po) => (
+              {/* Ordered Investigations Selector Tabs */}
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <FlaskConical className="w-3.5 h-3.5 text-purple-700" />
+                    <span>Ordered Investigations:</span>
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-medium">
+                    Click to enter result
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 pt-0.5">
+                  {(patientOrders.length > 0 ? patientOrders : [selectedLabOrder]).map((po) => {
+                    const isSelected = po.id === selectedLabOrder.id;
+                    const isDone = po.status === 'result_ready' || po.status === 'reviewed';
+                    const testLabel = po.tests[0] || 'Investigation';
+                    return (
                       <button
                         key={po.id}
                         type="button"
                         onClick={() => setSelectedOrderId(po.id)}
-                        className={`px-2.5 py-1 rounded text-[11px] border font-medium cursor-pointer transition-colors ${
-                          po.id === selectedLabOrder.id
-                            ? 'bg-emerald-800 text-white border-emerald-900 font-bold shadow-2xs'
-                            : po.status === 'result_ready' || po.status === 'reviewed'
-                            ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
-                            : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold border cursor-pointer transition-all flex items-center gap-1.5 shadow-2xs ${
+                          isSelected
+                            ? 'bg-purple-700 text-white border-purple-800 shadow-xs'
+                            : isDone
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                            : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
                         }`}
+                        title={isSelected ? 'Currently entering result' : 'Click to select this investigation'}
                       >
-                        {po.tests.join(', ')} {po.status === 'result_ready' || po.status === 'reviewed' ? '✓' : ''}
+                        <span>{testLabel}</span>
+                        {isDone && <Check className="w-3 h-3 text-emerald-600" />}
                       </button>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
-              )}
+
+                <div className="text-[11px] text-slate-600 pt-1 border-t border-slate-200/80">
+                  Selected: <strong className="text-slate-900 font-bold">{selectedLabOrder.tests.join(', ')}</strong>
+                </div>
+              </div>
 
               {/* Fast Result Numerical / Imaging Entry Form */}
-              <div className="space-y-3 bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs">
-                {isElectrolyteOrder ? (
+              <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
+                {isCbcOrder ? (
+                  <>
+                    <div className="font-bold text-slate-800 uppercase tracking-wider text-[11px] border-b border-slate-200 pb-1">
+                      Complete Blood Count (CBC) Panel
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Hemoglobin (Hb)
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            value={cbcHbValue}
+                            onChange={(e) => setCbcHbValue(e.target.value)}
+                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded font-mono font-bold text-xs"
+                          />
+                          <span className="text-slate-500 font-mono text-[10px]">g/dL</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">Ref: 13.0 - 17.0</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Total WBC Count
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            value={cbcWbcValue}
+                            onChange={(e) => setCbcWbcValue(e.target.value)}
+                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded font-mono font-bold text-xs"
+                          />
+                          <span className="text-slate-500 font-mono text-[10px]">/µL</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">Ref: 4,000 - 11,000</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Platelet Count
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            value={cbcPlateletsValue}
+                            onChange={(e) => setCbcPlateletsValue(e.target.value)}
+                            className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded font-mono font-bold text-xs"
+                          />
+                          <span className="text-slate-500 font-mono text-[10px]">lakh/µL</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">Ref: 1.5 - 4.5 lakh</span>
+                      </div>
+                    </div>
+                  </>
+                ) : isElectrolyteOrder ? (
                   <>
                     <div className="font-bold text-slate-800 uppercase tracking-wider text-[11px] border-b border-slate-200 pb-1">
                       Serum Electrolytes Panel
@@ -578,7 +683,7 @@ export const ScanLabPortal: React.FC = () => {
                           rows={3}
                           value={scanFindings}
                           onChange={(e) => setScanFindings(e.target.value)}
-                          className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded text-xs outline-none focus:border-emerald-800 font-mono"
+                          className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded text-xs outline-none focus:border-purple-700 font-mono"
                         ></textarea>
                       </div>
 
@@ -590,7 +695,7 @@ export const ScanLabPortal: React.FC = () => {
                           type="text"
                           value={scanImpression}
                           onChange={(e) => setScanImpression(e.target.value)}
-                          className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded text-xs font-bold font-mono outline-none focus:border-emerald-800"
+                          className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded text-xs font-bold font-mono outline-none focus:border-purple-700"
                         />
                       </div>
                     </div>
@@ -677,13 +782,13 @@ export const ScanLabPortal: React.FC = () => {
                     rows={2}
                     value={labRemarks}
                     onChange={(e) => setLabRemarks(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded text-xs outline-none focus:border-emerald-800"
+                    className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded text-xs outline-none focus:border-purple-700"
                   ></textarea>
                 </div>
               </div>
 
               {/* Late Turnaround Scheduling (Only when applicable) */}
-              <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-lg space-y-2 text-xs">
+              <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-xl space-y-2 text-xs">
                 <label className="flex items-center gap-2 cursor-pointer font-bold text-amber-950">
                   <input
                     type="checkbox"
@@ -724,7 +829,7 @@ export const ScanLabPortal: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleBatchSubmitAllPatientOrders}
-                    className="w-full sm:w-auto px-4 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-bold text-xs rounded-md shadow flex items-center justify-center gap-2 cursor-pointer transition-all"
+                    className="w-full sm:w-auto px-4 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-bold text-xs rounded-lg shadow-xs flex items-center justify-center gap-2 cursor-pointer transition-all"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5 text-blue-300" />
                     <span>Submit All ({patientOrders.length}) Tests for Patient</span>
@@ -732,8 +837,9 @@ export const ScanLabPortal: React.FC = () => {
                 )}
 
                 <button
+                  type="button"
                   onClick={handleSubmitLabResults}
-                  className="w-full sm:w-auto px-5 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs rounded-md shadow flex items-center justify-center gap-2 cursor-pointer transition-all"
+                  className="w-full sm:w-auto px-5 py-2.5 bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs rounded-lg shadow-xs flex items-center justify-center gap-2 cursor-pointer transition-all"
                 >
                   <Send className="w-3.5 h-3.5" />
                   <span>

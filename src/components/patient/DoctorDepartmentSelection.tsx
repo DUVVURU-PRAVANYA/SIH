@@ -54,7 +54,39 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
   patientName,
   onVisitCreated,
 }) => {
-  const { lang } = useQueueFlow();
+  const { lang, currentPatient, activePatient } = useQueueFlow();
+  const effectivePatient = activePatient || currentPatient;
+
+  // Helpers to parse and format patient data cleanly
+  const parseListString = (list: any): string => {
+    if (!list) return '';
+    if (Array.isArray(list)) {
+      return list.filter((item) => item && item !== 'None Reported' && item !== 'None').join(', ');
+    }
+    if (typeof list === 'string' && list !== 'None Reported' && list !== 'None') {
+      return list;
+    }
+    return '';
+  };
+
+  const getCleanAge = (age: any): string => {
+    if (age !== undefined && age !== null && age !== '' && Number(age) > 0) {
+      return String(age);
+    }
+    return '';
+  };
+
+  const getCleanBloodGroup = (bg: any): string => {
+    if (bg && bg !== 'Not Specified' && bg !== 'Unknown') {
+      return bg;
+    }
+    return '';
+  };
+
+  const getCleanGender = (g: any): 'Male' | 'Female' | 'Other' => {
+    if (g === 'Female' || g === 'Other') return g;
+    return 'Male';
+  };
 
   // Mode: 'know_doctor' (Choice A) | 'dont_know_doctor' (Choice B)
   const [choiceMode, setChoiceMode] = useState<'know_doctor' | 'dont_know_doctor'>('dont_know_doctor');
@@ -80,16 +112,30 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Part 2: Patient Profile Form (Prefilled from database)
-  const [profileForm, setProfileForm] = useState({
-    name: patientName,
-    age: '',
-    gender: 'Male',
-    bloodGroup: '',
-    allergies: '',
-    chronicConditions: '',
-  });
+  // Part 2: Patient Profile Form (Prefilled from registration & database)
+  const [profileForm, setProfileForm] = useState(() => ({
+    name: effectivePatient?.name || patientName || '',
+    age: getCleanAge(effectivePatient?.age),
+    gender: getCleanGender(effectivePatient?.gender),
+    bloodGroup: getCleanBloodGroup(effectivePatient?.bloodGroup),
+    allergies: parseListString(effectivePatient?.allergies),
+    chronicConditions: parseListString(effectivePatient?.chronicConditions),
+  }));
   const [profileSavedNotice, setProfileSavedNotice] = useState('');
+
+  // Auto-sync whenever effectivePatient updates or arrives from context
+  useEffect(() => {
+    if (effectivePatient) {
+      setProfileForm((prev) => ({
+        name: prev.name || effectivePatient.name || patientName || '',
+        age: prev.age || getCleanAge(effectivePatient.age),
+        gender: prev.gender && prev.gender !== 'Male' ? prev.gender : getCleanGender(effectivePatient.gender),
+        bloodGroup: prev.bloodGroup || getCleanBloodGroup(effectivePatient.bloodGroup),
+        allergies: prev.allergies || parseListString(effectivePatient.allergies),
+        chronicConditions: prev.chronicConditions || parseListString(effectivePatient.chronicConditions),
+      }));
+    }
+  }, [effectivePatient, patientName]);
 
   // 1. Fetch real departments, doctors, and patient profile from database
   useEffect(() => {
@@ -97,22 +143,25 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
     async function loadData() {
       try {
         setLoadingData(true);
+        const targetId = patientId || effectivePatient?.id;
         const [deptRes, docRes, patRes] = await Promise.all([
           apiClient.getDepartments(),
           apiClient.getDoctors(),
-          apiClient.getPatient(patientId).catch(() => ({ success: false, data: null })) as Promise<any>,
+          targetId
+            ? (apiClient.getPatient(targetId).catch(() => ({ success: false, data: null })) as Promise<any>)
+            : Promise.resolve({ success: false, data: null }),
         ]);
 
         if (mounted) {
           if (patRes && patRes.success && patRes.data) {
             const pat = patRes.data;
             setProfileForm({
-              name: pat.name || patientName,
-              age: pat.age && pat.age > 0 ? String(pat.age) : '',
-              gender: pat.gender && pat.gender !== 'Not Specified' ? pat.gender : 'Male',
-              bloodGroup: pat.bloodGroup && pat.bloodGroup !== 'Not Specified' && pat.bloodGroup !== 'Unknown' ? pat.bloodGroup : '',
-              allergies: Array.isArray(pat.allergies) ? pat.allergies.join(', ') : (pat.allergies || ''),
-              chronicConditions: Array.isArray(pat.chronicConditions) ? pat.chronicConditions.join(', ') : (pat.chronicConditions || ''),
+              name: pat.name || effectivePatient?.name || patientName || '',
+              age: getCleanAge(pat.age) || getCleanAge(effectivePatient?.age),
+              gender: getCleanGender(pat.gender) || getCleanGender(effectivePatient?.gender),
+              bloodGroup: getCleanBloodGroup(pat.bloodGroup) || getCleanBloodGroup(effectivePatient?.bloodGroup),
+              allergies: parseListString(pat.allergies) || parseListString(effectivePatient?.allergies),
+              chronicConditions: parseListString(pat.chronicConditions) || parseListString(effectivePatient?.chronicConditions),
             });
           }
 
@@ -205,19 +254,32 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
     setSubmitting(true);
 
     try {
+      let targetPatientId = patientId || effectivePatient?.id || '';
+      let targetPhone = effectivePatient?.phone || '';
+
+      if (!targetPatientId || !targetPhone) {
+        try {
+          const sess = JSON.parse(localStorage.getItem('gh_session') || '{}');
+          if (!targetPatientId) targetPatientId = sess.patientId || sess.patient?.id || sess.phone || '';
+          if (!targetPhone) targetPhone = sess.patient?.phone || sess.phone || '';
+        } catch {}
+      }
+
       // Step A: Save any profile updates (such as updated allergies) directly to the persistent database
-      try {
-        await apiClient.updatePatientProfile(patientId, {
-          name: profileForm.name,
-          age: Number(profileForm.age) || 46,
-          gender: profileForm.gender,
-          bloodGroup: profileForm.bloodGroup,
-          allergies: profileForm.allergies,
-          chronicConditions: profileForm.chronicConditions,
-        });
-        setProfileSavedNotice('Profile saved to database');
-      } catch (profileErr) {
-        console.warn('Profile update error:', profileErr);
+      if (targetPatientId) {
+        try {
+          await apiClient.updatePatientProfile(targetPatientId, {
+            name: profileForm.name,
+            age: Number(profileForm.age) || 42,
+            gender: profileForm.gender,
+            bloodGroup: profileForm.bloodGroup,
+            allergies: profileForm.allergies,
+            chronicConditions: profileForm.chronicConditions,
+          });
+          setProfileSavedNotice('Profile saved to database');
+        } catch (profileErr) {
+          console.warn('Profile update error:', profileErr);
+        }
       }
 
       // Step B: Create real new visit and token
@@ -226,17 +288,37 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
       const finalSymptoms = choiceMode === 'dont_know_doctor' ? symptomInput.trim() : 'OPD Consultation requested';
 
       const res = await apiClient.createVisit({
-        patientId,
+        patientId: targetPatientId,
+        phone: targetPhone,
+        name: profileForm.name || effectivePatient?.name,
+        age: Number(profileForm.age) || effectivePatient?.age,
+        gender: profileForm.gender || effectivePatient?.gender,
+        bloodGroup: profileForm.bloodGroup || effectivePatient?.bloodGroup,
+        allergies: profileForm.allergies,
+        chronicConditions: profileForm.chronicConditions,
         doctorId: finalDoctorId,
-        departmentId: finalDeptId,
+        departmentId: finalDeptId || 'dept-genmed',
         symptoms: finalSymptoms,
         forceNew: true,
       });
 
       if (!res.success || !res.data) {
-        setErrorMsg(res.error || 'Failed to generate OPD visit token. Please try again.');
+        setErrorMsg(res.error || res.message || 'Failed to generate OPD visit token. Please try again.');
         setSubmitting(false);
         return;
+      }
+
+      // Ensure local session is updated with the active visit and effective patient ID
+      const createdPatientId = res.data.journey?.patientId || targetPatientId;
+      if (createdPatientId) {
+        try {
+          const sess = JSON.parse(localStorage.getItem('gh_session') || '{}');
+          localStorage.setItem('gh_session', JSON.stringify({
+            ...sess,
+            patientId: createdPatientId,
+            hasActiveVisit: true,
+          }));
+        } catch {}
       }
 
       // Success: pass real created visit data to parent callback
@@ -340,7 +422,7 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
                   </label>
                   <select
                     value={profileForm.gender}
-                    onChange={(e) => setProfileForm({ ...profileForm, gender: e.target.value })}
+                    onChange={(e) => setProfileForm({ ...profileForm, gender: e.target.value as any })}
                     className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 font-medium focus:ring-2 focus:ring-blue-600 focus:outline-none"
                   >
                     <option value="Male">Male</option>
@@ -624,7 +706,7 @@ export const DoctorDepartmentSelection: React.FC<DoctorDepartmentSelectionProps>
               )}
             </button>
             <p className="text-[11px] text-center text-slate-500 mt-2">
-              Your official OPD consultation token and queue entry will be generated.
+              Your OPD consultation token and queue entry will be generated.
             </p>
           </div>
         </div>

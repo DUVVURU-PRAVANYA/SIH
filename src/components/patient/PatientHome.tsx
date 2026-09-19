@@ -163,7 +163,10 @@ export const PatientHome: React.FC = () => {
             patientName={patientName}
             onVisitCreated={async (visitData) => {
               setShowDoctorSelection(false);
-              await loadActiveVisit(patientId);
+              const effectiveId = visitData?.journey?.patientId || patientId || patId;
+              if (effectiveId) {
+                await loadActiveVisit(effectiveId);
+              }
             }}
             onCancel={hasActiveVisit ? () => setShowDoctorSelection(false) : undefined}
           />
@@ -176,7 +179,8 @@ export const PatientHome: React.FC = () => {
   const currentPat = activePatient || currentPatient;
   const rawPatName = (lang === 'ta' ? currentPat?.nameTa : currentPat?.name) || currentPat?.name || '';
   const cleanPatientName =
-    rawPatName.replace(/^Patient\s*\((.*?)\)$/i, '$1').replace(/^Patient\s+/i, '').trim() || rawPatName;
+    (rawPatName.replace(/^Patient\s*\((.*?)\)$/i, '$1').replace(/^Patient\s+/i, '').trim() || rawPatName)
+      .replace(/\b\w/g, (c) => c.toUpperCase());
   const realToken =
     activeVisitData?.journey?.currentToken ||
     activeVisitData?.queueMetrics?.tokenNumber ||
@@ -287,41 +291,29 @@ export const PatientHome: React.FC = () => {
     id: 'completed',
     title: `${journeySteps.length + 1}. Hospital Journey Completed`,
     titleTa: `${journeySteps.length + 1}. மருத்துவமனை வருகை நிறைவு`,
-    desc: 'All hospital steps fulfilled',
+    desc: isAllComplete
+      ? (lang === 'ta' ? 'அனைத்து நிலைகளும் நிறைவுற்றன' : 'Completed')
+      : (lang === 'ta' ? 'நிலுவையில் உள்ளது' : 'Pending'),
     status: isAllComplete ? 'completed' : 'pending',
   });
 
   return (
-    <div className="bg-[#f8fafc] flex-1 pb-16">
+    <div className="w-full min-h-[calc(100vh-64px)] flex-1 pb-16 relative z-10 flex flex-col">
       {/* Top Patient Header Banner */}
-      <div className="bg-[#0b2545] text-white px-4 py-4 sm:py-5 shadow-sm border-b border-slate-700">
+      <div className="w-full bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 py-5 shadow-xs">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-xs text-teal-300 font-medium mb-1.5">
-              <Building2 className="w-4 h-4 text-teal-400 shrink-0" />
-              <span className="font-semibold tracking-wide">
-                {lang === 'ta' ? 'அரசு தலைமை மருத்துவமனை • புறநோயாளிகள் பிரிவு' : 'Government Headquarter Hospital • OPD Portal'}
-              </span>
-              <span className="text-teal-500">•</span>
-              <span className="inline-flex items-center gap-1 text-[11px] bg-teal-950/70 border border-teal-500/40 text-teal-200 px-2 py-0.5 rounded-full font-sans">
-                <ShieldCheck className="w-3 h-3 text-teal-300" />
-                <span>{lang === 'ta' ? 'அங்கீகரிக்கப்பட்ட சேவை' : 'Official Portal'}</span>
-              </span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-bold font-serif tracking-tight text-white flex items-center gap-2">
-              <UserCheck className="w-5 h-5 text-teal-300 shrink-0" />
-              <span>
-                {lang === 'ta' ? 'நோயாளி: ' : 'Patient: '}
-                {cleanPatientName}
-              </span>
-              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-blue-900/80 border border-blue-400/40 text-blue-200">
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#0A2342] flex items-center gap-2.5">
+              <UserCheck className="w-5 h-5 text-[#0066FF] shrink-0" />
+              <span>{cleanPatientName}</span>
+              <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-lg bg-sky-50 border border-sky-200 text-[#0066FF]">
                 {currentPat?.id}
               </span>
             </h1>
-            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300 mt-1.5">
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 mt-1.5">
               <span>
                 {lang === 'ta' ? 'வயது' : 'Age'}:{' '}
-                <strong className={currentPat?.age && currentPat.age > 0 ? 'text-white font-bold' : 'text-amber-300 font-bold'}>
+                <strong className={currentPat?.age && currentPat.age > 0 ? 'text-slate-900 font-bold' : 'text-amber-600 font-bold'}>
                   {currentPat?.age && currentPat.age > 0
                     ? `${currentPat.age} yrs`
                     : (lang === 'ta' ? 'பதிவு செய்யப்படவில்லை' : 'Not Set')}
@@ -331,7 +323,7 @@ export const PatientHome: React.FC = () => {
               <span>•</span>
               <span>
                 {lang === 'ta' ? 'இரத்த வகை' : 'Blood Group'}:{' '}
-                <strong className={currentPat?.bloodGroup && currentPat.bloodGroup !== 'Not Specified' ? 'text-white font-bold' : 'text-amber-300 font-bold'}>
+                <strong className={currentPat?.bloodGroup && currentPat.bloodGroup !== 'Not Specified' ? 'text-slate-900 font-bold' : 'text-amber-600 font-bold'}>
                   {currentPat?.bloodGroup && currentPat.bloodGroup !== 'Not Specified'
                     ? currentPat.bloodGroup
                     : (lang === 'ta' ? 'பதிவு செய்யப்படவில்லை' : 'Not Recorded')}
@@ -340,8 +332,8 @@ export const PatientHome: React.FC = () => {
               {currentPat?.allergies && currentPat.allergies.length > 0 && !currentPat.allergies.includes('None Reported') && (
                 <>
                   <span>•</span>
-                  <span className="text-amber-300">
-                    Allergies: <strong className="font-bold">{currentPat.allergies.join(', ')}</strong>
+                  <span className="text-amber-700">
+                    {lang === 'ta' ? 'ஒவ்வாமை' : 'Allergies'}: <strong className="font-bold">{currentPat.allergies.join(', ')}</strong>
                   </span>
                 </>
               )}
@@ -352,7 +344,7 @@ export const PatientHome: React.FC = () => {
             <button
               type="button"
               onClick={startEditProfile}
-              className="px-3 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 rounded text-xs font-bold text-amber-200 flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
               title="Click to edit Age, Blood Group, and Health Details"
             >
               <Edit3 className="w-3.5 h-3.5" />
@@ -361,7 +353,7 @@ export const PatientHome: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowDoctorSelection(true)}
-              className="px-3.5 py-2 bg-blue-900 hover:bg-blue-800 border border-blue-400/40 rounded text-xs font-bold text-white flex items-center gap-1.5 shadow transition-colors cursor-pointer"
+              className="px-4 py-2 bg-gradient-to-r from-[#0066FF] via-[#009BF2] to-[#00D4A0] hover:brightness-105 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-[0_4px_14px_-2px_rgba(0,102,255,0.3)] transition-all cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>{lang === 'ta' ? 'புதிய டோக்கன் / மருத்துவர்' : 'Start New Visit'}</span>
@@ -386,7 +378,7 @@ export const PatientHome: React.FC = () => {
             <button
               type="button"
               onClick={startEditProfile}
-              className="self-start sm:self-auto px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded font-bold cursor-pointer transition-colors shadow-xs flex items-center gap-1.5"
+              className="self-start sm:self-auto px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold cursor-pointer transition-colors shadow-xs flex items-center gap-1.5"
             >
               <Edit3 className="w-3 h-3" />
               <span>{lang === 'ta' ? 'இப்போதே திருத்து' : 'Update Profile Now'}</span>
@@ -396,24 +388,24 @@ export const PatientHome: React.FC = () => {
       )}
 
       {/* Navigation Tabs (ONE Single Dashboard) */}
-      <div className="bg-white border-b border-slate-200 shadow-xs sticky top-[48px] z-20">
-        <div className="max-w-7xl mx-auto px-4 flex flex-wrap gap-2 py-2 text-xs font-bold text-slate-600">
+      <div className="w-full bg-white/85 backdrop-blur-md border-b border-slate-200/80 shadow-xs sticky top-[72px] z-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap gap-1.5 py-2.5 text-xs font-bold text-slate-600">
           {[
-            { id: 'queue', label: lang === 'ta' ? 'எனது வரிசை (My Queue)' : 'My Queue', icon: <Ticket className="w-3.5 h-3.5" /> },
-            { id: 'journey', label: lang === 'ta' ? 'எனது பணிப்பாதை (My Journey)' : 'My Journey', icon: <Activity className="w-3.5 h-3.5" /> },
+            { id: 'queue', label: lang === 'ta' ? 'எனது வரிசை' : 'My Queue', icon: <Ticket className="w-3.5 h-3.5" /> },
+            { id: 'journey', label: lang === 'ta' ? 'எனது பணிப்பாதை' : 'My Journey', icon: <Activity className="w-3.5 h-3.5" /> },
             { id: 'reports', label: lang === 'ta' ? 'ஆய்வக / ஸ்கேன் அறிக்கைகள்' : 'Lab / Scan Reports', icon: <FlaskConical className="w-3.5 h-3.5" /> },
-            { id: 'prescriptions', label: lang === 'ta' ? 'மருந்து சீட்டு (Prescription)' : 'Prescriptions / Pharmacy', icon: <Pill className="w-3.5 h-3.5" /> },
+            { id: 'prescriptions', label: lang === 'ta' ? 'மருந்து சீட்டு / மருந்தகம்' : 'Prescriptions / Pharmacy', icon: <Pill className="w-3.5 h-3.5" /> },
             { id: 'history', label: lang === 'ta' ? 'மருத்துவ வரலாறு' : 'Consultation History', icon: <FileText className="w-3.5 h-3.5" /> },
-            { id: 'profile', label: lang === 'ta' ? 'சுயவிவரம் (Profile)' : 'Patient Profile', icon: <User className="w-3.5 h-3.5" /> },
+            { id: 'profile', label: lang === 'ta' ? 'நோயாளி விவரம்' : 'Patient Profile', icon: <User className="w-3.5 h-3.5" /> },
           ].map((tab) => (
             <button
               key={tab.id}
               type="button"
               onClick={() => setActiveSection(tab.id as any)}
-              className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 font-bold transition-all cursor-pointer text-xs ${
                 activeSection === tab.id
-                  ? 'bg-blue-900 text-white shadow-xs'
-                  : 'hover:bg-slate-100 text-slate-700'
+                  ? 'bg-gradient-to-r from-[#0066FF] to-[#009BF2] text-white shadow-xs'
+                  : 'bg-slate-100 hover:bg-slate-200/80 text-slate-700'
               }`}
             >
               {tab.icon}
@@ -424,7 +416,7 @@ export const PatientHome: React.FC = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
         {/* ========================================================= */}
         {/* SECTION 1: LIVE QUEUE (MY QUEUE) */}
         {/* ========================================================= */}
@@ -442,7 +434,7 @@ export const PatientHome: React.FC = () => {
                       🚨 EMERGENCY PRIORITY: YOUR TURN NOW
                     </span>
                     <h3 className="text-base sm:text-lg font-extrabold font-serif mt-1">
-                      Proceed to {realDeptRoom} ({realDoctorName}) Immediately!
+                      Proceed to Consultation ({realDoctorName}) Immediately!
                     </h3>
                     <p className="text-xs text-red-100">
                       Doctor has prioritized your consultation directly following test review. Bypass normal waiting line.
@@ -596,7 +588,7 @@ export const PatientHome: React.FC = () => {
                 </div>
               </div>
             )}
-            <div className="bg-white rounded-xl border-2 border-blue-900/40 p-6 sm:p-8 shadow-sm space-y-6">
+            <div className="bg-white/88 backdrop-blur-md rounded-2xl border border-slate-200/90 p-6 sm:p-8 shadow-sm hover:shadow-md transition-all space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                 <div>
                   <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-900 bg-blue-100 px-2.5 py-1 rounded inline-flex items-center gap-1.5">
@@ -609,7 +601,7 @@ export const PatientHome: React.FC = () => {
                   </h2>
                   <p className="text-xs text-slate-600 flex items-center gap-1.5 mt-1">
                     <Building2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                    <span>{lang === 'ta' ? 'துறை:' : 'Department:'} {realDeptName} • {realDeptRoom} ({realDeptBlock})</span>
+                    <span className="font-semibold text-slate-700">{realDeptName}</span>
                   </p>
                 </div>
 
@@ -765,12 +757,12 @@ export const PatientHome: React.FC = () => {
                   ) : (
                     <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-900 text-center font-medium">
                       {realQueueStatus === 'called'
-                        ? '🔔 Your token is currently CALLED! Please enter the consultation room.'
+                        ? (lang === 'ta' ? '🔔 உங்கள் டோக்கன் அழைக்கப்பட்டுள்ளது! மருத்துவ ஆலோசனை அறைக்குள் செல்லவும்.' : '🔔 Your token is currently CALLED! Please enter the consultation room.')
                         : realQueueStatus === 'in_service'
-                        ? '🩺 You are currently in consultation with the doctor.'
+                        ? (lang === 'ta' ? '🩺 மருத்துவர் ஆலோசனையில் உள்ளீர்கள்.' : '🩺 You are currently in consultation with the doctor.')
                         : realQueueStatus === 'completed'
-                        ? '✓ Consultation completed.'
-                        : 'You are next in queue! Please proceed near the doctor consultation door.'}
+                        ? (lang === 'ta' ? '✓ ஆலோசனை நிறைவடைந்தது.' : '✓ Consultation completed.')
+                        : (lang === 'ta' ? 'அடுத்தது உங்கள் முறை. தயவுசெய்து ஆலோசனை பகுதிக்குச் செல்லவும்.' : 'You are next. Please proceed to the consultation area.')}
                     </div>
                   )}
 
@@ -816,7 +808,7 @@ export const PatientHome: React.FC = () => {
         {/* SECTION 2: MY JOURNEY */}
         {/* ========================================================= */}
         {activeSection === 'journey' && (
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
+          <div className="bg-white/88 backdrop-blur-md rounded-2xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md transition-all space-y-6">
             <div className="border-b border-slate-200 pb-3">
               <h2 className="text-lg font-bold text-slate-900 font-serif flex items-center gap-2">
                 <Activity className="w-5 h-5 text-blue-900" />
@@ -884,17 +876,12 @@ export const PatientHome: React.FC = () => {
         {/* SECTION 3: LAB / SCAN REPORTS */}
         {/* ========================================================= */}
         {activeSection === 'reports' && (
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
+          <div className="bg-white/88 backdrop-blur-md rounded-2xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md transition-all space-y-6">
             <div className="border-b border-slate-200 pb-3">
               <h2 className="text-lg font-bold text-slate-900 font-serif flex items-center gap-2">
                 <FlaskConical className="w-5 h-5 text-emerald-800" />
                 <span>{lang === 'ta' ? 'ஆய்வக & ஸ்கேன் அறிக்கைகள்' : 'Laboratory & Diagnostic Reports'}</span>
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                {lang === 'ta'
-                  ? 'மருத்துவரால் பரிந்துரைக்கப்பட்ட பரிசோதனைகளின் அதிகாரப்பூர்வ முடிவுகள்'
-                  : 'Official diagnostic scan and laboratory investigation reports.'}
-              </p>
             </div>
 
             {patientReports.length > 0 ? (
@@ -974,11 +961,10 @@ export const PatientHome: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-xl text-slate-500 text-xs">
+              <div className="p-10 text-center bg-slate-50 border border-slate-200 rounded-xl text-slate-500 text-xs flex flex-col items-center justify-center">
                 <FlaskConical className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                <p className="font-bold text-slate-700">No Lab or Scan Orders on File</p>
-                <p className="text-slate-500 mt-1">
-                  When the consulting doctor requests an X-Ray, Scan, or Blood Test, the request and results will appear here.
+                <p className="font-bold text-slate-700 text-sm">
+                  {lang === 'ta' ? 'ஆய்வக அல்லது ஸ்கேன் அறிக்கைகள் எதுவும் இல்லை.' : 'No lab or scan reports yet.'}
                 </p>
               </div>
             )}
@@ -989,17 +975,12 @@ export const PatientHome: React.FC = () => {
         {/* SECTION 4: PRESCRIPTIONS / PHARMACY */}
         {/* ========================================================= */}
         {activeSection === 'prescriptions' && (
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
+          <div className="bg-white/88 backdrop-blur-md rounded-2xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md transition-all space-y-6">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-slate-200 pb-3">
               <div>
                 <h2 className="text-lg font-bold text-slate-900 font-serif">
-                  {lang === 'ta' ? 'மருத்துவர் மருந்து சீட்டு & மருந்தகம்' : 'Prescription & Pharmacy Status'}
+                  {lang === 'ta' ? 'மருந்து சீட்டு & மருந்தகம்' : 'Prescription & Pharmacy Status'}
                 </h2>
-                <p className="text-xs text-slate-500">
-                  {lang === 'ta'
-                    ? 'மருத்துவரால் பரிந்துரைக்கப்பட்ட மருந்துகள் மற்றும் மருந்தக விநியோக நிலை'
-                    : 'Medications prescribed by the consulting doctor and pharmacy fulfillment status'}
-                </p>
               </div>
 
               <div className="flex items-center gap-2">
@@ -1121,11 +1102,10 @@ export const PatientHome: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-xl text-slate-500 text-xs">
+              <div className="p-10 text-center bg-slate-50 border border-slate-200 rounded-xl text-slate-500 text-xs flex flex-col items-center justify-center">
                 <Pill className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                <p className="font-bold text-slate-700">No Prescriptions Issued on File</p>
-                <p className="text-slate-500 mt-1">
-                  Once the doctor completes the consultation and prescribes medicines, they will appear here.
+                <p className="font-bold text-slate-700 text-sm">
+                  {lang === 'ta' ? 'மருந்து சீட்டுகள் எதுவும் இல்லை.' : 'No prescriptions yet.'}
                 </p>
               </div>
             )}
@@ -1136,16 +1116,11 @@ export const PatientHome: React.FC = () => {
         {/* SECTION 5: CONSULTATION HISTORY */}
         {/* ========================================================= */}
         {activeSection === 'history' && (
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
+          <div className="bg-white/88 backdrop-blur-md rounded-2xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md transition-all space-y-6">
             <div className="border-b border-slate-200 pb-3">
               <h2 className="text-lg font-bold text-slate-900 font-serif">
                 {lang === 'ta' ? 'மருத்துவ ஆலோசனைகள் வரலாறு' : 'Consultation History'}
               </h2>
-              <p className="text-xs text-slate-500">
-                {lang === 'ta'
-                  ? 'மருத்துவர் பதிவு செய்த மருத்துவ குறிப்புகள் மற்றும் நோயறிதல்'
-                  : 'Clinical notes and diagnosis recorded by the consulting doctor across hospital visits'}
-              </p>
             </div>
 
             {patientHistory.length > 0 ? (
@@ -1208,7 +1183,9 @@ export const PatientHome: React.FC = () => {
                           )}
                         </>
                       ) : (
-                        <p className="text-slate-600 italic">Consultation record in progress or archived.</p>
+                        <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-800 border border-blue-200">
+                          {lang === 'ta' ? 'மருத்துவ ஆலோசனை நடப்பில் உள்ளது' : 'Consultation in progress'}
+                        </span>
                       )}
                     </div>
                   );
@@ -1246,11 +1223,10 @@ export const PatientHome: React.FC = () => {
                 )}
               </div>
             ) : (
-              <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-xl text-slate-500 text-xs">
+              <div className="p-10 text-center bg-slate-50 border border-slate-200 rounded-xl text-slate-500 text-xs flex flex-col items-center justify-center">
                 <FileText className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                <p className="font-bold text-slate-700">No Past Consultations on File</p>
-                <p className="text-slate-500 mt-1">
-                  When the doctor conducts your consultation, the diagnosis and clinical observations will appear here.
+                <p className="font-bold text-slate-700 text-sm">
+                  {lang === 'ta' ? 'முடிவுற்ற மருத்துவ ஆலோசனைகள் எதுவும் இல்லை.' : 'No completed consultations yet.'}
                 </p>
               </div>
             )}
@@ -1261,16 +1237,13 @@ export const PatientHome: React.FC = () => {
         {/* SECTION 6: PATIENT PROFILE (PERSISTENT & EDITABLE) */}
         {/* ========================================================= */}
         {activeSection === 'profile' && (
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
+          <div className="bg-white/88 backdrop-blur-md rounded-2xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md transition-all space-y-6">
             <div className="border-b border-slate-200 pb-3 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-slate-900 font-serif flex items-center gap-2">
                   <User className="w-5 h-5 text-blue-900" />
                   <span>{lang === 'ta' ? 'நோயாளி சுயவிவரம்' : 'Patient Profile'}</span>
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {lang === 'ta' ? 'மருத்துவமனை அங்கீகரிக்கப்பட்ட நோயாளி பதிவு' : 'Hospital Registered OPD Patient Record'}
-                </p>
               </div>
               <div className="flex items-center gap-2">
                 <button

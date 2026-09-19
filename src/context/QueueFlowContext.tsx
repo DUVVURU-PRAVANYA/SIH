@@ -311,7 +311,18 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return false;
   });
 
-  const [currentPatient, setCurrentPatient] = useState<Patient | null>(null);
+  const [currentPatient, setCurrentPatient] = useState<Patient | null>(() => {
+    try {
+      const saved = localStorage.getItem('gh_session');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.patient) return parsed.patient;
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  });
   const [activeVisitData, setActiveVisitData] = useState<any | null>(null);
 
   const [activePatientId, setActivePatientIdState] = useState<string>(() => {
@@ -339,6 +350,21 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
     return null;
   });
+
+  // Sync currentPatient from backend if activePatientId exists and details are missing or mismatched
+  useEffect(() => {
+    if (activePatientId && (!currentPatient || currentPatient.id !== activePatientId)) {
+      apiClient.getPatient(activePatientId).then((res) => {
+        if (res.success && res.data) {
+          setCurrentPatient(res.data);
+          try {
+            const existing = JSON.parse(localStorage.getItem('gh_session') || '{}');
+            localStorage.setItem('gh_session', JSON.stringify({ ...existing, patient: res.data }));
+          } catch {}
+        }
+      }).catch(() => {});
+    }
+  }, [activePatientId, currentPatient]);
 
   const setRole = (newRole: UserRole) => {
     setRoleState(newRole);
@@ -663,7 +689,9 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           tests: [ord.testName || 'Diagnostic Investigation'],
           priority: 'routine' as const,
           schedule: 'today' as const,
-          status: ord.status === 'completed'
+          status: (ord.status === 'reviewed' || ord.isReviewed)
+            ? 'reviewed'
+            : ord.status === 'completed'
             ? 'result_ready'
             : ord.status === 'in_progress'
             ? 'sample_collected'
@@ -1591,6 +1619,12 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           prev.map((o) => (o.patientId === patientId ? { ...o, status: 'reviewed' as any } : o))
         );
 
+        try {
+          await apiClient.reviewDiagnostics(patientId);
+        } catch (e) {
+          // ignore
+        }
+
         await refreshDoctorQueue(currentUser?.departmentId, effectiveDocId);
         await refreshLabOrders();
         if (activePatientId) await loadActiveVisit(activePatientId);
@@ -2291,6 +2325,7 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       localStorage.setItem('gh_session', JSON.stringify({
         role: 'patient',
         patientId: patId,
+        patient: pat,
         hasActiveVisit: hasVisit,
       }));
 
@@ -2392,12 +2427,12 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       } else if (norm.includes('arun')) {
         assignedRole = 'doctor';
         staffUser = { id: 'usr-doc-arun', username: 'dr_arun', fullName: 'Dr. Arun Kumar', role: 'doctor', departmentId: 'dept-cardio' };
-      } else if (norm.includes('senthil')) {
-        assignedRole = 'doctor';
-        staffUser = { id: 'usr-doc-senthil', username: 'dr_senthil', fullName: 'Dr. Senthil Nathan', role: 'doctor', departmentId: 'dept-ortho' };
       } else if (norm.includes('meena')) {
         assignedRole = 'doctor';
-        staffUser = { id: 'usr-doc-meena', username: 'dr_meena', fullName: 'Dr. Meena Sharma', role: 'doctor', departmentId: 'dept-pedia' };
+        staffUser = { id: 'usr-doc-meena', username: 'dr_meena', fullName: 'Dr. Meena Sharma', role: 'doctor', departmentId: 'dept-ortho' };
+      } else if (norm.includes('senthil')) {
+        assignedRole = 'doctor';
+        staffUser = { id: 'usr-doc-2', username: 'dr_senthil', fullName: 'Dr. M. Senthil Nathan', role: 'doctor', departmentId: 'dept-genmed' };
       } else {
         assignedRole = 'doctor';
         staffUser = { id: 'usr-doc-1', username: 'dr_priya', fullName: 'Dr. Priya Kumar', role: 'doctor', departmentId: 'dept-genmed' };
@@ -2443,8 +2478,17 @@ export const QueueFlowProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       // Profile created in DB. Store pending OTP session & transition to /verify-otp
       const registeredPatient = resData.patient;
       setCurrentPatient(registeredPatient);
+      setActivePatientId(registeredPatient.id);
       setHasActiveVisit(false);
       setActiveVisitData(null);
+      try {
+        const existing = JSON.parse(localStorage.getItem('gh_session') || '{}');
+        localStorage.setItem('gh_session', JSON.stringify({
+          ...existing,
+          patientId: registeredPatient.id,
+          patient: registeredPatient,
+        }));
+      } catch {}
 
       const session: PendingOtpSession = {
         phone: cleanPhone,

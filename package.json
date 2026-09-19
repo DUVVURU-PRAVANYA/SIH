@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "phone": "vite --config ivr-phone/vite.config.ts ivr-phone --port 5175",
-    "server": "tsx server/index.ts",
-    "start": "tsx server/index.ts",
+    "server": "tsx watch server/index.ts",
+    "start": "tsx watch server/index.ts",
     "build": "tsc -b && vite build && vite build --config ivr-phone/vite.config.ts --base /phone/ --outDir ../dist/phone ivr-phone",
     "preview": "vite preview",
     "test:e2e": "tsx server/test_e2e.ts"

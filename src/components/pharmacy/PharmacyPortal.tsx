@@ -80,65 +80,46 @@ export const PharmacyPortal: React.FC = () => {
   const dispensedCount = pharmacyOrders.filter((o) => o.status === 'dispensed').length;
 
   return (
-    <div className="bg-[#f8fafc] flex-1 pb-16">
-      {/* Header Banner (No Location / Counter / Room Information) */}
-      <div className="bg-[#581c87] text-white px-4 py-4 border-b border-purple-800 shadow-sm">
+    <div className="bg-transparent flex-1 pb-16 relative z-10">
+      {/* Header Banner (CareNexus Institutional Style) */}
+      <div className="bg-white/85 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 py-4 shadow-xs">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-lg bg-purple-700/50 border border-purple-400/40 flex items-center justify-center text-purple-200">
-              <Pill className="w-6 h-6" />
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-pink-50 border border-pink-200 flex items-center justify-center text-[#DB2777] shadow-2xs">
+              <Pill className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold font-serif text-white">
-                  {lang === 'ta' ? 'மைய மருந்தகம்' : 'Central Pharmacy & Medicine Dispensing'}
-                </h1>
-                <span className="text-xs px-2.5 py-0.5 rounded bg-purple-500/30 text-purple-200 font-bold border border-purple-400/40">
-                  {lang === 'ta' ? 'அரசு மருந்தக சேவை' : 'Government Pharmacy'}
-                </span>
-              </div>
-              <p className="text-xs text-purple-200 mt-0.5">
-                {lang === 'ta'
-                  ? 'மருத்துவர் மருந்து சீட்டு சரிபார்ப்பு மற்றும் நோயாளிகளுக்கு மருந்துகள் வழங்குதல்'
-                  : 'Doctor prescription verification and patient medication fulfillment'}
-              </p>
+              <h1 className="text-xl font-black text-[#0A2342] tracking-tight">
+                Central Pharmacy & Medicine Dispensing
+              </h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-xs">
+          <div className="flex items-center gap-2.5 text-xs">
             <button
               onClick={handleManualRefresh}
               disabled={isRefreshing}
-              className="px-3 py-1.5 bg-purple-700/80 hover:bg-purple-600 border border-purple-400/40 rounded text-white font-medium flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+              className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 text-slate-700 rounded-xl font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50 shadow-2xs"
               title="Refresh Pharmacy Orders from Database"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 text-[#0066FF] ${isRefreshing ? 'animate-spin' : ''}`} />
               <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
             </button>
-
-            <div className="bg-purple-950/80 px-3 py-1.5 rounded border border-purple-700 text-purple-100">
-              <span>{lang === 'ta' ? 'மொத்த மருந்து சீட்டுகள்: ' : 'Total Prescriptions: '}</span>
-              <strong className="font-mono text-white">{pharmacyOrders.length} Total</strong>
-            </div>
           </div>
         </div>
       </div>
 
       {/* Main Single Dashboard Container */}
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        {/* Real Working Status Filter */}
-        <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-xs flex flex-wrap items-center justify-between gap-3">
-          <div className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-            {lang === 'ta' ? 'மருந்து சீட்டு நிலை வடிகட்டி:' : 'Filter Prescriptions by Status:'}
-          </div>
-
-          <div className="flex flex-wrap gap-2 text-xs font-bold">
+        {/* Simple Segmented Status Filter */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="inline-flex flex-wrap bg-slate-100/90 p-1 rounded-xl gap-1 text-xs font-semibold shadow-2xs border border-slate-200/60">
             <button
               onClick={() => setStatusFilter('all')}
-              className={`px-3 py-1.5 rounded cursor-pointer transition-colors ${
+              className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-xs ${
                 statusFilter === 'all'
-                  ? 'bg-purple-900 text-white shadow-xs'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  ? 'bg-white text-blue-950 font-bold shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               All ({pharmacyOrders.length})
@@ -146,10 +127,10 @@ export const PharmacyPortal: React.FC = () => {
 
             <button
               onClick={() => setStatusFilter('pending')}
-              className={`px-3 py-1.5 rounded cursor-pointer transition-colors ${
+              className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-xs ${
                 statusFilter === 'pending'
-                  ? 'bg-amber-800 text-white shadow-xs'
-                  : 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100'
+                  ? 'bg-white text-blue-950 font-bold shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               Pending ({pendingCount})
@@ -157,10 +138,10 @@ export const PharmacyPortal: React.FC = () => {
 
             <button
               onClick={() => setStatusFilter('preparing')}
-              className={`px-3 py-1.5 rounded cursor-pointer transition-colors ${
+              className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-xs ${
                 statusFilter === 'preparing'
-                  ? 'bg-blue-800 text-white shadow-xs'
-                  : 'bg-blue-50 text-blue-900 border border-blue-200 hover:bg-blue-100'
+                  ? 'bg-white text-blue-950 font-bold shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               Preparing ({preparingCount})
@@ -168,21 +149,21 @@ export const PharmacyPortal: React.FC = () => {
 
             <button
               onClick={() => setStatusFilter('ready')}
-              className={`px-3 py-1.5 rounded cursor-pointer transition-colors ${
+              className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-xs ${
                 statusFilter === 'ready'
-                  ? 'bg-purple-800 text-white shadow-xs'
-                  : 'bg-purple-50 text-purple-900 border border-purple-200 hover:bg-purple-100'
+                  ? 'bg-white text-blue-950 font-bold shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Ready for Pickup ({readyCount})
+              Ready ({readyCount})
             </button>
 
             <button
               onClick={() => setStatusFilter('dispensed')}
-              className={`px-3 py-1.5 rounded cursor-pointer transition-colors ${
+              className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-xs ${
                 statusFilter === 'dispensed'
-                  ? 'bg-emerald-800 text-white shadow-xs'
-                  : 'bg-emerald-50 text-emerald-900 border border-emerald-200 hover:bg-emerald-100'
+                  ? 'bg-white text-blue-950 font-bold shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               Dispensed ({dispensedCount})
@@ -193,10 +174,9 @@ export const PharmacyPortal: React.FC = () => {
         {/* Prescription Queue & Medication Details */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column: Orders Queue Table */}
-          <div className="lg:col-span-7 bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
+          <div className="lg:col-span-7 bg-white/88 backdrop-blur-md rounded-2xl border border-slate-200/90 p-5 shadow-sm hover:shadow-md transition-all space-y-4">
             <h2 className="text-base font-bold text-slate-900 flex items-center justify-between border-b border-slate-200 pb-2">
-              <span>{lang === 'ta' ? 'மருந்து சீட்டுகள் பட்டியல்' : 'Active Prescriptions Queue'}</span>
-              <span className="text-xs text-slate-500 font-normal">Showing {filteredOrders.length} of {pharmacyOrders.length}</span>
+              <span>Active Prescriptions Queue</span>
             </h2>
 
             {filteredOrders.length === 0 ? (
@@ -227,7 +207,7 @@ export const PharmacyPortal: React.FC = () => {
                         <td className="p-3 font-mono font-bold text-purple-950">{ord.tokenNumber}</td>
                         <td className="p-3 font-bold text-slate-900">{ord.patientName}</td>
                         <td className="p-3 text-slate-600 font-medium">
-                          {ord.medications.length} {ord.medications.length === 1 ? 'Medication' : 'Medications'}
+                          {ord.medications.length} {ord.medications.length === 1 ? 'medicine' : 'medicines'}
                         </td>
                         <td className="p-3">
                           <span
@@ -295,14 +275,14 @@ export const PharmacyPortal: React.FC = () => {
 
           {/* Right Column: Selected Prescription Details (Inline on SAME Dashboard) */}
           {selectedOrder && (
-            <div className="lg:col-span-5 bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
+            <div className="lg:col-span-5 bg-white/88 backdrop-blur-md rounded-2xl border border-slate-200/90 p-5 shadow-sm hover:shadow-md transition-all space-y-4">
               <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div>
                   <h3 className="text-sm font-bold text-slate-900">
-                    Prescription: {selectedOrder.patientName}
+                    {selectedOrder.patientName}
                   </h3>
-                  <div className="text-xs text-slate-500 font-mono">
-                    Token: <strong className="text-purple-950">{selectedOrder.tokenNumber}</strong> • Doctor: {selectedOrder.doctorName}
+                  <div className="text-xs text-slate-500 font-medium">
+                    {selectedOrder.tokenNumber} · {selectedOrder.doctorName}
                   </div>
                 </div>
                 <span
@@ -322,30 +302,47 @@ export const PharmacyPortal: React.FC = () => {
 
               {/* Exact Doctor Prescribed Medication Breakdown */}
               <div className="space-y-2.5 text-xs">
-                {selectedOrder.medications.map((m, idx) => (
-                  <div key={idx} className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
-                    <div className="flex justify-between items-center">
-                      <strong className="text-slate-900 text-xs">{m.name}</strong>
-                      <span className="font-mono font-bold text-purple-900 bg-purple-100 px-2 py-0.5 rounded text-[11px]">
-                        {m.dosage}
-                      </span>
-                    </div>
+                {selectedOrder.medications.map((m, idx) => {
+                  const isTablet =
+                    m.name.toLowerCase().includes('tab') ||
+                    m.dosage.toLowerCase().includes('tab') ||
+                    (m.instructions && m.instructions.toLowerCase().includes('tablet'));
+                  const unitWord = isTablet
+                    ? (m.quantity === 1 ? 'tablet' : 'tablets')
+                    : (m.quantity === 1 ? 'unit' : 'units');
+                  const timingClean = m.frequency
+                    ? m.frequency.replace(/\s*\(\s*/g, ' · ').replace(/\s*\)\s*/g, '').replace(/-/g, ' · ')
+                    : '';
 
-                    <div className="text-purple-950 font-semibold text-[11px]">
-                      Timing: {m.frequency} • Duration: {m.duration}
-                    </div>
-
-                    {m.instructions && (
-                      <div className="text-slate-600 text-[11px] italic bg-white p-1.5 rounded border border-slate-200">
-                        Instructions: {m.instructions}
+                  return (
+                    <div key={idx} className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <strong className="text-slate-900 text-xs font-bold">{m.name}</strong>
+                        <span className="font-mono font-bold text-purple-900 bg-purple-100 px-2 py-0.5 rounded text-[11px]">
+                          {m.dosage}
+                        </span>
                       </div>
-                    )}
 
-                    <div className="text-right font-mono font-bold text-slate-700 text-[11px] pt-1 border-t border-slate-200">
-                      Quantity: {m.quantity || 30} units
+                      <div className="text-purple-950 font-medium text-[11px]">
+                        Timing: {timingClean || m.frequency}
+                      </div>
+
+                      <div className="text-slate-700 font-medium text-[11px]">
+                        Duration: {m.duration}
+                      </div>
+
+                      {m.instructions && (
+                        <div className="text-slate-600 text-[11px] bg-white p-1.5 rounded border border-slate-200">
+                          Instructions: {m.instructions}
+                        </div>
+                      )}
+
+                      <div className="text-slate-700 font-medium text-[11px] pt-1 border-t border-slate-200">
+                        Quantity: {m.quantity || 7} {unitWord}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Action Buttons */}
@@ -356,7 +353,7 @@ export const PharmacyPortal: React.FC = () => {
                     className="w-full py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-bold text-xs rounded shadow flex items-center justify-center gap-1.5 cursor-pointer transition-all"
                   >
                     <Package className="w-4 h-4" />
-                    <span>Prepare Prescription</span>
+                    <span>Start Dispensing</span>
                   </button>
                 )}
 
@@ -376,14 +373,14 @@ export const PharmacyPortal: React.FC = () => {
                     className="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs rounded shadow flex items-center justify-center gap-1.5 cursor-pointer transition-all"
                   >
                     <ShieldCheck className="w-4 h-4" />
-                    <span>Dispense Medicines & Complete Visit</span>
+                    <span>Dispense Medicine</span>
                   </button>
                 )}
 
                 {selectedOrder.status === 'dispensed' && (
                   <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded text-center text-xs font-bold text-emerald-800 flex items-center justify-center gap-1.5">
                     <Check className="w-4 h-4 text-emerald-600" />
-                    <span>Prescription Dispensed • Visit Completed</span>
+                    <span>Dispensed ✓</span>
                   </div>
                 )}
               </div>

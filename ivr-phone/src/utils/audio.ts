@@ -189,6 +189,12 @@ class AudioEngine {
       ];
     }
 
+    // Prompts under 185 chars in a single language should play as one continuous natural sentence
+    const isFullTamil = /[\u0B80-\u0BFF]/.test(text);
+    if (text.length <= 185) {
+      return [{ text: text.trim(), lang: isFullTamil ? 'ta' : defaultLang }];
+    }
+
     const parts: Array<{ text: string; lang: 'en' | 'ta'; delayBeforeMs?: number }> = [];
     const lines = text.split(/(?<=[.?!,;:\n])\s+/);
 
@@ -277,29 +283,105 @@ class AudioEngine {
     playNext();
   }
 
+  /**
+   * Sanitize text string for crystal-clear natural speech synthesis
+   * Removes awkward bracket tokens, replaces Tamil suffixes/hyphens with spoken words,
+   * expands doctor prefixes and numbers cleanly so TTS never stumbles or crashes.
+   */
+  public sanitizeVoiceText(rawText: string, lang: 'en' | 'ta'): string {
+    let t = rawText
+      .replace(/\[PAUSE_[^\]]+\]/gi, ' ')
+      .replace(/\[[^\]]+\]/g, ' ')
+      .trim();
+
+    if (lang === 'ta') {
+      // Clean up numeral suffixes: 1-ஐ -> எண் ஒன்றை
+      t = t
+        .replace(/1\s*-\s*ஐ/g, 'எண் ஒன்றை')
+        .replace(/2\s*-\s*ஐ/g, 'எண் இரண்டை')
+        .replace(/3\s*-\s*ஐ/g, 'எண் மூன்றை')
+        .replace(/4\s*-\s*ஐ/g, 'எண் நான்கை')
+        .replace(/5\s*-\s*ஐ/g, 'எண் ஐந்தை')
+        .replace(/0\s*-\s*ஐ/g, 'எண் பூஜ்ஜியத்தை')
+        .replace(/(\b[A-Z-]+-\d+)-க்கான/gi, '$1 க்கான')
+        .replace(/-க்கான/g, ' க்கான');
+
+      // Convert common token department prefixes to Tamil phonetics if encountered in raw strings
+      t = t
+        .replace(/\bGENMED\s*-\s*(\d+)/gi, 'பொது மருத்துவம் $1')
+        .replace(/\bCARDIO\s*-\s*(\d+)/gi, 'கார்டியோ $1')
+        .replace(/\bORTHO\s*-\s*(\d+)/gi, 'எலும்பியல் $1')
+        .replace(/\bDERMA\s*-\s*(\d+)/gi, 'தோல் மருத்துவம் $1')
+        .replace(/\bX-RAY\s*-\s*(\d+)/gi, 'எக்ஸ்-ரே $1')
+        .replace(/\bPHARM\s*-\s*(\d+)/gi, 'மருந்தகம் $1')
+        .replace(/\bLAB\s*-\s*(\d+)/gi, 'ஆய்வகம் $1');
+    } else {
+      // English cleanup
+      t = t
+        .replace(/\bDr\.?\s+/gi, 'Doctor ')
+        .replace(/\bGENMED\s*-\s*(\d+)/gi, 'General Medicine $1')
+        .replace(/\bCARDIO\s*-\s*(\d+)/gi, 'Cardiology $1')
+        .replace(/\bORTHO\s*-\s*(\d+)/gi, 'Orthopedics $1')
+        .replace(/\bDERMA\s*-\s*(\d+)/gi, 'Dermatology $1')
+        .replace(/\bX-RAY\s*-\s*(\d+)/gi, 'X-Ray $1')
+        .replace(/\bPHARM\s*-\s*(\d+)/gi, 'Pharmacy $1')
+        .replace(/\bLAB\s*-\s*(\d+)/gi, 'Laboratory $1');
+    }
+
+    // Clean up extra hyphens and double spaces
+    t = t.replace(/\s*-\s*/g, ' ').replace(/\s{2,}/g, ' ').trim();
+    return t;
+  }
+
   private async playSegment(text: string, lang: 'en' | 'ta', onEnded: () => void) {
     const seqId = this.activeSequenceId;
+    const sanitizedText = this.sanitizeVoiceText(text, lang);
+    if (!sanitizedText) {
+      onEnded();
+      return;
+    }
+
     let finished = false;
+    let watchdogTimer: ReturnType<typeof setTimeout> | null = null;
+
     const safeEnd = () => {
       if (finished) return;
       finished = true;
+      if (watchdogTimer) {
+        clearTimeout(watchdogTimer);
+        watchdogTimer = null;
+      }
       if (seqId === this.activeSequenceId) {
         onEnded();
       }
     };
 
+    // Watchdog timer: estimated duration based on text length + 3.5s buffer
+    // Guarantees speech engine NEVER freezes or crashes even on stream or audio hardware stalls
+    const expectedDurationMs = Math.max(4000, Math.min(22000, sanitizedText.length * 105 + 3500));
+    watchdogTimer = setTimeout(() => {
+      safeEnd();
+    }, expectedDurationMs);
+
     // 1. Primary: Stream natural telephone audio via unlocked Web Audio Context
-    // Bypasses browser autoplay restrictions even after 3-second async pauses
+    // Bypasses browser autoplay restrictions even after async pauses
     const ctx = this.getAudioContext();
     if (ctx) {
+      if (ctx.state === 'suspended') {
+        try {
+          await ctx.resume();
+        } catch {}
+      }
+
       const candidates: string[] = [];
       if (typeof window !== 'undefined') {
         const host = window.location.hostname || 'localhost';
-        candidates.push(`http://${host}:4000/api/tts?text=${encodeURIComponent(text)}&lang=${lang}`);
-        candidates.push(`http://localhost:4000/api/tts?text=${encodeURIComponent(text)}&lang=${lang}`);
-        candidates.push(`/api/tts?text=${encodeURIComponent(text)}&lang=${lang}`);
+        candidates.push(`/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
+        candidates.push(`http://${host}:4000/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
+        candidates.push(`http://${host}:4000/api/ivr/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
+        candidates.push(`http://localhost:4000/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
       } else {
-        candidates.push(`/api/tts?text=${encodeURIComponent(text)}&lang=${lang}`);
+        candidates.push(`http://localhost:4000/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
       }
 
       for (const url of candidates) {
@@ -307,9 +389,21 @@ class AudioEngine {
           const res = await fetch(url);
           if (res.ok) {
             const arrayBuf = await res.arrayBuffer();
-            if (seqId !== this.activeSequenceId) return;
+            if (seqId !== this.activeSequenceId) {
+              safeEnd();
+              return;
+            }
             const audioBuf = await ctx.decodeAudioData(arrayBuf.slice(0));
-            if (seqId !== this.activeSequenceId) return;
+            if (seqId !== this.activeSequenceId) {
+              safeEnd();
+              return;
+            }
+
+            if (ctx.state === 'suspended') {
+              try {
+                await ctx.resume();
+              } catch {}
+            }
 
             const source = ctx.createBufferSource();
             source.buffer = audioBuf;
@@ -320,20 +414,24 @@ class AudioEngine {
               this.currentBufferSource = null;
               safeEnd();
             };
+
             source.start(0);
             return;
           }
-        } catch {
-          // try next candidate url
+        } catch (fetchErr) {
+          console.warn('[IVR TTS] candidate fetch failed:', url, fetchErr);
         }
       }
     }
 
-    if (seqId !== this.activeSequenceId) return;
+    if (seqId !== this.activeSequenceId) {
+      safeEnd();
+      return;
+    }
 
     // 2. Secondary: Fallback to HTMLAudio element
     try {
-      const audioUrl = `/api/tts?text=${encodeURIComponent(text)}&lang=${lang}`;
+      const audioUrl = `/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`;
       const audio = new Audio(audioUrl);
       this.currentAudio = audio;
 
@@ -343,13 +441,13 @@ class AudioEngine {
       };
       audio.onerror = () => {
         this.currentAudio = null;
-        this.fallbackSpeechSynthesis(text, lang, safeEnd);
+        this.fallbackSpeechSynthesis(sanitizedText, lang, safeEnd);
       };
 
       await audio.play();
     } catch {
       this.currentAudio = null;
-      this.fallbackSpeechSynthesis(text, lang, safeEnd);
+      this.fallbackSpeechSynthesis(sanitizedText, lang, safeEnd);
     }
   }
 
@@ -360,6 +458,7 @@ class AudioEngine {
     }
 
     try {
+      window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = lang === 'ta' ? 'ta-IN' : 'en-IN';
       utterance.rate = lang === 'ta' ? 0.92 : 0.98;
@@ -380,8 +479,21 @@ class AudioEngine {
         if (enVoice) utterance.voice = enVoice;
       }
 
-      utterance.onend = () => onEnded();
-      utterance.onerror = () => onEnded();
+      let ended = false;
+      const done = () => {
+        if (!ended) {
+          ended = true;
+          onEnded();
+        }
+      };
+
+      utterance.onend = done;
+      utterance.onerror = done;
+
+      // Chrome SpeechSynthesis safety timeout:
+      const timeoutMs = Math.max(3000, text.length * 110);
+      setTimeout(done, timeoutMs);
+
       window.speechSynthesis.speak(utterance);
     } catch {
       onEnded();

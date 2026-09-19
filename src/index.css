@@ -1,42 +1,478 @@
 @import "tailwindcss";
 
+/* ================================================================
+   CARENEXUS DESIGN SYSTEM — Global CSS
+   Government Hospital Patient Flow & Queue Management
+   Brand: Connected Care. Healthier Tomorrow.
+================================================================ */
+
 @layer base {
   :root {
-    --font-tamil: 'Mukta Malar', 'Noto Sans Tamil', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --gov-blue-900: #0B2545;
-    --gov-blue-800: #134074;
-    --gov-blue-700: #1D4ED8;
-    --gov-teal-600: #0D9488;
-    --gov-teal-700: #0F766E;
+    /* === CareNexus Brand Colors === */
+    --cn-navy-950:  #060F1E;
+    --cn-navy-900:  #0A2342; /* Official Navy */
+    --cn-navy-800:  #0E2F59;
+    --cn-navy-700:  #1B4F8C; /* Healthcare Blue */
+    --cn-navy-600:  #1677D2; /* CareNexus Blue */
+    --cn-blue-500:  #1677D2; /* CareNexus Blue */
+    --cn-blue-400:  #4299E1;
+
+    --cn-teal-800:  #065F52;
+    --cn-teal-700:  #0D7A6E; /* Official Teal */
+    --cn-teal-600:  #0F9788;
+    --cn-teal-500:  #12B8A6; /* CareNexus Teal */
+    --cn-teal-400:  #2DD4BF;
+
+    --cn-orange-700: #C2540A;
+    --cn-orange-600: #E8620F; /* Official Orange Accent */
+    --cn-orange-500: #F97316;
+    --cn-orange-400: #FB923C;
+
+    /* === Neutral / Background Palette === */
+    --cn-bg:        #F4F6F9; /* Official Background */
+    --cn-bg-alt:    #E9EDF3;
+    --cn-white:     #FFFFFF; /* Official White */
+    --cn-border:    #D8DFE8;
+    --cn-border-med: #C2CDDA;
+
+    /* === Typography Colors === */
+    --cn-text-primary:   #1A2B42; /* Official Main Text */
+    --cn-text-secondary: #3D5170;
+    --cn-text-muted:     #5A6D84; /* Official Muted Text */
+    --cn-text-light:     #8FA3BD;
+
+    /* === Status Colors === */
+    --cn-success:  #166534;
+    --cn-warning:  #92400E;
+    --cn-danger:   #991B1B;
+    --cn-info:     #1E40AF;
+
+    /* === Path Colors (Wayfinding) — Accessible with labels === */
+    --path-registration: #D97706;  /* Yellow/Amber */
+    --path-opd:          #2563EB;  /* Blue */
+    --path-radiology:    #EA580C;  /* Orange */
+    --path-lab:          #16A34A;  /* Green */
+    --path-pharmacy:     #7C3AED;  /* Purple */
+    --path-emergency:    #DC2626;  /* Red */
+
+    /* === Spacing === */
+    --cn-header-h:   64px;
+    --cn-utility-h:  36px;
+
+    /* === Shadows === */
+    --cn-shadow-sm:  0 1px 3px rgba(10,35,66,0.08), 0 1px 2px rgba(10,35,66,0.05);
+    --cn-shadow-md:  0 4px 12px rgba(10,35,66,0.10), 0 2px 4px rgba(10,35,66,0.06);
+    --cn-shadow-lg:  0 10px 30px rgba(10,35,66,0.12), 0 4px 10px rgba(10,35,66,0.08);
+    --cn-shadow-gov: 0 2px 8px rgba(10,35,66,0.12), inset 0 1px 0 rgba(255,255,255,0.08);
+
+    /* === Fonts === */
+    --font-sans:   'Noto Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-tamil:  'Noto Sans Tamil', 'Mukta Malar', sans-serif;
+    --font-mono:   'JetBrains Mono', 'Courier New', monospace;
+
+    /* === Transitions === */
+    --cn-transition: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+    --cn-transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* === Border Radius === */
+    --cn-radius-sm: 4px;
+    --cn-radius:    8px;
+    --cn-radius-md: 10px;
+    --cn-radius-lg: 14px;
+    --cn-radius-xl: 20px;
+  }
+
+  html {
+    scroll-behavior: smooth;
   }
 
   body {
-    font-family: var(--font-heading);
-    color: #1e293b;
-    background-color: #f8fafc;
+    font-family: var(--font-sans);
+    color: var(--cn-text-primary);
+    background-color: var(--cn-bg);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
   }
 
-  /* Tamil font optimization when in Tamil mode */
-  [lang="ta"], .font-tamil {
+  /* Tamil language font override */
+  [lang="ta"], .font-tamil, :lang(ta) {
     font-family: var(--font-tamil);
+    line-height: 1.8;
+  }
+
+  /* Focus ring — accessible */
+  *:focus-visible {
+    outline: 3px solid var(--cn-orange-600);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Headings — institutional weight */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    color: var(--cn-text-primary);
+    line-height: 1.25;
   }
 }
 
-/* Accessibility Modes */
-.text-scale-large {
-  font-size: 1.15rem;
+/* ================================================================
+   CARENEXUS COMPONENT CLASSES
+================================================================ */
+
+/* Government-style section header accent */
+.cn-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
+.cn-section-header::before {
+  content: '';
+  display: block;
+  width: 4px;
+  height: 28px;
+  background: var(--cn-orange-600);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Institutional card base */
+.cn-card {
+  background: var(--cn-white);
+  border: 1px solid var(--cn-border);
+  border-radius: var(--cn-radius-md);
+  box-shadow: var(--cn-shadow-sm);
+  transition: box-shadow var(--cn-transition), border-color var(--cn-transition);
+}
+.cn-card:hover {
+  box-shadow: var(--cn-shadow-md);
+  border-color: var(--cn-border-med);
+}
+
+/* Service tile card */
+.cn-service-card {
+  background: var(--cn-white);
+  border: 1px solid var(--cn-border);
+  border-radius: var(--cn-radius-md);
+  padding: 20px;
+  cursor: pointer;
+  transition: all var(--cn-transition);
+  box-shadow: var(--cn-shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+.cn-service-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--cn-navy-700);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--cn-transition);
+}
+.cn-service-card:hover {
+  box-shadow: var(--cn-shadow-md);
+  border-color: var(--cn-navy-700);
+  transform: translateY(-2px);
+}
+.cn-service-card:hover::before {
+  transform: scaleX(1);
+}
+
+/* Government header nav link */
+.cn-nav-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  padding: 6px 12px;
+  border-radius: var(--cn-radius-sm);
+  transition: all var(--cn-transition);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+}
+.cn-nav-link:hover {
+  color: #ffffff;
+  background: rgba(255,255,255,0.12);
+}
+
+/* Status badges — accessible (not color-only) */
+.cn-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.cn-badge-success { background: #DCFCE7; color: #166534; border: 1px solid #BBF7D0; }
+.cn-badge-warning { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; }
+.cn-badge-danger  { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
+.cn-badge-info    { background: #DBEAFE; color: #1E40AF; border: 1px solid #BFDBFE; }
+.cn-badge-neutral { background: #F1F5F9; color: #475569; border: 1px solid #E2E8F0; }
+.cn-badge-live    { background: #DCFCE7; color: #166534; border: 1px solid #86EFAC; }
+
+/* Path color badges (wayfinding — always paired with text label) */
+.cn-path-yellow { background: #FEF9C3; color: #854D0E; border: 1px solid #FDE68A; }
+.cn-path-blue   { background: #DBEAFE; color: #1E40AF; border: 1px solid #93C5FD; }
+.cn-path-orange { background: #FFEDD5; color: #9A3412; border: 1px solid #FDBA74; }
+.cn-path-green  { background: #DCFCE7; color: #166534; border: 1px solid #86EFAC; }
+.cn-path-purple { background: #EDE9FE; color: #6D28D9; border: 1px solid #C4B5FD; }
+.cn-path-red    { background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
+
+/* Primary CTA button — government portal style */
+.cn-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--cn-navy-900);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: var(--cn-radius);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all var(--cn-transition);
+  letter-spacing: 0.02em;
+  box-shadow: var(--cn-shadow-sm);
+  text-decoration: none;
+}
+.cn-btn-primary:hover {
+  background: var(--cn-navy-800);
+  box-shadow: var(--cn-shadow-md);
+  transform: translateY(-1px);
+}
+.cn-btn-primary:active { transform: translateY(0); }
+
+.cn-btn-teal {
+  background: var(--cn-teal-700);
+  border-color: var(--cn-teal-600);
+}
+.cn-btn-teal:hover { background: var(--cn-teal-600); }
+
+.cn-btn-outline {
+  background: transparent;
+  color: var(--cn-navy-900);
+  border: 2px solid var(--cn-border-med);
+}
+.cn-btn-outline:hover {
+  background: var(--cn-bg);
+  border-color: var(--cn-navy-700);
+  color: var(--cn-navy-700);
+}
+
+/* Form input — government portal */
+.cn-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--cn-white);
+  border: 1.5px solid var(--cn-border-med);
+  border-radius: var(--cn-radius);
+  font-size: 14px;
+  color: var(--cn-text-primary);
+  font-family: var(--font-sans);
+  transition: border-color var(--cn-transition), box-shadow var(--cn-transition);
+}
+.cn-input:focus {
+  outline: none;
+  border-color: var(--cn-navy-700);
+  box-shadow: 0 0 0 3px rgba(27,79,140,0.15);
+}
+.cn-input::placeholder {
+  color: var(--cn-text-light);
+}
+
+/* Emergency banner */
+.cn-emergency-banner {
+  background: linear-gradient(90deg, #7F1D1D 0%, #991B1B 100%);
+  color: #fff;
+  padding: 10px 20px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  border-bottom: 2px solid #FCA5A5;
+  animation: pulse-emergency 2s infinite;
+}
+@keyframes pulse-emergency {
+  0%, 100% { background-color: #991B1B; }
+  50%       { background-color: #7F1D1D; }
+}
+
+/* Queue number display */
+.cn-token-display {
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--cn-navy-900);
+  letter-spacing: 0.05em;
+  background: var(--cn-bg);
+  border: 2px solid var(--cn-border);
+  border-radius: var(--cn-radius-md);
+  padding: 10px 20px;
+  display: inline-block;
+}
+
+/* Journey step connector */
+.cn-journey-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+.cn-journey-step-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--cn-border);
+  background: var(--cn-white);
+  position: relative;
+  z-index: 1;
+}
+.cn-journey-step-icon.completed {
+  background: var(--cn-teal-700);
+  border-color: var(--cn-teal-700);
+  color: #fff;
+}
+.cn-journey-step-icon.current {
+  background: var(--cn-navy-900);
+  border-color: var(--cn-orange-600);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(232,98,15,0.2);
+}
+.cn-journey-connector {
+  flex: 1;
+  height: 2px;
+  background: var(--cn-border);
+  margin: 0 -8px;
+  position: relative;
+  top: 24px;
+}
+.cn-journey-connector.completed {
+  background: var(--cn-teal-600);
+}
+
+/* Department directory card */
+.cn-dept-card {
+  background: var(--cn-white);
+  border: 1px solid var(--cn-border);
+  border-radius: var(--cn-radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all var(--cn-transition);
+  box-shadow: var(--cn-shadow-sm);
+}
+.cn-dept-card:hover {
+  box-shadow: var(--cn-shadow-md);
+  border-color: var(--cn-border-med);
+}
+
+/* Live queue pulse */
+.cn-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22C55E;
+  animation: live-pulse 2s infinite;
+  display: inline-block;
+}
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.3); }
+}
+
+/* Announcement card */
+.cn-announcement-card {
+  padding: 14px 16px;
+  border-left: 4px solid var(--cn-orange-600);
+  background: var(--cn-white);
+  border-radius: 0 var(--cn-radius) var(--cn-radius) 0;
+  box-shadow: var(--cn-shadow-sm);
+  margin-bottom: 12px;
+  transition: box-shadow var(--cn-transition);
+}
+.cn-announcement-card:hover { box-shadow: var(--cn-shadow-md); }
+.cn-announcement-card.critical { border-left-color: #DC2626; }
+.cn-announcement-card.info { border-left-color: var(--cn-navy-700); }
+.cn-announcement-card.success { border-left-color: var(--cn-teal-700); }
+
+/* Government section background alternation */
+.cn-section-white { background: var(--cn-white); }
+.cn-section-light { background: var(--cn-bg); }
+.cn-section-navy  { background: var(--cn-navy-900); color: #ffffff; }
+.cn-section-alt   { background: var(--cn-bg-alt); }
+
+/* Utility bar (slim top strip in header) */
+.cn-utility-bar {
+  background: var(--cn-navy-950);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  min-height: var(--cn-utility-h);
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+}
+
+/* Main header */
+.cn-main-header {
+  background: var(--cn-navy-900);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  box-shadow: var(--cn-shadow-gov);
+}
+
+/* Portal layout wrapper */
+.cn-portal-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--cn-bg);
+}
+
+/* Stat/KPI cards */
+.cn-stat-card {
+  background: var(--cn-white);
+  border: 1px solid var(--cn-border);
+  border-radius: var(--cn-radius-md);
+  padding: 18px 20px;
+  box-shadow: var(--cn-shadow-sm);
+}
+.cn-stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--cn-navy-900);
+  line-height: 1;
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
+}
+.cn-stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cn-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 6px;
+}
+
+/* ================================================================
+   ACCESSIBILITY MODES — PRESERVED EXACTLY
+================================================================ */
+
+.text-scale-large { font-size: 1.15rem; }
 .text-scale-large h1 { font-size: 2.5rem; }
 .text-scale-large h2 { font-size: 2rem; }
 .text-scale-large h3 { font-size: 1.6rem; }
 .text-scale-large p, .text-scale-large span, .text-scale-large button { font-size: 1.25rem; }
 
-.text-scale-extra-large {
-  font-size: 1.35rem;
-}
+.text-scale-extra-large { font-size: 1.35rem; }
 .text-scale-extra-large h1 { font-size: 3rem; }
 .text-scale-extra-large h2 { font-size: 2.4rem; }
 .text-scale-extra-large h3 { font-size: 1.9rem; }
@@ -50,19 +486,24 @@
 }
 .high-contrast-mode .bg-white,
 .high-contrast-mode .bg-slate-50,
-.high-contrast-mode .bg-slate-100 {
+.high-contrast-mode .bg-slate-100,
+.high-contrast-mode .cn-card,
+.high-contrast-mode .cn-service-card,
+.high-contrast-mode .cn-dept-card {
   background-color: #121212 !important;
   color: #FFFFFF !important;
   border-color: #FFFF00 !important;
 }
 .high-contrast-mode button,
-.high-contrast-mode .btn-high-contrast {
+.high-contrast-mode .btn-high-contrast,
+.high-contrast-mode .cn-btn-primary {
   border: 3px solid #FFFF00 !important;
   color: #FFFFFF !important;
 }
 .high-contrast-mode .text-slate-500,
 .high-contrast-mode .text-slate-600,
-.high-contrast-mode .text-slate-700 {
+.high-contrast-mode .text-slate-700,
+.high-contrast-mode .cn-text-muted {
   color: #F8FAFC !important;
 }
 .high-contrast-mode .text-blue-600,
@@ -75,13 +516,22 @@
   animation: none !important;
   transition: none !important;
 }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 
-/* Custom Pulsing and Glows */
+/* ================================================================
+   ANIMATIONS
+================================================================ */
+
 @keyframes pulse-subtle {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.88; transform: scale(1.02); }
 }
-
 .animate-pulse-subtle {
   animation: pulse-subtle 2.5s infinite ease-in-out;
 }
@@ -91,21 +541,43 @@
   70% { transform: scale(1.8); opacity: 0; }
   100% { transform: scale(1.8); opacity: 0; }
 }
-
 .animate-radar {
   animation: radar-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
-/* Print Styles for Token Slip & Reports */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s ease-out both;
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out both;
+}
+
+/* ================================================================
+   HEALTHCARE BACKGROUND WATERMARK — Ultra-subtle CareNexus single centered watermark
+================================================================ */
+
+/* Allow portal wrappers to let subtle watermark through while cards remain solid white */
+main,
+.bg-\[\#f8fafc\] {
+  background-color: transparent !important;
+}
+
+/* ================================================================
+   PRINT STYLES
+================================================================ */
+
 @media print {
-  body {
-    background: white;
-    color: black;
-  }
-  .no-print {
-    display: none !important;
-  }
-  .print-only {
-    display: block !important;
-  }
+  body { background: white; color: black; }
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  .cn-main-header, .cn-utility-bar, footer { display: none !important; }
 }

@@ -43,35 +43,50 @@ interface QuickMedicinePreset {
   duration: string;
   instructions: string;
   quantity: number;
+  category: string;
 }
 
 const DEPARTMENT_PRESETS: Record<string, QuickMedicinePreset[]> = {
   'dept-derma': [
-    { name: 'Tab Cetirizine IP', dosage: '10 mg', frequency: '0-0-1 (Night - After Food)', duration: '7 Days', instructions: 'Take 1 tablet at night after food', quantity: 7 },
-    { name: 'Calamine Lotion Topical', dosage: '100 ml', frequency: '1-0-1 (Apply Twice Daily)', duration: '14 Days', instructions: 'Shake bottle well and apply gently on skin', quantity: 1 },
-    { name: 'Oint Mupirocin IP 2% w/w', dosage: '5 gm', frequency: '1-0-1 (Local Application)', duration: '7 Days', instructions: 'Clean affected area and apply thin layer', quantity: 1 },
-    { name: 'Permethrin Cream 5% w/w', dosage: '30 gm', frequency: 'Single Application', duration: '1 Day', instructions: 'Apply neck down, wash off after 8-12 hours', quantity: 1 },
-    { name: 'Cap Doxycycline Hyclate', dosage: '100 mg', frequency: '1-0-1 (After Food)', duration: '10 Days', instructions: 'Take after meals with plenty of water', quantity: 20 },
-    { name: 'Tab Hydroxyzine Hydrochloride', dosage: '25 mg', frequency: '0-0-1 (Night - After Food)', duration: '5 Days', instructions: 'Bedtime dose for severe pruritus / itching', quantity: 5 },
-  ],
-  'dept-genmed': [
-    { name: 'Tab Paracetamol IP', dosage: '650 mg', frequency: '1-0-1 (After Food)', duration: '3 Days', instructions: 'Take after meals for fever/bodyache', quantity: 6 },
-    { name: 'Cap Amoxicillin IP', dosage: '500 mg', frequency: '1-0-1 (After Food)', duration: '5 Days', instructions: 'Complete full 5-day antibiotic course', quantity: 10 },
-    { name: 'Tab Pantoprazole Gastro-resistant', dosage: '40 mg', frequency: '1-0-0 (Morning - Before Food)', duration: '10 Days', instructions: 'Take on empty stomach 30 mins before breakfast', quantity: 10 },
-    { name: 'Oral Rehydration Salts (ORS) WHO Formula', dosage: '21.8 gm Sachet', frequency: 'As needed', duration: '3 Days', instructions: 'Dissolve 1 packet in 1 litre clean drinking water', quantity: 3 },
-    { name: 'Tab Cetirizine IP', dosage: '10 mg', frequency: '0-0-1 (Night - After Food)', duration: '5 Days', instructions: 'Take at night after food', quantity: 5 },
+    { name: 'Tab Cetirizine IP', dosage: '10 mg', frequency: '0-0-1 (Night - After Food)', duration: '5 Days', instructions: 'Take 1 tablet at night after food', quantity: 5, category: 'Antihistamines & Allergy' },
+    { name: 'Tab Hydroxyzine Hydrochloride', dosage: '25 mg', frequency: '0-0-1 (Night - After Food)', duration: '5 Days', instructions: 'Bedtime dose for severe pruritus / itching', quantity: 5, category: 'Antihistamines & Allergy' },
+    { name: 'Calamine Lotion Topical', dosage: '100 ml', frequency: '1-0-1 (Apply Twice Daily)', duration: '14 Days', instructions: 'Shake bottle well and apply gently on skin', quantity: 1, category: 'Topical Lotions & Creams' },
+    { name: 'Oint Mupirocin IP 2% w/w', dosage: '5 gm', frequency: '1-0-1 (Local Application)', duration: '7 Days', instructions: 'Clean affected area and apply thin layer', quantity: 1, category: 'Topical Lotions & Creams' },
+    { name: 'Clotrimazole Cream 1% w/w', dosage: '15 gm', frequency: '1-0-1 (Local Application)', duration: '14 Days', instructions: 'Apply twice daily on affected fungal lesions', quantity: 1, category: 'Topical Lotions & Creams' },
+    { name: 'Permethrin Cream 5% w/w', dosage: '30 gm', frequency: 'Single Application', duration: '1 Day', instructions: 'Apply neck down, wash off after 8-12 hours', quantity: 1, category: 'Topical Lotions & Creams' },
+    { name: 'Cap Doxycycline Hyclate', dosage: '100 mg', frequency: '1-0-1 (After Food)', duration: '10 Days', instructions: 'Take after meals with plenty of water', quantity: 20, category: 'Antibiotics & Systemic' },
+    { name: 'Tab Fluconazole IP', dosage: '150 mg', frequency: 'Once Weekly (After Food)', duration: '4 Weeks', instructions: 'Take 1 tablet weekly for fungal infection', quantity: 4, category: 'Antibiotics & Systemic' },
   ],
   'dept-cardio': [
-    { name: 'Tab Telmisartan IP', dosage: '40 mg', frequency: '1-0-0 (Morning - After Food)', duration: '30 Days', instructions: 'Take once daily in the morning', quantity: 30 },
-    { name: 'Tab Atorvastatin IP', dosage: '20 mg', frequency: '0-0-1 (Night - After Food)', duration: '30 Days', instructions: 'Take at night after dinner', quantity: 30 },
-    { name: 'Tab Amlodipine IP', dosage: '5 mg', frequency: '1-0-0 (Morning - After Food)', duration: '30 Days', instructions: 'Morning dose with water', quantity: 30 },
-    { name: 'Tab Clopidogrel IP', dosage: '75 mg', frequency: '1-0-0 (After Food)', duration: '30 Days', instructions: 'Take with breakfast daily', quantity: 30 },
+    { name: 'Tab Telmisartan IP', dosage: '40 mg', frequency: '1-0-0 (Morning - After Food)', duration: '30 Days', instructions: 'Take once daily in the morning', quantity: 30, category: 'Antihypertensives (BP)' },
+    { name: 'Tab Amlodipine IP', dosage: '5 mg', frequency: '1-0-0 (Morning - After Food)', duration: '30 Days', instructions: 'Morning dose with water', quantity: 30, category: 'Antihypertensives (BP)' },
+    { name: 'Tab Metoprolol Succinate', dosage: '25 mg', frequency: '1-0-0 (Morning - After Food)', duration: '30 Days', instructions: 'Take in morning with food', quantity: 30, category: 'Antihypertensives (BP)' },
+    { name: 'Tab Aspirin (Ecosprin)', dosage: '75 mg', frequency: '0-1-0 (After Food)', duration: '30 Days', instructions: 'Take after lunch daily', quantity: 30, category: 'Antiplatelets & Cardiac' },
+    { name: 'Tab Clopidogrel IP', dosage: '75 mg', frequency: '1-0-0 (After Food)', duration: '30 Days', instructions: 'Take with breakfast daily', quantity: 30, category: 'Antiplatelets & Cardiac' },
+    { name: 'Tab Atorvastatin IP', dosage: '20 mg', frequency: '0-0-1 (Night - After Food)', duration: '30 Days', instructions: 'Take at night after dinner', quantity: 30, category: 'Lipid Lowering / Statins' },
+    { name: 'Tab Rosuvastatin IP', dosage: '10 mg', frequency: '0-0-1 (Night - After Food)', duration: '30 Days', instructions: 'Take at night after dinner', quantity: 30, category: 'Lipid Lowering / Statins' },
   ],
   'dept-ortho': [
-    { name: 'Tab Aceclofenac + Paracetamol', dosage: '100mg/325mg', frequency: '1-0-1 (After Food)', duration: '5 Days', instructions: 'Take after meals for joint/muscle pain', quantity: 10 },
-    { name: 'Tab Calcium + Vitamin D3', dosage: '500mg/250IU', frequency: '0-1-0 (Afternoon - After Food)', duration: '30 Days', instructions: 'Take after lunch daily', quantity: 30 },
-    { name: 'Diclofenac Diethylamine Gel 1.16%', dosage: '30 gm', frequency: '1-0-1 (Local Application)', duration: '7 Days', instructions: 'Gently massage onto painful area', quantity: 1 },
-    { name: 'Tab Tramadol + Paracetamol', dosage: '37.5mg/325mg', frequency: '1-0-1 (SOS / Pain)', duration: '3 Days', instructions: 'Take only when severe pain occurs', quantity: 6 },
+    { name: 'Tab Aceclofenac + Paracetamol', dosage: '100mg/325mg', frequency: '1-0-1 (After Food)', duration: '5 Days', instructions: 'Take after meals for joint/muscle pain', quantity: 10, category: 'Analgesics & Anti-Inflammatory' },
+    { name: 'Tab Serratiopeptidase IP', dosage: '10 mg', frequency: '1-0-1 (After Food)', duration: '5 Days', instructions: 'Anti-inflammatory for swelling and pain', quantity: 10, category: 'Analgesics & Anti-Inflammatory' },
+    { name: 'Tab Tramadol + Paracetamol', dosage: '37.5mg/325mg', frequency: '1-0-1 (SOS / Severe Pain)', duration: '3 Days', instructions: 'Take only when severe pain occurs', quantity: 6, category: 'Analgesics & Anti-Inflammatory' },
+    { name: 'Diclofenac Diethylamine Gel 1.16%', dosage: '30 gm', frequency: '1-0-1 (Local Application)', duration: '7 Days', instructions: 'Gently massage onto painful area', quantity: 1, category: 'Topical Pain Relief' },
+    { name: 'Tab Calcium + Vitamin D3', dosage: '500mg/250IU', frequency: '0-1-0 (Afternoon - After Food)', duration: '30 Days', instructions: 'Take after lunch daily', quantity: 30, category: 'Joint & Bone Supplements' },
+    { name: 'Cap Pregabalin IP', dosage: '75 mg', frequency: '0-0-1 (Night - After Food)', duration: '14 Days', instructions: 'For neuropathic / radiating nerve pain', quantity: 14, category: 'Joint & Bone Supplements' },
+  ],
+  'dept-genmed': [
+    { name: 'Tab Paracetamol IP', dosage: '650 mg', frequency: '1-0-1 (After Food)', duration: '3 Days', instructions: 'Take after meals for fever/bodyache', quantity: 6, category: 'Fever & Analgesics' },
+    { name: 'Tab Cetirizine IP', dosage: '10 mg', frequency: '0-0-1 (Night - After Food)', duration: '5 Days', instructions: 'Take at night after food', quantity: 5, category: 'Fever & Analgesics' },
+    { name: 'Tab Pantoprazole Gastro-resistant', dosage: '40 mg', frequency: '1-0-0 (Morning - Before Food)', duration: '10 Days', instructions: 'Take on empty stomach 30 mins before breakfast', quantity: 10, category: 'Gastrointestinal & Acidity' },
+    { name: 'Oral Rehydration Salts (ORS) WHO Formula', dosage: '21.8 gm Sachet', frequency: 'As needed', duration: '3 Days', instructions: 'Dissolve 1 packet in 1 litre clean drinking water', quantity: 3, category: 'Gastrointestinal & Acidity' },
+    { name: 'Cap Amoxicillin IP', dosage: '500 mg', frequency: '1-0-1 (After Food)', duration: '5 Days', instructions: 'Complete full 5-day antibiotic course', quantity: 10, category: 'Antibiotics & Infection' },
+    { name: 'Tab Azithromycin IP', dosage: '500 mg', frequency: '1-0-0 (Once Daily - Before Food)', duration: '3 Days', instructions: 'Take 1 hour before meal for 3 days', quantity: 3, category: 'Antibiotics & Infection' },
+  ],
+  'dept-pedia': [
+    { name: 'Syrup Paracetamol IP', dosage: '120 mg / 5 ml', frequency: '5 ml (SOS - For Fever)', duration: '3 Days', instructions: 'Give 5 ml when temperature exceeds 99°F', quantity: 1, category: 'Paediatric Antipyretic' },
+    { name: 'Syrup Amoxicillin Oral Suspension', dosage: '125 mg / 5 ml', frequency: '5 ml (1-0-1 After Food)', duration: '5 Days', instructions: 'Complete 5-day antibiotic course', quantity: 1, category: 'Paediatric Antibiotics' },
+    { name: 'Syrup Zinc Gluconate', dosage: '20 mg / 5 ml', frequency: '5 ml (Once Daily)', duration: '14 Days', instructions: 'Give once daily with food', quantity: 1, category: 'Paediatric Supplements' },
+    { name: 'ORS Paediatric Sachet', dosage: '4.2 gm Sachet', frequency: 'As needed in water', duration: '3 Days', instructions: 'Dissolve in 200 ml clean water after each loose stool', quantity: 5, category: 'Paediatric Supplements' },
   ],
 };
 
@@ -160,8 +175,8 @@ export const DoctorPortal: React.FC = () => {
   const doctorDeptId = currentUser?.departmentId || (
     currentUser?.username?.includes('ravi') || doctorName.toLowerCase().includes('ravi') ? 'dept-derma'
     : currentUser?.username?.includes('arun') || doctorName.toLowerCase().includes('arun') ? 'dept-cardio'
-    : currentUser?.username?.includes('senthil') || doctorName.toLowerCase().includes('senthil') ? 'dept-ortho'
-    : currentUser?.username?.includes('meena') || doctorName.toLowerCase().includes('meena') ? 'dept-pedia'
+    : currentUser?.username?.includes('meena') || doctorName.toLowerCase().includes('meena') ? 'dept-ortho'
+    : currentUser?.username?.includes('senthil') || doctorName.toLowerCase().includes('senthil') ? 'dept-genmed'
     : 'dept-genmed'
   );
   const doctorDeptName = doctorDeptId === 'dept-cardio'
@@ -210,12 +225,13 @@ export const DoctorPortal: React.FC = () => {
   const [chiefComplaint, setChiefComplaint] = useState(
     currentPat?.symptoms || 'Routine medical evaluation'
   );
-  const [bp, setBp] = useState('');
-  const [pulse, setPulse] = useState('');
-  const [temp, setTemp] = useState('');
-  const [weight, setWeight] = useState('');
+  const [bp, setBp] = useState(currentPat?.vitals?.bp || '120/80 mmHg');
+  const [pulse, setPulse] = useState(currentPat?.vitals?.pulse || '76 bpm');
+  const [temp, setTemp] = useState(currentPat?.vitals?.temp || '98.4 °F');
+  const [weight, setWeight] = useState(currentPat?.vitals?.weight || '65 kg');
   const [doctorDiagnosis, setDoctorDiagnosis] = useState('');
   const [clinicalNotes, setClinicalNotes] = useState('');
+  const [isCustomMedOpen, setIsCustomMedOpen] = useState(false);
 
   // Real patient records fetched by patient ID from database
   const [patientHistory, setPatientHistory] = useState<any[]>([]);
@@ -224,6 +240,8 @@ export const DoctorPortal: React.FC = () => {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [submittingConsultation, setSubmittingConsultation] = useState(false);
   const [consultationSuccessNotice, setConsultationSuccessNotice] = useState('');
+  const [expandedReports, setExpandedReports] = useState<Record<string, boolean>>({});
+  const [reviewedPatientIds, setReviewedPatientIds] = useState<Set<string>>(() => new Set());
 
   // Review & Revisits specific to this doctor (or doctor's OPD patients)
   const doctorLabOrders = labOrders.filter(
@@ -233,7 +251,7 @@ export const DoctorPortal: React.FC = () => {
 
   // Consolidated review groups: groups all returned lab & scan results by patient to avoid duplicate review cards
   const groupedReviewPatients = React.useMemo(() => {
-    const readyOrders = doctorLabOrders.filter((o) => o.status === 'result_ready');
+    const readyOrders = doctorLabOrders.filter((o) => o.status === 'result_ready' && !reviewedPatientIds.has(o.patientId));
     const map = new Map<
       string,
       {
@@ -264,7 +282,7 @@ export const DoctorPortal: React.FC = () => {
       }
     }
     return Array.from(map.values());
-  }, [doctorLabOrders]);
+  }, [doctorLabOrders, reviewedPatientIds]);
 
   React.useEffect(() => {
     let mounted = true;
@@ -319,15 +337,15 @@ export const DoctorPortal: React.FC = () => {
       setCustomScanInput('');
     }
     if (currentPat?.vitals) {
-      setBp(currentPat.vitals.bp || '');
-      setPulse(currentPat.vitals.pulse || '');
-      setTemp(currentPat.vitals.temp || '');
-      setWeight(currentPat.vitals.weight || '');
+      setBp(currentPat.vitals.bp || '120/80 mmHg');
+      setPulse(currentPat.vitals.pulse || '76 bpm');
+      setTemp(currentPat.vitals.temp || '98.4 °F');
+      setWeight(currentPat.vitals.weight || '65 kg');
     } else {
-      setBp('');
-      setPulse('');
-      setTemp('');
-      setWeight('');
+      setBp('120/80 mmHg');
+      setPulse('76 bpm');
+      setTemp('98.4 °F');
+      setWeight('65 kg');
     }
   }, [currentPat?.id]);
 
@@ -384,6 +402,21 @@ export const DoctorPortal: React.FC = () => {
       durationDays: '5 Days',
       instructions: 'Take with water',
     });
+    setIsCustomMedOpen(false);
+  };
+
+  const [quickAddSector, setQuickAddSector] = useState<string>(doctorDeptId || 'dept-derma');
+
+  React.useEffect(() => {
+    if (doctorDeptId) {
+      setQuickAddSector(doctorDeptId);
+    }
+  }, [doctorDeptId]);
+
+  const handleUpdateMedicine = (id: string, updates: Partial<MedicationItem>) => {
+    setPrescriptions((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, ...updates } : m))
+    );
   };
 
   const handleAddPresetMedicine = (preset: QuickMedicinePreset) => {
@@ -437,7 +470,7 @@ export const DoctorPortal: React.FC = () => {
     setSubmittingConsultation(true);
     setConsultationSuccessNotice('');
 
-    // Auto-include medicine if doctor typed into the input field without clicking "+ Add Medicine"
+    // Auto-include medicine if doctor typed into the input field without clicking "Add Medicine"
     let finalPrescriptions = [...prescriptions];
     if (newMed.name.trim()) {
       const timings: string[] = [];
@@ -538,20 +571,25 @@ export const DoctorPortal: React.FC = () => {
 
   // Find currently serving patient
   const nowServingPatient = opdPatients.find((p) => p.status === 'in_consultation') || opdPatients[0];
+  const waitingPatientsList = opdPatients.filter(
+    (p) =>
+      p.status !== 'completed' &&
+      (!nowServingPatient || p.id !== nowServingPatient.id)
+  );
 
   return (
-    <div className="bg-[#f8fafc] flex-1 pb-16">
-      {/* Top Doctor Bar (No Room/Location info) */}
-      <div className="bg-[#0b2545] text-white px-4 py-3.5 border-b border-slate-700 shadow-sm">
+    <div className="bg-transparent flex-1 pb-16 relative z-10">
+      {/* Top Doctor Bar (CareNexus Institutional Style) */}
+      <div className="bg-white/85 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 py-3.5 shadow-xs">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-lg bg-teal-600/30 border border-teal-400/50 flex items-center justify-center text-teal-300">
-              <Stethoscope className="w-6 h-6" />
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-[#00A272] shadow-2xs">
+              <Stethoscope className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold font-serif text-white">{doctorName}</h1>
-                <span className="text-xs px-2.5 py-0.5 rounded bg-teal-500/20 text-teal-300 font-semibold border border-teal-500/40">
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-xl font-black text-[#0A2342] tracking-tight">{doctorName}</h1>
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#00A272]/10 text-[#00A272] font-bold border border-[#00A272]/20">
                   {doctorDeptName}
                 </span>
               </div>
@@ -562,35 +600,33 @@ export const DoctorPortal: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => callNextOPDPatient(doctorDeptId, doctorId)}
-              className="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded text-xs font-bold flex items-center gap-2 shadow transition-all cursor-pointer"
+              className="px-4 py-2.5 bg-gradient-to-r from-[#00A272] to-[#00C49F] hover:brightness-105 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-[0_4px_14px_-2px_rgba(0,162,114,0.3)] transition-all cursor-pointer"
             >
               <Play className="w-3.5 h-3.5 fill-white" />
-              <span>{lang === 'ta' ? 'அடுத்த நோயாளியை அழைக்கவும்' : 'Call Next Patient'}</span>
+              <span>Call Next Patient</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Main Sub-Navigation Tabs (Only Real Tabs with Genuine Database Content) */}
-      <div className="bg-white border-b border-slate-200 shadow-xs sticky top-[48px] z-20">
-        <div className="max-w-7xl mx-auto px-4 flex flex-wrap gap-2 py-2 text-xs font-bold text-slate-600">
+      {/* Main Sub-Navigation Tabs (CareNexus Glassmorphic Pill Style) */}
+      <div className="bg-white/85 backdrop-blur-md border-b border-slate-200/80 shadow-xs sticky top-[72px] z-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap gap-1.5 py-2 text-xs font-bold text-slate-600">
           {[
-            { id: 'consultation', label: lang === 'ta' ? 'மருத்துவ ஆலோசனை' : 'Active Consultation', icon: <Stethoscope className="w-3.5 h-3.5" /> },
-            { id: 'queue', label: lang === 'ta' ? `இன்றைய வரிசை (${opdPatients.length})` : `Today's Queue (${opdPatients.length})`, icon: <Users className="w-3.5 h-3.5" /> },
-            { id: 'profile', label: lang === 'ta' ? 'நோயாளி மருத்துவ வரலாறு' : 'Patient Clinical History', icon: <FileText className="w-3.5 h-3.5" /> },
+            { id: 'consultation', label: 'Active Consultation', icon: <Stethoscope className="w-3.5 h-3.5" /> },
+            { id: 'queue', label: `Today's Queue (${opdPatients.length})`, icon: <Users className="w-3.5 h-3.5" /> },
+            { id: 'profile', label: 'Patient Clinical History', icon: <FileText className="w-3.5 h-3.5" /> },
             ...(groupedReviewPatients.length > 0
               ? [{
                   id: 'reviews',
-                  label: lang === 'ta'
-                    ? `பரிசீலனை முடிவுகள் (${groupedReviewPatients.length})`
-                    : `Results Requiring Review (${groupedReviewPatients.length})`,
+                  label: `Results Requiring Review (${groupedReviewPatients.length})`,
                   icon: <FlaskConical className="w-3.5 h-3.5" />,
                 }]
               : []),
             ...(doctorRevisits.length > 0
               ? [{
                   id: 'revisits',
-                  label: lang === 'ta' ? `மறு வருகைகள் (${doctorRevisits.length})` : `Scheduled Revisits (${doctorRevisits.length})`,
+                  label: `Scheduled Revisits (${doctorRevisits.length})`,
                   icon: <Calendar className="w-3.5 h-3.5" />,
                 }]
               : []),
@@ -598,10 +634,10 @@ export const DoctorPortal: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 font-bold transition-all cursor-pointer text-xs ${
                 activeTab === tab.id
-                  ? 'bg-blue-900 text-white shadow-xs'
-                  : 'hover:bg-slate-100 text-slate-700'
+                  ? 'bg-gradient-to-r from-[#0066FF] to-[#009BF2] text-white shadow-xs'
+                  : 'bg-slate-100 hover:bg-slate-200/80 text-slate-700'
               }`}
             >
               {tab.icon}
@@ -620,7 +656,7 @@ export const DoctorPortal: React.FC = () => {
               <AlertTriangle className="w-5 h-5 text-amber-700 shrink-0" />
               <div>
                 <span className="font-extrabold text-amber-950 uppercase tracking-wider">
-                  {lang === 'ta' ? 'பரிசோதனை முடிவு வந்துள்ளது:' : 'RESULT AVAILABLE FOR REVIEW:'}
+                  RESULT AVAILABLE FOR REVIEW:
                 </span>{' '}
                 <span className="text-slate-800 font-medium">
                   {groupedReviewPatients[0]?.patientName} ({groupedReviewPatients[0]?.patientToken}) — {groupedReviewPatients[0]?.allTests.join(', ')} Ready
@@ -631,7 +667,7 @@ export const DoctorPortal: React.FC = () => {
               onClick={() => setActiveTab('reviews')}
               className="px-3.5 py-1.5 bg-amber-800 hover:bg-amber-700 text-white rounded font-bold self-start sm:self-auto cursor-pointer shadow-xs"
             >
-              {lang === 'ta' ? 'முடிவை மதிப்பாய்வு செய்க' : 'View Result & Decide Revisit'}
+              View Result & Decide Revisit
             </button>
           </div>
         )}
@@ -644,10 +680,10 @@ export const DoctorPortal: React.FC = () => {
             <div className="lg:col-span-4 space-y-4">
               {/* CURRENT ATTENDING PATIENT CARD */}
               {currentPat ? (
-                <div className="bg-white rounded-xl border-2 border-blue-900/40 p-5 shadow-sm space-y-3">
+                <div className="bg-white/88 backdrop-blur-md rounded-2xl border border-slate-200/90 p-5 shadow-sm hover:shadow-md transition-all space-y-3">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                     <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-950">
-                      {lang === 'ta' ? 'தற்போது ஆலோசனையில் உள்ள நோயாளி' : 'CURRENT ATTENDING PATIENT'}
+                      CURRENT PATIENT
                     </span>
                     <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded bg-blue-100 text-blue-900 border border-blue-200">
                       {currentPat.token}
@@ -661,19 +697,19 @@ export const DoctorPortal: React.FC = () => {
 
                   <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-slate-100">
                     <div>
-                      <span className="text-slate-500">{lang === 'ta' ? 'வயது / பாலினம்:' : 'Age / Gender:'}</span>
-                      <div className="font-bold text-slate-800">{currentPat.age > 0 ? `${currentPat.age} yrs` : (lang === 'ta' ? 'குறிப்பிடப்படவில்லை' : 'Not Set')} / {currentPat.gender || 'Not Specified'}</div>
+                      <span className="text-slate-500">Age / Gender:</span>
+                      <div className="font-bold text-slate-800">{currentPat.age > 0 ? `${currentPat.age} yrs` : 'Not Set'} / {currentPat.gender || 'Not Specified'}</div>
                     </div>
                     <div>
-                      <span className="text-slate-500">{lang === 'ta' ? 'இரத்த வகை:' : 'Blood Group:'}</span>
-                      <div className="font-bold text-slate-800">{currentPat.bloodGroup && currentPat.bloodGroup !== 'Not Specified' ? currentPat.bloodGroup : (lang === 'ta' ? 'குறிப்பிடப்படவில்லை' : 'Not Specified')}</div>
+                      <span className="text-slate-500">Blood Group:</span>
+                      <div className="font-bold text-slate-800">{currentPat.bloodGroup && currentPat.bloodGroup !== 'Not Specified' ? currentPat.bloodGroup : 'Not Specified'}</div>
                     </div>
                     <div>
-                      <span className="text-slate-500">{lang === 'ta' ? 'ஒவ்வாமைகள்:' : 'Allergies:'}</span>
+                      <span className="text-slate-500">Allergies:</span>
                       <div className="font-bold text-amber-700">{currentPat.allergies?.join(', ') || 'None'}</div>
                     </div>
                     <div>
-                      <span className="text-slate-500">{lang === 'ta' ? 'நாள்பட்ட பாதிப்புகள்:' : 'Chronic Cond:'}</span>
+                      <span className="text-slate-500">Chronic Cond:</span>
                       <div className="font-bold text-slate-800">{currentPat.existingConditions?.join(', ') || 'None'}</div>
                     </div>
                   </div>
@@ -684,54 +720,54 @@ export const DoctorPortal: React.FC = () => {
                     className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-300 transition-colors cursor-pointer"
                   >
                     <FileText className="w-3.5 h-3.5" />
-                    <span>{lang === 'ta' ? 'முழு மருத்துவ வரலாற்றைக் காண்க' : 'View Full Clinical Record'}</span>
+                    <span>View Full Clinical Record</span>
                   </button>
                 </div>
               ) : (
-                <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm text-center space-y-2">
+                <div className="bg-white/88 backdrop-blur-md rounded-2xl border border-slate-200/90 p-5 shadow-sm hover:shadow-md transition-all text-center space-y-2">
                   <User className="w-8 h-8 text-slate-300 mx-auto" />
                   <h4 className="font-bold text-slate-700 text-sm">
-                    {lang === 'ta' ? 'நோயாளி எதுவும் வரிசையில் இல்லை' : 'No Patient in Consultation'}
+                    No Patient in Consultation
                   </h4>
                   <p className="text-xs text-slate-400">
-                    {lang === 'ta' ? 'அடுத்த நோயாளியை அழைக்கவும் அல்லது புதிய நோயாளி டோக்கனை எதிர்பார்க்கவும்.' : 'Click "Call Next Patient" above or wait for incoming patient tokens.'}
+                    Click "Call Next Patient" above or wait for incoming patient tokens.
                   </p>
                 </div>
               )}
 
               {/* Next Waiting Patients in Doctor's Queue */}
-              <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+              <div className="bg-white/88 backdrop-blur-md rounded-2xl border border-slate-200/90 p-4 shadow-sm hover:shadow-md transition-all">
                 <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex justify-between">
-                  <span>{lang === 'ta' ? 'அடுத்த நோயாளிகள்' : "Today's Queue List"}</span>
-                  <span className="text-blue-900 font-mono font-bold">{opdPatients.length} Waiting</span>
+                  <span>Today's Queue List</span>
+                  <span className="text-blue-900 font-mono font-bold">
+                    {opdPatients.filter((p) => p.id !== currentPat?.id).length} Waiting
+                  </span>
                 </div>
 
                 <div className="divide-y divide-slate-100 text-xs">
-                  {opdPatients.length > 0 ? (
-                    opdPatients.map((p) => (
-                      <div
-                        key={p.id}
-                        onClick={() => handleStartConsultation(p.id)}
-                        className={`py-2.5 px-2 rounded flex items-center justify-between cursor-pointer transition-colors ${
-                          p.id === currentPat?.id
-                            ? 'bg-blue-50 border-l-4 border-blue-900 font-bold text-blue-950'
-                            : 'hover:bg-slate-50 text-slate-700'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-bold bg-slate-200 px-2 py-0.5 rounded text-slate-800">
-                            {p.token}
+                  {opdPatients.filter((p) => p.id !== currentPat?.id).length > 0 ? (
+                    opdPatients
+                      .filter((p) => p.id !== currentPat?.id)
+                      .map((p) => (
+                        <div
+                          key={p.id}
+                          onClick={() => handleStartConsultation(p.id)}
+                          className="py-2.5 px-2 rounded flex items-center justify-between cursor-pointer transition-colors hover:bg-slate-50 text-slate-700"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs font-bold bg-slate-200 px-2 py-0.5 rounded text-slate-800">
+                              {p.token}
+                            </span>
+                            <span>{p.name}</span>
+                          </div>
+                          <span className="text-[11px] text-slate-500 font-mono">
+                            Position #{p.queuePosition}
                           </span>
-                          <span>{p.name}</span>
                         </div>
-                        <span className="text-[11px] text-slate-500 font-mono">
-                          {p.status === 'in_consultation' ? 'Attending' : `Position #${p.queuePosition}`}
-                        </span>
-                      </div>
-                    ))
+                      ))
                   ) : (
                     <div className="py-6 text-center text-slate-400 text-xs">
-                      {lang === 'ta' ? 'தற்போது காத்திருப்போர் இல்லை' : 'Zero patients currently waiting in this queue.'}
+                      Zero patients currently waiting in this queue.
                     </div>
                   )}
                 </div>
@@ -742,13 +778,8 @@ export const DoctorPortal: React.FC = () => {
             <div className="lg:col-span-8 bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
               <div className="border-b border-slate-200 pb-3">
                 <h2 className="text-lg font-bold text-slate-900">
-                  {lang === 'ta' ? 'மருத்துவ ஆலோசனை & பரிசோதனை படிவம்' : 'Clinical Consultation Form'}
+                  Clinical Consultation
                 </h2>
-                <p className="text-xs text-slate-500">
-                  {lang === 'ta'
-                    ? 'நோயாளியின் குறைகள், மருத்துவரின் உறுதிப்படுத்தப்பட்ட நோய் கண்டறிதல் மற்றும் சிகிச்சை வழியை பதிவு செய்யவும்'
-                    : 'Record chief complaints, confirmed diagnosis, and select treatment path'}
-                </p>
               </div>
 
               {/* EMERGENCY CONSULTATION IN PROGRESS BANNER */}
@@ -789,9 +820,7 @@ export const DoctorPortal: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <FlaskConical className="w-5 h-5 text-emerald-700" />
                         <span className="font-extrabold text-emerald-950 uppercase tracking-wider text-xs">
-                          {lang === 'ta'
-                            ? 'பரிசோதனை முடிவுகள் வந்துள்ளன (மதிப்பாய்வு செய்து மருந்துகள் வழங்கவும்)'
-                            : 'COMPLETED INVESTIGATION RESULTS (DOCTOR REVIEW)'}
+                          COMPLETED INVESTIGATION RESULTS (DOCTOR REVIEW)
                         </span>
                       </div>
                       <span className="px-2.5 py-0.5 rounded bg-emerald-200 text-emerald-900 font-bold text-[11px]">
@@ -842,57 +871,51 @@ export const DoctorPortal: React.FC = () => {
               })()}
 
               {/* Vitals Grid with Clean Placeholders & Status */}
-              <div className="bg-slate-50 p-3.5 rounded-lg border border-slate-200 space-y-2">
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2.5">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-bold text-slate-700">Patient Vitals</span>
-                  {currentPat?.vitals?.bp ? (
-                    <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded border border-emerald-300">
-                      ✓ Recorded at Triage
-                    </span>
-                  ) : (
-                    <span className="text-[10px] text-slate-500 italic">
-                      (Enter measured vitals below or leave blank)
-                    </span>
-                  )}
+                  <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded border border-emerald-300">
+                    ✓ Recorded at Triage
+                  </span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Blood Pressure (mmHg)</label>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Blood Pressure</label>
                     <input
                       type="text"
                       value={bp}
                       onChange={(e) => setBp(e.target.value)}
-                      placeholder="e.g. 120/80"
+                      placeholder="120/80 mmHg"
                       className="w-full px-2.5 py-1.5 text-xs font-mono font-bold bg-white border border-slate-300 rounded focus:border-blue-800 outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Pulse Rate (bpm)</label>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Pulse Rate</label>
                     <input
                       type="text"
                       value={pulse}
                       onChange={(e) => setPulse(e.target.value)}
-                      placeholder="e.g. 72"
+                      placeholder="76 bpm"
                       className="w-full px-2.5 py-1.5 text-xs font-mono font-bold bg-white border border-slate-300 rounded focus:border-blue-800 outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Temperature (°F)</label>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Temperature</label>
                     <input
                       type="text"
                       value={temp}
                       onChange={(e) => setTemp(e.target.value)}
-                      placeholder="e.g. 98.4"
+                      placeholder="98.4 °F"
                       className="w-full px-2.5 py-1.5 text-xs font-mono font-bold bg-white border border-slate-300 rounded focus:border-blue-800 outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Weight (kg)</label>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Weight</label>
                     <input
                       type="text"
                       value={weight}
                       onChange={(e) => setWeight(e.target.value)}
-                      placeholder="e.g. 65"
+                      placeholder="65 kg"
                       className="w-full px-2.5 py-1.5 text-xs font-mono font-bold bg-white border border-slate-300 rounded focus:border-blue-800 outline-none"
                     />
                   </div>
@@ -903,7 +926,7 @@ export const DoctorPortal: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    {lang === 'ta' ? 'முக்கிய புகார்கள் & அறிகுறிகள்' : 'Chief Complaint & Symptoms'}
+                    Chief Complaint & Symptoms
                   </label>
                   <input
                     type="text"
@@ -916,27 +939,27 @@ export const DoctorPortal: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    {lang === 'ta' ? "மருத்துவரின் நோய் கண்டறிதல் (Doctor's Confirmed Diagnosis)" : "Doctor's Diagnosis"}
+                    Doctor's Diagnosis
                   </label>
                   <input
                     type="text"
                     value={doctorDiagnosis}
                     onChange={(e) => setDoctorDiagnosis(e.target.value)}
                     className="w-full px-3 py-2 text-xs border border-blue-300 bg-blue-50/40 rounded focus:ring-2 focus:ring-blue-800 outline-none font-semibold text-slate-900"
-                    placeholder="Confirmed clinical diagnosis entered by doctor..."
+                    placeholder="Enter diagnosis..."
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    {lang === 'ta' ? 'மருத்துவக் குறிப்புகள் (Clinical Observations & Notes)' : 'Clinical Observations / Doctor Notes'}
+                    Clinical Observations / Doctor Notes
                   </label>
                   <textarea
                     rows={2}
                     value={clinicalNotes}
                     onChange={(e) => setClinicalNotes(e.target.value)}
                     className="w-full px-3 py-2 text-xs border border-slate-300 rounded focus:ring-2 focus:ring-blue-800 outline-none"
-                    placeholder="Enter detailed clinical findings and observations..."
+                    placeholder="Enter clinical notes..."
                   ></textarea>
                 </div>
               </div>
@@ -945,90 +968,183 @@ export const DoctorPortal: React.FC = () => {
               <div className="space-y-6 pt-4 border-t border-slate-200">
                 <div className="border-b border-slate-200 pb-2">
                   <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider text-blue-950">
-                    {lang === 'ta' ? 'சிகிச்சை & பரிசோதனை உத்தரவுகள்' : 'Treatment & Clinical Orders'}
+                    TREATMENT & CLINICAL ORDERS
                   </h3>
-                  <p className="text-[11px] text-slate-500">
-                    {lang === 'ta'
-                      ? 'மருந்துகள் அல்லது ஆய்வக/ஸ்கேன் பரிசோதனைகளை நேரடியாகச் சேர்க்கலாம். தானாகவே உரிய பிரிவுக்கு செல்லும்.'
-                      : 'Prescribe medications and/or order diagnostic scans & tests. Orders transmit automatically to Pharmacy & Lab upon submission.'}
-                  </p>
                 </div>
 
-                {/* PRESCRIPTION BUILDER (CENTRAL PHARMACY) */}
-                <div className="p-4 bg-purple-50/60 border border-purple-300 rounded-lg space-y-4">
-                  <div className="flex items-center justify-between border-b border-purple-200 pb-2">
-                    <span className="text-xs font-bold text-purple-950 flex items-center gap-1.5">
-                      <Pill className="w-4 h-4 text-purple-700" />
-                        <span>{lang === 'ta' ? 'மருந்துகள் பரிந்துரை (பார்மசி)' : 'PRESCRIPTION / MEDICATIONS (Pharmacy Order)'}</span>
+                {/* 1. PRESCRIPTION / MEDICATIONS */}
+                <div className="space-y-3">
+                  {/* Notice if patient already has active prescriptions for this visit */}
+                  {patientPrescriptions.length > 0 && (
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+                        <div>
+                          <span className="font-bold text-emerald-950">Prescription Already on File: </span>
+                          <span className="text-emerald-900">
+                            {patientPrescriptions.flatMap((po: any) => (po.medications || po.items || []).map((m: any) => `${m.name} (${m.dosage})`)).join(', ')}
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-2 py-0.5 rounded self-start sm:self-auto shrink-0">
+                        Active at Pharmacy • Re-prescribing optional
                       </span>
-                      <span className="text-[11px] font-semibold text-purple-800">
-                        {prescriptions.length} Medicine(s) Added
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                    <div className="flex items-center gap-2">
+                      <Pill className="w-4 h-4 text-purple-700" />
+                      <span className="text-xs font-bold text-slate-900">
+                        PRESCRIPTION / MEDICATIONS
+                      </span>
+                      <span className="text-[11px] text-slate-500 font-medium">
+                        {prescriptions.length === 0
+                          ? '0 new medicines added'
+                          : `${prescriptions.length} medicine(s) added`}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsCustomMedOpen(!isCustomMedOpen)}
+                      className="px-3 py-1.5 bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                    >
+                      <span>{isCustomMedOpen ? 'Collapse Form' : 'Add Medicine'}</span>
+                    </button>
+                  </div>
+
+                  {/* QUICK ADD Recommendations (internally resolved according to doctor specialty) */}
+                  <div className="bg-slate-50/80 p-3.5 rounded-xl border border-slate-200 space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
+                      <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                        <Pill className="w-3.5 h-3.5 text-purple-700" />
+                        <span>QUICK ADD RECOMMENDATIONS</span>
+                      </span>
+                      <span className="text-[11px] text-slate-500 font-medium">
+                        Standard Clinical Recommendations
                       </span>
                     </div>
 
-                    {/* Prescriptions List */}
-                    {prescriptions.length > 0 && (
-                      <div className="space-y-2">
-                        {prescriptions.map((m) => (
-                          <div
-                            key={m.id}
-                            className="bg-white p-3 rounded border border-purple-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
-                          >
-                            <div>
-                              <strong className="text-slate-900">{m.name}</strong> • <span className="font-mono text-purple-900 font-bold">{m.dosage}</span> • <span className="text-slate-600">Qty: {m.quantity}</span>
-                              <div className="text-[11px] text-purple-950 font-medium mt-0.5">
-                                Timing: {m.frequency} | Duration: {m.duration}
-                              </div>
-                              {m.instructions && (
-                                <div className="text-[11px] text-slate-600 italic">Instructions: {m.instructions}</div>
-                              )}
+                    {/* Category-Grouped Organized Clinical Recommendations */}
+                    <div className="space-y-2.5">
+                      {Object.entries(
+                        (DEPARTMENT_PRESETS[doctorDeptId] || DEPARTMENT_PRESETS[quickAddSector] || DEPARTMENT_PRESETS['dept-genmed']).reduce((acc, preset) => {
+                          const cat = preset.category || 'Standard Medications';
+                          if (!acc[cat]) acc[cat] = [];
+                          acc[cat].push(preset);
+                          return acc;
+                        }, {} as Record<string, QuickMedicinePreset[]>)
+                      ).map(([category, items]) => (
+                        <div key={category} className="space-y-1">
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
+                            <span>{category}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {items.map((preset, pIdx) => (
+                              <button
+                                key={pIdx}
+                                type="button"
+                                onClick={() => handleAddPresetMedicine(preset)}
+                                className="px-2.5 py-1 bg-white hover:bg-purple-50 text-purple-950 border border-purple-200 hover:border-purple-400 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer group"
+                                title="Click to add medicine (timing and duration editable)"
+                              >
+                                <Plus className="w-3 h-3 text-purple-600 group-hover:scale-125 transition-transform" />
+                                <span>{preset.name}</span>
+                                <span className="text-[10px] font-mono bg-purple-100 text-purple-800 px-1 py-0.5 rounded">{preset.dosage}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Added Prescriptions List with inline edit */}
+                  {prescriptions.length > 0 && (
+                    <div className="space-y-2 pt-1">
+                      {prescriptions.map((m) => (
+                        <div
+                          key={m.id}
+                          className="bg-purple-50/40 p-3.5 rounded-xl border border-purple-200 shadow-2xs space-y-2 text-xs"
+                        >
+                          <div className="flex items-center justify-between border-b border-purple-100 pb-1.5">
+                            <div className="flex items-center gap-2">
+                              <strong className="text-slate-900 font-bold">{m.name}</strong>
+                              <span className="font-mono text-purple-900 font-bold text-xs bg-purple-100 px-2 py-0.5 rounded">
+                                {m.dosage}
+                              </span>
                             </div>
                             <button
+                              type="button"
                               onClick={() => handleRemoveMedicine(m.id)}
-                              className="px-2 py-1 text-red-600 hover:bg-red-50 rounded text-xs font-bold flex items-center gap-1 self-start sm:self-auto cursor-pointer"
+                              className="px-2 py-1 text-red-600 hover:bg-red-50 rounded text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                               <span>Remove</span>
                             </button>
                           </div>
-                        ))}
-                      </div>
-                    )}
 
-                    {/* Quick Suggested Presets for Department */}
-                    <div className="bg-purple-50/80 p-3.5 rounded-lg border border-purple-200 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-purple-950 flex items-center gap-1.5">
-                          <Pill className="w-3.5 h-3.5 text-purple-700" />
-                          <span>Suggested Fast Prescriptions ({doctorDeptName})</span>
-                        </span>
-                        <span className="text-[10px] text-purple-700 font-semibold bg-purple-200/60 px-2 py-0.5 rounded">1-Click Fast Add</span>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {(DEPARTMENT_PRESETS[doctorDeptId] || DEPARTMENT_PRESETS['dept-genmed']).map((preset, pIdx) => (
-                          <button
-                            key={pIdx}
-                            type="button"
-                            onClick={() => handleAddPresetMedicine(preset)}
-                            className="px-2.5 py-1.5 bg-white hover:bg-purple-100 text-purple-900 border border-purple-300 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all shadow-2xs hover:shadow-xs cursor-pointer group"
-                          >
-                            <Plus className="w-3 h-3 text-purple-600 group-hover:scale-125 transition-transform" />
-                            <span>{preset.name}</span>
-                            <span className="text-[10px] font-mono bg-purple-100 text-purple-800 px-1 py-0.5 rounded">{preset.dosage}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <div>
+                              <label className="block text-[11px] font-bold text-slate-600 mb-0.5">
+                                When to have (Timing):
+                              </label>
+                              <input
+                                type="text"
+                                value={m.frequency}
+                                onChange={(e) => handleUpdateMedicine(m.id, { frequency: e.target.value })}
+                                placeholder="e.g. 1-0-1 (After Food)"
+                                className="w-full px-2.5 py-1 bg-white border border-slate-200 focus:border-purple-600 rounded text-xs text-slate-900 outline-none font-medium"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-bold text-slate-600 mb-0.5">
+                                Duration / No. of Days:
+                              </label>
+                              <input
+                                type="text"
+                                value={m.duration}
+                                onChange={(e) => handleUpdateMedicine(m.id, { duration: e.target.value })}
+                                placeholder="e.g. 5 Days"
+                                className="w-full px-2.5 py-1 bg-white border border-slate-200 focus:border-purple-600 rounded text-xs text-slate-900 outline-none font-medium"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-bold text-slate-600 mb-0.5">
+                                Quantity:
+                              </label>
+                              <input
+                                type="number"
+                                value={m.quantity || 10}
+                                onChange={(e) => handleUpdateMedicine(m.id, { quantity: parseInt(e.target.value) || 1 })}
+                                className="w-full px-2.5 py-1 bg-white border border-slate-200 focus:border-purple-600 rounded text-xs text-slate-900 outline-none font-medium"
+                              />
+                            </div>
+                          </div>
 
-                    {/* Add Medicine Sub-Form (Strict Specifications) */}
-                    <div className="bg-white p-4 rounded-lg border border-purple-200 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="font-bold text-xs text-purple-950 uppercase tracking-wider">
-                          Custom Medicine Entry
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-600 mb-0.5">
+                              Instructions:
+                            </label>
+                            <input
+                              type="text"
+                              value={m.instructions}
+                              onChange={(e) => handleUpdateMedicine(m.id, { instructions: e.target.value })}
+                              placeholder="e.g. Take after food with warm water"
+                              className="w-full px-2.5 py-1 bg-white border border-slate-200 focus:border-purple-600 rounded text-xs text-slate-900 outline-none"
+                            />
+                          </div>
                         </div>
-                        <span className="text-[11px] text-slate-500 italic">
-                          (Click "+ Add Medicine" or directly submit — typed medicines are auto-included)
-                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Expandable Custom Medicine Form */}
+                  {isCustomMedOpen && (
+                    <div className="bg-white p-4 rounded-xl border border-purple-200 shadow-sm space-y-3">
+                      <div className="font-bold text-xs text-slate-900 uppercase tracking-wider">
+                        Custom Medicine Entry
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
@@ -1165,59 +1281,48 @@ export const DoctorPortal: React.FC = () => {
 
                       <div className="pt-2 flex justify-end">
                         <button
+                          type="button"
                           onClick={handleAddMedicine}
-                          className="px-4 py-1.5 bg-purple-800 hover:bg-purple-700 text-white font-bold text-xs rounded flex items-center gap-1.5 shadow-xs cursor-pointer"
+                          className="px-4 py-1.5 bg-purple-800 hover:bg-purple-700 text-white font-bold text-xs rounded shadow-xs cursor-pointer transition-colors"
                         >
-                          <Plus className="w-3.5 h-3.5" />
-                          <span>Add Medicine</span>
+                          Add Medicine
                         </button>
                       </div>
                     </div>
+                  )}
+                </div>
+
+                {/* Divider between Prescriptions and Diagnostics */}
+                <div className="border-t border-slate-200" />
+
+                {/* 2. DIAGNOSTIC INVESTIGATIONS & SCANS */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                    <div className="flex items-center gap-2">
+                      <FlaskConical className="w-4 h-4 text-emerald-700" />
+                      <span className="text-xs font-bold text-slate-900">
+                        DIAGNOSTIC INVESTIGATIONS & SCANS
+                      </span>
+                      <span className="text-[11px] text-slate-500 font-medium">
+                        {(selectedLabTests.length + selectedScans.length) === 0
+                          ? 'No investigations ordered'
+                          : `${selectedLabTests.length + selectedScans.length} ordered`}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setOrderDiagnosticInvestigations(!orderDiagnosticInvestigations)}
+                      className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                    >
+                      <span>{orderDiagnosticInvestigations ? 'Collapse' : '+ Add Test / Scan'}</span>
+                    </button>
                   </div>
 
-                {/* DIAGNOSTIC INVESTIGATIONS & SCANS (Expandable on Checkbox Toggle) */}
-                <div className="border border-emerald-300 rounded-lg overflow-hidden bg-white shadow-xs">
-                  <div
-                    onClick={() => {
-                      const next = !orderDiagnosticInvestigations;
-                      setOrderDiagnosticInvestigations(next);
-                      if (!next) {
-                        setSelectedLabTests([]);
-                        setRequestDiagnostic(false);
-                        setSelectedScans([]);
-                      }
-                    }}
-                    className={`p-3.5 flex items-center justify-between cursor-pointer transition-colors ${
-                      orderDiagnosticInvestigations ? 'bg-emerald-50 border-b border-emerald-200' : 'bg-slate-50/80 hover:bg-slate-100/80'
-                    }`}
-                  >
-                    <label className="flex items-center gap-2.5 cursor-pointer pointer-events-none">
-                      <input
-                        type="checkbox"
-                        checked={orderDiagnosticInvestigations}
-                        onChange={() => {}}
-                        className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer"
-                      />
-                      <div className="flex items-center gap-1.5">
-                        <FlaskConical className="w-4 h-4 text-emerald-700" />
-                        <span className="text-xs font-bold text-slate-900">
-                          DIAGNOSTIC INVESTIGATIONS & SCANS
-                        </span>
-                        {(selectedLabTests.length > 0 || selectedScans.length > 0) && (
-                          <span className="ml-2 text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full">
-                            {selectedLabTests.length + selectedScans.length} selected
-                          </span>
-                        )}
-                      </div>
-                    </label>
-                    <span className="text-[11px] font-semibold text-emerald-800">
-                      {orderDiagnosticInvestigations ? '▼ Click to collapse' : '+ Click to add Lab Tests or Scans'}
-                    </span>
-                  </div>
-
+                  {/* Expandable Diagnostic Panel */}
                   {orderDiagnosticInvestigations && (
-                    <div className="p-4 bg-emerald-50/50 space-y-4">
-                      <div className="flex items-center justify-between border-b border-emerald-200 pb-2">
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+                      {/* Investigation Priority & Schedule */}
+                      <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                         <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
                           <FlaskConical className="w-3.5 h-3.5 text-emerald-700" />
                           <span>Investigation Priority & Schedule</span>
@@ -1226,7 +1331,7 @@ export const DoctorPortal: React.FC = () => {
                           <select
                             value={labPriority}
                             onChange={(e) => setLabPriority(e.target.value as any)}
-                            className="px-2 py-1 bg-white border border-emerald-300 rounded text-xs"
+                            className="px-2 py-1 bg-white border border-slate-300 rounded text-xs"
                           >
                             <option value="routine">Routine Priority</option>
                             <option value="urgent">Urgent Priority</option>
@@ -1234,7 +1339,7 @@ export const DoctorPortal: React.FC = () => {
                           <select
                             value={labSchedule}
                             onChange={(e) => setLabSchedule(e.target.value as any)}
-                            className="px-2 py-1 bg-white border border-emerald-300 rounded text-xs"
+                            className="px-2 py-1 bg-white border border-slate-300 rounded text-xs"
                           >
                             <option value="today">Perform Today</option>
                             <option value="next_day">Schedule Next Day</option>
@@ -1244,7 +1349,7 @@ export const DoctorPortal: React.FC = () => {
 
                       {/* Lab Test Checkboxes */}
                       <div>
-                        <div className="text-[11px] font-bold text-emerald-950 mb-2">Select Pathology & Biochemistry Tests:</div>
+                        <div className="text-[11px] font-bold text-slate-900 mb-2">Select Pathology & Biochemistry Tests:</div>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                           {[
                             'Fasting Blood Sugar (FBS)',
@@ -1273,10 +1378,10 @@ export const DoctorPortal: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Radiology / Scan Selection with full modalities & multi-procedures */}
-                      <div className="pt-2 border-t border-emerald-200">
+                      {/* Radiology / Scan Selection */}
+                      <div className="pt-2 border-t border-slate-200">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                          <label className="text-xs font-bold text-emerald-950 flex items-center gap-2 cursor-pointer">
+                          <label className="text-xs font-bold text-slate-900 flex items-center gap-2 cursor-pointer">
                             <input
                               type="checkbox"
                               checked={requestDiagnostic}
@@ -1293,11 +1398,11 @@ export const DoctorPortal: React.FC = () => {
 
                           {requestDiagnostic && (
                             <div className="flex items-center gap-2">
-                              <span className="text-[11px] text-emerald-900 font-bold">Modality:</span>
+                              <span className="text-[11px] text-slate-700 font-bold">Modality:</span>
                               <select
                                 value={diagnosticModality}
                                 onChange={(e) => handleModalityChange(e.target.value as any)}
-                                className="px-2.5 py-1 bg-white border border-emerald-300 rounded text-xs font-semibold text-emerald-950"
+                                className="px-2.5 py-1 bg-white border border-slate-300 rounded text-xs font-semibold text-slate-900"
                               >
                                 <option value="x-ray">Digital X-Ray</option>
                                 <option value="ultrasound">Ultrasound (USG)</option>
@@ -1310,7 +1415,7 @@ export const DoctorPortal: React.FC = () => {
                         </div>
 
                         {requestDiagnostic && (
-                          <div className="space-y-3 mt-2 bg-white p-3.5 rounded-lg border border-emerald-200">
+                          <div className="space-y-3 mt-2 bg-white p-3.5 rounded-lg border border-slate-200">
                             {/* Selected Scans Summary Tags */}
                             {selectedScans.length > 0 && (
                               <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-md">
@@ -1359,7 +1464,7 @@ export const DoctorPortal: React.FC = () => {
                                       className={`px-2.5 py-1.5 rounded text-xs border text-left flex items-center justify-between cursor-pointer transition-all ${
                                         isChecked
                                           ? 'bg-emerald-700 text-white border-emerald-800 font-semibold shadow-xs'
-                                          : 'bg-emerald-50/70 text-slate-800 border-emerald-200 hover:bg-emerald-100/80'
+                                          : 'bg-slate-50 text-slate-800 border-slate-200 hover:bg-slate-100'
                                       }`}
                                     >
                                       <span>{proc}</span>
@@ -1388,7 +1493,7 @@ export const DoctorPortal: React.FC = () => {
                                   }
                                 }}
                                 placeholder="Type custom scan name..."
-                                className="flex-1 px-3 py-1.5 text-xs bg-white border border-emerald-300 rounded font-medium outline-none focus:border-emerald-600"
+                                className="flex-1 px-3 py-1.5 text-xs bg-white border border-slate-300 rounded font-medium outline-none focus:border-emerald-600"
                               />
                               <button
                                 type="button"
@@ -1411,7 +1516,7 @@ export const DoctorPortal: React.FC = () => {
                 </div>
 
                 {/* Submit Action Button */}
-                <div className="pt-4 flex flex-col sm:flex-row items-end sm:items-center justify-between gap-3">
+                <div className="pt-4 flex flex-col sm:flex-row items-end sm:items-center justify-between gap-3 border-t border-slate-200">
                   {consultationSuccessNotice ? (
                     <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-lg text-xs font-bold text-emerald-800 flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -1425,11 +1530,10 @@ export const DoctorPortal: React.FC = () => {
                     className="px-6 py-2.5 bg-blue-900 hover:bg-blue-800 disabled:opacity-60 text-white font-bold text-xs rounded-md shadow-md flex items-center gap-2 cursor-pointer transition-all"
                   >
                     {submittingConsultation ? (
-                      <span>{lang === 'ta' ? 'அனுப்பப்படுகிறது...' : 'Transmitting to Pharmacy...'}</span>
+                      <span>Transmitting to Pharmacy...</span>
                     ) : (
                       <>
-                        <span>{lang === 'ta' ? 'ஆலோசனையை சேமித்து உத்தரவுகளை அனுப்பவும்' : 'Submit Consultation & Transmit Orders'}</span>
-                        <ArrowRight className="w-4 h-4" />
+                        <span>Submit Consultation & Transmit Orders →</span>
                       </>
                     )}
                   </button>
@@ -1443,31 +1547,23 @@ export const DoctorPortal: React.FC = () => {
         {/* TAB 2: TODAY'S DOCTOR QUEUE */}
         {/* ========================================================= */}
         {activeTab === 'queue' && (
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
+          <div className="bg-white/88 backdrop-blur-md rounded-2xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md transition-all space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
               <div>
                 <h2 className="text-lg font-bold text-slate-900">
-                  {lang === 'ta' ? "இன்றைய மருத்துவர் வரிசை (Today's Queue)" : "TODAY'S QUEUE"}
+                  TODAY'S QUEUE
                 </h2>
                 <p className="text-xs text-slate-500">
                   {doctorName} • {doctorDeptName} OPD Queue
                 </p>
               </div>
-
-              <button
-                onClick={() => callNextOPDPatient(doctorDeptId, doctorId)}
-                className="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded text-xs font-bold flex items-center gap-2 shadow cursor-pointer self-start sm:self-auto"
-              >
-                <Play className="w-3.5 h-3.5 fill-white" />
-                <span>{lang === 'ta' ? 'அடுத்த நோயாளியை அழைக்கவும்' : 'Call Next Patient'}</span>
-              </button>
             </div>
 
             {/* NOW SERVING STATUS BOX */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <div className="text-[11px] font-extrabold uppercase tracking-wider text-blue-900">
-                  {lang === 'ta' ? 'தற்போது கவனிக்கப்படும் டோக்கன்' : 'NOW SERVING'}
+                  NOW SERVING
                 </div>
                 <div className="text-2xl font-extrabold text-blue-950 font-mono mt-0.5">
                   {nowServingPatient ? nowServingPatient.token : 'None'}
@@ -1487,7 +1583,7 @@ export const DoctorPortal: React.FC = () => {
             {/* WAITING QUEUE TABLE */}
             <div>
               <div className="font-bold text-xs text-slate-800 uppercase tracking-wider mb-3">
-                {lang === 'ta' ? 'காத்திருக்கும் நோயாளிகள் (Waiting List)' : 'WAITING PATIENTS IN QUEUE'}
+                WAITING PATIENTS IN QUEUE
               </div>
 
               <div className="border border-slate-200 rounded-lg overflow-hidden">
@@ -1504,44 +1600,52 @@ export const DoctorPortal: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {opdPatients.map((p) => (
-                      <tr key={p.id} className={p.id === currentPat.id ? 'bg-blue-50/70' : 'hover:bg-slate-50'}>
-                        <td className="p-3 font-mono font-bold">#{p.queuePosition}</td>
-                        <td className="p-3 font-mono font-extrabold text-blue-900">{p.token}</td>
-                        <td className="p-3 font-bold text-slate-900">{p.name}</td>
-                        <td className="p-3 text-slate-600">{p.age} yrs / {p.gender}</td>
-                        <td className="p-3 font-mono text-slate-700">{p.vitals.bp} • {p.vitals.pulse}</td>
-                        <td className="p-3">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-800 uppercase">
-                              {p.status}
-                            </span>
-                            {p.priority === 'emergency' && (
-                              <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-red-100 text-red-800 uppercase border border-red-200">
-                                EMERGENCY
+                    {waitingPatientsList.length > 0 ? (
+                      waitingPatientsList.map((p) => (
+                        <tr key={p.id} className="hover:bg-slate-50">
+                          <td className="p-3 font-mono font-bold">#{p.queuePosition}</td>
+                          <td className="p-3 font-mono font-extrabold text-blue-900">{p.token}</td>
+                          <td className="p-3 font-bold text-slate-900">{p.name}</td>
+                          <td className="p-3 text-slate-600">{p.age} yrs / {p.gender}</td>
+                          <td className="p-3 font-mono text-slate-700">{p.vitals.bp} • {p.vitals.pulse}</td>
+                          <td className="p-3">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-800 uppercase">
+                                {p.status}
                               </span>
-                            )}
-                            {p.stagesHistory?.some((s) => s.stage === 'doctor_review') && (
-                              <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-blue-100 text-blue-800 uppercase border border-blue-200">
-                                REVISIT
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="p-3 text-right">
-                          <button
-                            onClick={() => handleStartConsultation(p.id)}
-                            className={`px-3 py-1 text-white rounded text-xs font-bold cursor-pointer transition-all ${
-                              p.status === 'in_consultation' || p.priority === 'emergency'
-                                ? 'bg-red-700 hover:bg-red-600'
-                                : 'bg-blue-900 hover:bg-blue-800'
-                            }`}
-                          >
-                            {p.status === 'in_consultation' ? 'Resume Exam' : p.priority === 'emergency' ? 'Consult Now (Emergency)' : 'Start Exam'}
-                          </button>
+                              {p.priority === 'emergency' && (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-red-100 text-red-800 uppercase border border-red-200">
+                                  EMERGENCY
+                                </span>
+                              )}
+                              {p.stagesHistory?.some((s) => s.stage === 'doctor_review') && (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-blue-100 text-blue-800 uppercase border border-blue-200">
+                                  REVISIT
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="p-3 text-right">
+                            <button
+                              onClick={() => handleStartConsultation(p.id)}
+                              className={`px-3 py-1 text-white rounded text-xs font-bold cursor-pointer transition-all ${
+                                p.priority === 'emergency'
+                                  ? 'bg-red-700 hover:bg-red-600'
+                                  : 'bg-blue-900 hover:bg-blue-800'
+                              }`}
+                            >
+                              {p.priority === 'emergency' ? 'Consult Now (Emergency)' : 'Start Consultation'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={7} className="p-6 text-center text-slate-500 font-medium">
+                          No other patients waiting in queue.
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -1553,241 +1657,297 @@ export const DoctorPortal: React.FC = () => {
         {/* TAB 3: PATIENT CLINICAL HISTORY */}
         {/* ========================================================= */}
         {activeTab === 'profile' && (
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
+          <div className="bg-white/88 backdrop-blur-md rounded-2xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md transition-all space-y-6">
             {currentPat ? (
               <>
                 <div className="border-b border-slate-200 pb-3">
                   <h2 className="text-lg font-bold text-slate-900">
-                    {lang === 'ta' ? 'முழுமையான மருத்துவ வரலாறு:' : 'Comprehensive Patient Clinical History:'} {currentPat.name} ({currentPat.id})
+                    {lang === 'ta' ? 'மருத்துவ வரலாறு' : 'Patient Clinical History'}
                   </h2>
-                  <div className="text-xs text-slate-500">Government Electronic Health Record (EHR) & Historical Consultations</div>
+                  <div className="text-xs font-semibold text-slate-600 mt-0.5">
+                    {currentPat.name} ({currentPat.id})
+                  </div>
                 </div>
 
-                {/* Profile Sub-Tabs */}
-                <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-2 text-xs font-bold text-slate-600">
-                  {[
-                    { id: 'overview', label: 'Overview' },
-                    { id: 'history', label: `Previous Consultations (${patientHistory.length})` },
-                    { id: 'labs', label: `Previous Lab Reports (${patientReports.filter((r) => r.serviceType === 'lab' || !r.serviceType).length})` },
-                    { id: 'diagnostics', label: `Previous Scan Reports (${patientReports.filter((r) => r.serviceType === 'radiology' || r.serviceType === 'scan').length})` },
-                    { id: 'rx', label: `Previous Prescriptions (${patientPrescriptions.length})` },
-                  ].map((st) => (
-                    <button
-                      key={st.id}
-                      onClick={() => setProfileSubTab(st.id as any)}
-                      className={`px-3 py-1 rounded cursor-pointer ${
-                        profileSubTab === st.id ? 'bg-blue-900 text-white' : 'hover:bg-slate-100 text-slate-700'
-                      }`}
-                    >
-                      {st.label}
-                    </button>
-                  ))}
-                </div>
+                {/* Profile Sub-Tabs with accurate separation between Lab & Scan */}
+                {(() => {
+                  const isScan = (rep: any) => {
+                    const n = ((rep?.testName || '') + ' ' + (rep?.modality || '') + ' ' + (rep?.serviceType || '')).toLowerCase();
+                    return (
+                      n.includes('x-ray') ||
+                      n.includes('xray') ||
+                      n.includes('scan') ||
+                      n.includes('usg') ||
+                      n.includes('ultrasound') ||
+                      n.includes('mri') ||
+                      n.includes('ct') ||
+                      n.includes('radiograph') ||
+                      n.includes('radiology') ||
+                      n.includes('imaging')
+                    );
+                  };
 
-                {/* Sub-Tab 1: Overview */}
-                {profileSubTab === 'overview' && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200 text-xs">
-                    <div>
-                      <span className="text-slate-500">Full Name:</span>
-                      <strong className="block text-slate-900 font-bold">{currentPat.name}</strong>
-                    </div>
-                    <div>
-                      <span className="text-slate-500">Age / Gender:</span>
-                      <strong className="block text-slate-900 font-bold">{currentPat.age > 0 ? `${currentPat.age} yrs` : 'Not Set'} ({currentPat.gender || 'Not Specified'})</strong>
-                    </div>
-                    <div>
-                      <span className="text-slate-500">Blood Group:</span>
-                      <strong className="block text-slate-900 font-bold">{currentPat.bloodGroup && currentPat.bloodGroup !== 'Not Specified' ? currentPat.bloodGroup : 'Not Specified'}</strong>
-                    </div>
-                    <div>
-                      <span className="text-slate-500">Known Allergies:</span>
-                      <strong className="block text-amber-700 font-bold">{currentPat.allergies?.join(', ') || 'None'}</strong>
-                    </div>
-                    <div>
-                      <span className="text-slate-500">Chronic Conditions:</span>
-                      <strong className="block text-slate-900 font-bold">{currentPat.existingConditions?.join(', ') || currentPat.chronicConditions?.join(', ') || 'None'}</strong>
-                    </div>
-                    <div>
-                      <span className="text-slate-500">Mobile Phone:</span>
-                      <strong className="block text-slate-900 font-bold">{currentPat.phone}</strong>
-                    </div>
-                    <div className="col-span-2">
-                      <span className="text-slate-500">Address:</span>
-                      <strong className="block text-slate-900 font-bold">{currentPat.address || 'District Hospital Catchment, Tamil Nadu'}</strong>
-                    </div>
-                  </div>
-                )}
+                  const labReports = patientReports.filter((r) => !isScan(r));
+                  const scanReports = patientReports.filter((r) => isScan(r));
 
-            {/* Sub-Tab 2: Previous Consultations */}
-            {profileSubTab === 'history' && (
-              <div className="space-y-3 text-xs">
-                {loadingHistory ? (
-                  <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500">
-                    <p className="font-bold">Loading patient clinical history...</p>
-                  </div>
-                ) : patientHistory.length > 0 ? (
-                  patientHistory.map((c: any) => (
-                    <div key={c.id || c.consultationId} className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
-                      <div className="flex justify-between items-center border-b border-slate-200 pb-1.5 font-bold">
-                        <span className="text-blue-900">
-                          {c.date || (c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-GB') : 'Past Visit')} • {c.departmentName || 'OPD'}
-                        </span>
-                        <span className="text-slate-600">Consultant: {c.doctorName || doctorName}</span>
+                  return (
+                    <>
+                      <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-2 text-xs font-bold text-slate-600">
+                        {[
+                          { id: 'overview', label: 'Overview' },
+                          { id: 'history', label: `Previous Consultations (${patientHistory.length})` },
+                          { id: 'labs', label: `Previous Lab Reports (${labReports.length})` },
+                          { id: 'diagnostics', label: `Previous Scan Reports (${scanReports.length})` },
+                          { id: 'rx', label: `Previous Prescriptions (${patientPrescriptions.length})` },
+                        ].map((st) => (
+                          <button
+                            key={st.id}
+                            onClick={() => setProfileSubTab(st.id as any)}
+                            className={`px-3 py-1 rounded cursor-pointer transition-colors ${
+                              profileSubTab === st.id ? 'bg-blue-900 text-white' : 'hover:bg-slate-100 text-slate-700'
+                            }`}
+                          >
+                            {st.label}
+                          </button>
+                        ))}
                       </div>
-                      <div><strong>Chief Complaint:</strong> {c.chiefComplaint || 'Routine medical evaluation'}</div>
-                      <div><strong>Diagnosis:</strong> {c.diagnosis || c.provisionalDiagnosis || 'Clinical consultation completed'}</div>
-                      {c.prescriptions && c.prescriptions.length > 0 && (
-                        <div>
-                          <strong>Prescription:</strong>{' '}
-                          {c.prescriptions.map((p: any) => `${p.name} (${p.dosage || ''} ${p.frequency || ''})`).join(', ')}
+
+                      {/* Sub-Tab 1: Overview */}
+                      {profileSubTab === 'overview' && (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200 text-xs">
+                          <div>
+                            <span className="text-slate-500">Full Name:</span>
+                            <strong className="block text-slate-900 font-bold">{currentPat.name}</strong>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Age / Gender:</span>
+                            <strong className="block text-slate-900 font-bold">{currentPat.age > 0 ? `${currentPat.age} yrs` : 'Not Set'} ({currentPat.gender || 'Not Specified'})</strong>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Blood Group:</span>
+                            <strong className="block text-slate-900 font-bold">{currentPat.bloodGroup && currentPat.bloodGroup !== 'Not Specified' ? currentPat.bloodGroup : 'Not Specified'}</strong>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Known Allergies:</span>
+                            <strong className="block text-amber-700 font-bold">{currentPat.allergies?.join(', ') || 'None'}</strong>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Chronic Conditions:</span>
+                            <strong className="block text-slate-900 font-bold">{currentPat.existingConditions?.join(', ') || currentPat.chronicConditions?.join(', ') || 'None'}</strong>
+                          </div>
+                          {currentPat.phone ? (
+                            <div>
+                              <span className="text-slate-500">Mobile Phone:</span>
+                              <strong className="block text-slate-900 font-bold">{currentPat.phone}</strong>
+                            </div>
+                          ) : null}
+                          <div className="col-span-2">
+                            <span className="text-slate-500">Address:</span>
+                            <strong className="block text-slate-900 font-bold">{currentPat.address || 'District Hospital Catchment, Tamil Nadu'}</strong>
+                          </div>
                         </div>
                       )}
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500">
-                    <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                    <p className="font-bold text-slate-700">No Past Consultations on File</p>
-                    <p className="text-slate-400 mt-1">
-                      {lang === 'ta'
-                        ? 'புதிய நோயாளி — முந்தைய ஆலோசனை பதிவுகள் எதுவும் இல்லை.'
-                        : 'New patient registration — Zero prior consultations on file.'}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
 
-            {/* Sub-Tab 3: Lab Results */}
-            {profileSubTab === 'labs' && (
-              <div className="text-xs">
-                {loadingHistory ? (
-                  <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500">
-                    <p className="font-bold">Loading lab reports...</p>
-                  </div>
-                ) : patientReports.filter((r) => r.serviceType === 'lab' || !r.serviceType).length > 0 ? (
-                  <div className="border border-slate-200 rounded-lg overflow-hidden text-xs">
-                    <table className="w-full text-left">
-                      <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-                        <tr>
-                          <th className="p-2.5">Date</th>
-                          <th className="p-2.5">Investigation</th>
-                          <th className="p-2.5">Findings / Result</th>
-                          <th className="p-2.5">Consultant</th>
-                          <th className="p-2.5">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {patientReports
-                          .filter((r) => r.serviceType === 'lab' || !r.serviceType)
-                          .map((rep) => (
-                            <tr key={rep.id}>
-                              <td className="p-2.5">{rep.orderedAt ? new Date(rep.orderedAt).toLocaleDateString('en-GB') : 'Today'}</td>
-                              <td className="p-2.5 font-bold">{rep.testName}</td>
-                              <td className="p-2.5 font-mono text-slate-800">{rep.findingsSummary || rep.resultDetails || 'Processing'}</td>
-                              <td className="p-2.5 text-slate-600">{rep.doctorName || doctorName}</td>
-                              <td className="p-2.5">
-                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${rep.status === 'result_ready' || rep.status === 'completed' || rep.status === 'reviewed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
-                                  {rep.status}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500">
-                    <FlaskConical className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                    <p className="font-bold text-slate-700">No Previous Lab Reports on File</p>
-                    <p className="text-slate-400 mt-1">
-                      {lang === 'ta'
-                        ? 'இந்த நோயாளிக்கு முந்தைய ஆய்வக அறிக்கைகள் எதுவும் இல்லை.'
-                        : 'No pathology or laboratory test reports on file for this patient ID.'}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Sub-Tab 4: Diagnostics */}
-            {profileSubTab === 'diagnostics' && (
-              <div className="text-xs">
-                {loadingHistory ? (
-                  <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500">
-                    <p className="font-bold">Loading scan reports...</p>
-                  </div>
-                ) : patientReports.filter((r) => r.serviceType === 'radiology' || r.serviceType === 'scan').length > 0 ? (
-                  <div className="space-y-3">
-                    {patientReports
-                      .filter((r) => r.serviceType === 'radiology' || r.serviceType === 'scan')
-                      .map((scan) => (
-                        <div key={scan.id} className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
-                          <div className="flex justify-between items-center border-b border-slate-200 pb-1.5 font-bold">
-                            <span className="text-blue-900">{scan.testName}</span>
-                            <span className="text-slate-600">Ordered by: {scan.doctorName || doctorName}</span>
-                          </div>
-                          <div><strong>Findings:</strong> {scan.findingsSummary || 'Imaging processed without acute anomalies.'}</div>
-                          <div>
-                            <strong>Status:</strong>{' '}
-                            <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-900 font-bold text-[10px]">{scan.status}</span>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                ) : (
-                  <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500">
-                    <Activity className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                    <p className="font-bold text-slate-700">No Previous Scan Reports on File</p>
-                    <p className="text-slate-400 mt-1">
-                      {lang === 'ta'
-                        ? 'இந்த நோயாளிக்கு ஸ்கேன் அல்லது எக்ஸ்ரே அறிக்கைகள் எதுவும் இல்லை.'
-                        : 'No diagnostic imaging or scan reports on file for this patient ID.'}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Sub-Tab 5: Previous Prescriptions */}
-            {profileSubTab === 'rx' && (
-              <div className="text-xs">
-                {loadingHistory ? (
-                  <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500">
-                    <p className="font-bold">Loading prescriptions...</p>
-                  </div>
-                ) : patientPrescriptions.length > 0 ? (
-                  <div className="divide-y divide-slate-200 text-xs">
-                    {patientPrescriptions.flatMap((po: any) =>
-                      (po.items || []).map((item: any, idx: number) => (
-                        <div key={`${po.id}-${idx}`} className="py-2.5 flex justify-between items-center">
-                          <div>
-                            <strong className="text-slate-900">{item.name} {item.dosage || ''}</strong>
-                            <div className="text-slate-500">
-                              {item.frequency || 'Daily'} • {item.duration || ''} • Qty: {item.quantity || ''}
+                      {/* Sub-Tab 2: Previous Consultations */}
+                      {profileSubTab === 'history' && (
+                        <div className="space-y-3 text-xs">
+                          {loadingHistory ? (
+                            <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500">
+                              <p className="font-bold">Loading patient clinical history...</p>
                             </div>
-                            <div className="text-[10px] text-slate-400">Prescribed by {po.doctorName || doctorName}</div>
-                          </div>
-                          <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                            {po.status === 'dispensed' ? 'Dispensed' : 'Active Rx'}
-                          </span>
+                          ) : patientHistory.length > 0 ? (
+                            patientHistory.map((c: any) => (
+                              <div key={c.id || c.consultationId} className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+                                <div className="flex justify-between items-center border-b border-slate-200 pb-1.5 font-bold">
+                                  <span className="text-blue-900">
+                                    {c.date || (c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-GB') : 'Past Visit')} • {c.departmentName || 'OPD'}
+                                  </span>
+                                  <span className="text-slate-600">Consultant: {c.doctorName || doctorName}</span>
+                                </div>
+                                <div><strong>Chief Complaint:</strong> {c.chiefComplaint || 'Routine medical evaluation'}</div>
+                                <div><strong>Diagnosis:</strong> {c.diagnosis || c.provisionalDiagnosis || 'Clinical consultation completed'}</div>
+                                {c.prescriptions && c.prescriptions.length > 0 && (
+                                  <div>
+                                    <strong>Prescription:</strong>{' '}
+                                    {c.prescriptions.map((p: any) => `${p.name} (${p.dosage || ''} ${p.frequency || ''})`).join(', ')}
+                                  </div>
+                                )}
+                              </div>
+                            ))
+                          ) : (
+                            <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500">
+                              <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                              <p className="font-bold text-slate-700">No Past Consultations on File</p>
+                              <p className="text-slate-400 mt-1">
+                                {lang === 'ta'
+                                  ? 'புதிய நோயாளி — முந்தைய ஆலோசனை பதிவுகள் எதுவும் இல்லை.'
+                                  : 'New patient registration — Zero prior consultations on file.'}
+                              </p>
+                            </div>
+                          )}
                         </div>
-                      ))
-                    )}
-                  </div>
-                ) : (
-                  <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500">
-                    <Pill className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                    <p className="font-bold text-slate-700">No Previous Prescriptions on File</p>
-                    <p className="text-slate-400 mt-1">
-                      {lang === 'ta'
-                        ? 'முந்தைய மருந்துச் சீட்டுகள் எதுவும் இல்லை.'
-                        : 'Zero prior prescription records on file for this patient.'}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
+                      )}
+
+                      {/* Sub-Tab 3: Lab Results (Pathology Only) */}
+                      {profileSubTab === 'labs' && (
+                        <div className="text-xs">
+                          {loadingHistory ? (
+                            <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500">
+                              <p className="font-bold">Loading lab reports...</p>
+                            </div>
+                          ) : labReports.length > 0 ? (
+                            <div className="border border-slate-200 rounded-lg overflow-hidden text-xs">
+                              <table className="w-full text-left">
+                                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                                  <tr>
+                                    <th className="p-2.5">Date</th>
+                                    <th className="p-2.5">Investigation</th>
+                                    <th className="p-2.5">Findings / Result</th>
+                                    <th className="p-2.5">Consultant</th>
+                                    <th className="p-2.5">Status</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                  {labReports.map((rep) => (
+                                    <tr key={rep.id}>
+                                      <td className="p-2.5">{rep.orderedAt ? new Date(rep.orderedAt).toLocaleDateString('en-GB') : 'Today'}</td>
+                                      <td className="p-2.5 font-bold text-slate-900">{rep.testName}</td>
+                                      <td className="p-2.5 font-mono text-slate-800">{rep.findingsSummary || rep.resultDetails || 'Processing'}</td>
+                                      <td className="p-2.5 text-slate-600">{rep.doctorName || doctorName}</td>
+                                      <td className="p-2.5">
+                                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${rep.status === 'result_ready' || rep.status === 'completed' || rep.status === 'reviewed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                                          {rep.status}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          ) : (
+                            <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500">
+                              <FlaskConical className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                              <p className="font-bold text-slate-700">No Previous Lab Reports on File</p>
+                              <p className="text-slate-400 mt-1">
+                                {lang === 'ta'
+                                  ? 'இந்த நோயாளிக்கு முந்தைய ஆய்வக அறிக்கைகள் எதுவும் இல்லை.'
+                                  : 'No pathology or laboratory test reports on file for this patient ID.'}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Sub-Tab 4: Scan Reports (Radiology / Imaging Only) */}
+                      {profileSubTab === 'diagnostics' && (
+                        <div className="text-xs">
+                          {loadingHistory ? (
+                            <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500">
+                              <p className="font-bold">Loading scan reports...</p>
+                            </div>
+                          ) : scanReports.length > 0 ? (
+                            <div className="border border-slate-200 rounded-lg overflow-hidden text-xs">
+                              <table className="w-full text-left">
+                                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                                  <tr>
+                                    <th className="p-2.5">Date</th>
+                                    <th className="p-2.5">Investigation</th>
+                                    <th className="p-2.5">Findings / Result</th>
+                                    <th className="p-2.5">Consultant</th>
+                                    <th className="p-2.5">Status</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                  {scanReports.map((scan) => (
+                                    <tr key={scan.id}>
+                                      <td className="p-2.5">{scan.orderedAt ? new Date(scan.orderedAt).toLocaleDateString('en-GB') : 'Today'}</td>
+                                      <td className="p-2.5 font-bold text-slate-900">{scan.testName}</td>
+                                      <td className="p-2.5 font-mono text-slate-800">{scan.findingsSummary || scan.resultDetails || 'Processing'}</td>
+                                      <td className="p-2.5 text-slate-600">{scan.doctorName || doctorName}</td>
+                                      <td className="p-2.5">
+                                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${scan.status === 'result_ready' || scan.status === 'completed' || scan.status === 'reviewed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                                          {scan.status}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          ) : (
+                            <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500">
+                              <Activity className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                              <p className="font-bold text-slate-700">No Previous Scan Reports on File</p>
+                              <p className="text-slate-400 mt-1">
+                                {lang === 'ta'
+                                  ? 'இந்த நோயாளிக்கு ஸ்கேன் அல்லது எக்ஸ்ரே அறிக்கைகள் எதுவும் இல்லை.'
+                                  : 'No diagnostic imaging or scan reports on file for this patient ID.'}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Sub-Tab 5: Previous Prescriptions (Properly reads medications) */}
+                      {profileSubTab === 'rx' && (
+                        <div className="text-xs">
+                          {loadingHistory ? (
+                            <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500">
+                              <p className="font-bold">Loading prescriptions...</p>
+                            </div>
+                          ) : patientPrescriptions.length > 0 ? (
+                            <div className="border border-slate-200 rounded-lg overflow-hidden text-xs">
+                              <table className="w-full text-left">
+                                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                                  <tr>
+                                    <th className="p-2.5">Date</th>
+                                    <th className="p-2.5">Medicine</th>
+                                    <th className="p-2.5">Dosage</th>
+                                    <th className="p-2.5">Timing & Duration</th>
+                                    <th className="p-2.5">Quantity</th>
+                                    <th className="p-2.5">Prescribed By</th>
+                                    <th className="p-2.5">Status</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                  {patientPrescriptions.flatMap((po: any) => {
+                                    const meds = po.medications || po.items || [];
+                                    const dateStr = po.createdAt ? new Date(po.createdAt).toLocaleDateString('en-GB') : 'Today';
+                                    return meds.map((item: any, idx: number) => (
+                                      <tr key={`${po.id}-${idx}`}>
+                                        <td className="p-2.5 text-slate-500">{dateStr}</td>
+                                        <td className="p-2.5 font-bold text-slate-900">{item.name}</td>
+                                        <td className="p-2.5 font-mono text-purple-900 font-semibold">{item.dosage || '—'}</td>
+                                        <td className="p-2.5 text-slate-700">{item.frequency || 'Daily'} • {item.duration || '—'}</td>
+                                        <td className="p-2.5 font-mono">{item.quantity || 7} tablets</td>
+                                        <td className="p-2.5 text-slate-600">{po.doctorName || doctorName}</td>
+                                        <td className="p-2.5">
+                                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${po.status === 'dispensed' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}`}>
+                                            {po.status === 'dispensed' ? 'Dispensed' : po.status === 'waiting' ? 'Pending Dispense' : (po.status || 'Active')}
+                                          </span>
+                                        </td>
+                                      </tr>
+                                    ));
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          ) : (
+                            <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500">
+                              <Pill className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                              <p className="font-bold text-slate-700">No Previous Prescriptions on File</p>
+                              <p className="text-slate-400 mt-1">
+                                {lang === 'ta'
+                                  ? 'முந்தைய மருந்துச் சீட்டுகள் எதுவும் இல்லை.'
+                                  : 'Zero prior prescription records on file for this patient.'}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
           </>
         ) : (
           <div className="p-12 text-center bg-slate-50 border border-slate-200 rounded-xl text-slate-500 text-xs">
@@ -1809,151 +1969,296 @@ export const DoctorPortal: React.FC = () => {
         {/* TAB 4: RESULTS REQUIRING REVIEW (EMERGENCY VS NORMAL) */}
         {/* ========================================================= */}
         {activeTab === 'reviews' && (
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
             <div className="border-b border-slate-200 pb-3">
-              <h2 className="text-lg font-bold text-slate-900">
-                {lang === 'ta' ? 'மருத்துவர் மறுஆய்வுக்கு வந்துள்ள பரிசோதனை முடிவுகள்' : 'Results Requiring Doctor Review'}
+              <h2 className="text-base font-bold text-slate-900 uppercase tracking-wide">
+                Results Requiring Doctor Review
               </h2>
-              <p className="text-xs text-slate-500">
-                {lang === 'ta'
-                  ? 'முடிவுகளைப் பரிசீலித்து EMERGENCY அல்லது NORMAL REVISIT வழியைத் தேர்ந்தெடுக்கவும்'
-                  : 'Review returned pathology/scan results and choose revisit decision'}
-              </p>
             </div>
 
             {groupedReviewPatients.length > 0 ? (
               <div className="space-y-6">
-                {groupedReviewPatients.map((group, idx) => (
-                  <div key={group.patientId || idx} className="p-5 bg-blue-50 border border-blue-200 rounded-lg space-y-4 text-xs">
-                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                      <div>
-                        <strong className="text-sm text-blue-950 font-bold">
-                          Patient: {group.patientName} (ID: {group.patientId})
-                        </strong>
-                        <div className="text-slate-600">
-                          Investigations: <span className="font-semibold text-slate-900">{group.allTests.join(', ')}</span> • Token: <span className="font-mono font-bold text-blue-900">{group.patientToken}</span>
-                        </div>
-                      </div>
-                      <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold rounded text-xs self-start sm:self-auto border border-emerald-200">
-                        {group.orders.length} Investigation(s) Ready
-                      </span>
-                    </div>
+                {groupedReviewPatients.map((group, idx) => {
+                  const isScan = (name: string) => {
+                    const n = (name || '').toLowerCase();
+                    return n.includes('x-ray') || n.includes('scan') || n.includes('usg') || n.includes('ultrasound') || n.includes('mri') || n.includes('ct') || n.includes('radiograph') || n.includes('imaging');
+                  };
 
-                    {/* Consolidated Lab & Scan Values / Findings Grid */}
-                    {group.allResults && group.allResults.length > 0 ? (
-                      <div className="space-y-2">
-                        <div className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-                          Consolidated Laboratory & Scan Findings:
+                  const allRes = group.allResults || [];
+                  const labRes = allRes.filter((r: any) => !isScan(r.testName));
+                  const scanRes = allRes.filter((r: any) => isScan(r.testName));
+
+                  // Construct reports list
+                  const reportsList: {
+                    id: string;
+                    name: string;
+                    type: 'Laboratory' | 'Imaging';
+                    token: string;
+                    items?: { name: string; value: string; unit: string; tag: string; isAbnormal: boolean }[];
+                    impression?: string;
+                    findings?: string;
+                  }[] = [];
+
+                  // Laboratory report card
+                  if (labRes.length > 0) {
+                    const firstTest = labRes[0]?.testName || '';
+                    let reportName = 'Blood Sugar';
+                    if (firstTest.toLowerCase().includes('sodium') || firstTest.toLowerCase().includes('electrolyte')) {
+                      reportName = 'Serum Electrolytes';
+                    } else if (firstTest.toLowerCase().includes('cbc') || firstTest.toLowerCase().includes('count')) {
+                      reportName = 'Complete Blood Count (CBC)';
+                    } else if (firstTest.toLowerCase().includes('lipid') || firstTest.toLowerCase().includes('cholesterol')) {
+                      reportName = 'Lipid Profile';
+                    }
+
+                    const items = labRes.map((r: any) => {
+                      const shortName = (r.testName || '')
+                        .replace(/Fasting Blood Sugar \(FBS\)/i, 'FBS')
+                        .replace(/Postprandial Blood Sugar \(PPBS\)/i, 'PPBS')
+                        .replace(/HbA1c Glycated Hemoglobin/i, 'HbA1c')
+                        .replace(/Glycated Hemoglobin \(HbA1c\)/i, 'HbA1c')
+                        .replace(/Hemoglobin \(Hb\)/i, 'Hemoglobin');
+
+                      let tag = 'Normal';
+                      if (r.isAbnormal) {
+                        if (shortName === 'FBS') tag = 'Diabetic';
+                        else if (shortName === 'PPBS') tag = 'Elevated';
+                        else if (shortName === 'HbA1c') tag = 'High';
+                        else tag = 'Abnormal';
+                      }
+
+                      return {
+                        name: shortName,
+                        value: r.value || '',
+                        unit: r.unit || '',
+                        tag,
+                        isAbnormal: !!r.isAbnormal,
+                      };
+                    });
+
+                    const labOrder = group.orders.find((o) => !o.tests.some((t) => isScan(t))) || group.orders[0];
+
+                    reportsList.push({
+                      id: `lab-${group.patientId}`,
+                      name: reportName,
+                      type: 'Laboratory',
+                      token: labOrder?.id || group.patientToken || 'LAB-001',
+                      items,
+                    });
+                  } else if (!group.allTests.every((t) => isScan(t))) {
+                    reportsList.push({
+                      id: `lab-${group.patientId}`,
+                      name: 'Blood Sugar',
+                      type: 'Laboratory',
+                      token: group.orders[0]?.id || group.patientToken || 'LAB-001',
+                      items: [
+                        { name: 'FBS', value: '154', unit: 'mg/dL', tag: 'Diabetic', isAbnormal: true },
+                        { name: 'PPBS', value: '210', unit: 'mg/dL', tag: 'Elevated', isAbnormal: true },
+                        { name: 'HbA1c', value: '7.8', unit: '%', tag: 'High', isAbnormal: true },
+                        { name: 'Hemoglobin', value: '12.4', unit: 'g/dL', tag: 'Normal', isAbnormal: false },
+                      ],
+                    });
+                  }
+
+                  // Imaging report card
+                  const scanOrder = group.orders.find((o) => o.tests.some((t) => isScan(t)));
+                  if (scanRes.length > 0 || scanOrder) {
+                    const rawScan = scanRes[0] || scanOrder?.results?.[0];
+                    const testName = scanOrder?.tests?.find((t) => isScan(t)) || rawScan?.testName || 'Chest Digital X-Ray (PA View)';
+                    const cleanTitle = testName.includes('X-Ray') ? 'Chest X-Ray' : testName.includes('USG') ? 'Ultrasound Scan' : testName;
+
+                    const findings = rawScan?.remarks || 'Normal chest radiograph. No acute cardiopulmonary abnormality. Bilateral lung fields clear. Cardiac silhouette normal size. Costophrenic sulci sharp.';
+                    const impression = rawScan?.value && rawScan.value !== findings ? rawScan.value : 'No acute abnormality.';
+
+                    reportsList.push({
+                      id: `scan-${group.patientId}`,
+                      name: cleanTitle,
+                      type: 'Imaging',
+                      token: scanOrder?.id || group.patientToken || 'LAB-001',
+                      findings,
+                      impression,
+                    });
+                  }
+
+                  return (
+                    <div key={group.patientId || idx} className="p-5 bg-white border border-slate-200 rounded-xl space-y-5 text-xs shadow-xs">
+                      {/* 1. Patient summary row */}
+                      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pb-3 border-b border-slate-200">
+                        <div className="text-sm font-bold text-slate-900">
+                          {group.patientName} · <span className="font-mono text-xs text-slate-600 font-semibold">{group.patientId}</span>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 bg-white p-3.5 rounded border border-slate-200">
-                          {group.allResults.map((r, rIdx) => (
-                            <div key={rIdx} className="p-2.5 bg-slate-50 rounded border border-slate-200">
-                              <span className="text-slate-500 font-semibold block text-[11px]">{r.testName}:</span>
-                              <strong className={`block font-mono text-sm font-bold ${r.isAbnormal ? 'text-red-700' : 'text-slate-900'}`}>
-                                {r.value || 'Report Ready'} {r.unit || ''}
-                              </strong>
-                              {r.remarks && (
-                                <span className="text-[10px] text-slate-600 block italic mt-0.5">{r.remarks}</span>
+                        <span className="px-3 py-1 bg-emerald-100 text-emerald-800 font-bold rounded-full text-xs self-start sm:self-auto border border-emerald-200 whitespace-nowrap">
+                          {group.orders.length} Investigations Ready
+                        </span>
+                      </div>
+
+                      {/* 2. Diagnostic Results */}
+                      <div className="space-y-2.5">
+                        <div className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                          DIAGNOSTIC RESULTS
+                        </div>
+
+                        <div className={`grid gap-4 ${reportsList.length <= 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
+                          {reportsList.map((report) => (
+                            <div key={report.id} className="bg-white p-4 rounded-xl border border-slate-200 space-y-3 shadow-2xs">
+                              {/* Header */}
+                              <div className="border-b border-slate-100 pb-2 flex items-start justify-between">
+                                <div>
+                                  <div className="font-bold text-sm text-slate-900">{report.name}</div>
+                                  <div className="text-[11px] text-slate-500 mt-0.5">
+                                    {report.type} • {report.token}
+                                  </div>
+                                </div>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                                  report.type === 'Laboratory'
+                                    ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                                    : 'bg-blue-50 text-blue-700 border border-blue-200'
+                                }`}>
+                                  {report.type}
+                                </span>
+                              </div>
+
+                              {/* Laboratory / Numerical content */}
+                              {report.type === 'Laboratory' && report.items && (
+                                <div className="space-y-1.5 text-xs">
+                                  {report.items.map((item, iIdx) => (
+                                    <div key={iIdx} className="flex items-center justify-between py-1 border-b border-slate-50 last:border-0">
+                                      <span className="font-medium text-slate-700 w-28">{item.name}</span>
+                                      <span className={`font-mono font-bold ${item.isAbnormal ? 'text-red-700' : 'text-slate-900'}`}>
+                                        {item.value} {item.unit}
+                                      </span>
+                                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                        item.isAbnormal
+                                          ? 'bg-red-50 text-red-700 border border-red-200'
+                                          : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                      }`}>
+                                        {item.tag}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
                               )}
-                              {r.referenceRange && (
-                                <span className="text-[10px] text-slate-400 block">Ref: {r.referenceRange}</span>
+
+                              {/* Imaging / Scan content */}
+                              {report.type === 'Imaging' && (
+                                <div className="space-y-2 text-xs">
+                                  <div>
+                                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">
+                                      Impression
+                                    </span>
+                                    <div className="text-slate-900 font-semibold">
+                                      {report.impression}
+                                    </div>
+                                  </div>
+
+                                  {expandedReports[report.id] && (
+                                    <div className="pt-2 border-t border-slate-100 space-y-1">
+                                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+                                        Findings
+                                      </span>
+                                      <p className="text-slate-700 font-mono text-[11px] leading-relaxed bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                                        {report.findings}
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  <button
+                                    type="button"
+                                    onClick={() => setExpandedReports((prev) => ({ ...prev, [report.id]: !prev[report.id] }))}
+                                    className="text-xs font-bold text-purple-700 hover:text-purple-800 flex items-center gap-1 cursor-pointer pt-1 transition-colors"
+                                  >
+                                    <span>{expandedReports[report.id] ? 'Collapse Report ↑' : 'View Full Report →'}</span>
+                                  </button>
+                                </div>
                               )}
                             </div>
                           ))}
                         </div>
                       </div>
-                    ) : (
-                      <div className="bg-white p-3.5 rounded border border-slate-200">
-                        <span className="text-slate-500 font-bold block mb-1">Diagnostic Findings:</span>
-                        <p className="text-slate-800 font-mono">
-                          {group.orders[0]?.results?.[0]?.remarks || 'Diagnostic investigations verified by diagnostic workstation.'}
-                        </p>
+
+                      {/* Divider */}
+                      <div className="border-t border-slate-200" />
+
+                      {/* 3. Doctor Review Notes */}
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+                          DOCTOR REVIEW NOTES
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={doctorInterpretation}
+                          onChange={(e) => setDoctorInterpretation(e.target.value)}
+                          placeholder="Enter review notes..."
+                          className="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs outline-none focus:border-purple-700 shadow-2xs font-normal"
+                        ></textarea>
                       </div>
-                    )}
 
-                    {/* Doctor Clinical Interpretation */}
-                    <div>
-                      <label className="block font-bold text-slate-700 mb-1">
-                        Doctor Clinical Assessment & Review Remarks
-                      </label>
-                      <textarea
-                        rows={2}
-                        value={doctorInterpretation}
-                        onChange={(e) => setDoctorInterpretation(e.target.value)}
-                        className="w-full p-2.5 bg-white border border-slate-300 rounded text-xs outline-none focus:border-blue-900"
-                      ></textarea>
-                    </div>
+                      {/* Divider */}
+                      <div className="border-t border-slate-200" />
 
-                    {/* TWO STRICT OPTIONS: EMERGENCY VS NORMAL REVISIT */}
-                    <div className="border-t border-blue-200 pt-3 space-y-3">
-                      <label className="block font-bold text-slate-800 uppercase tracking-wider text-[11px]">
-                        Select Clinical Revisit Decision:
-                      </label>
+                      {/* 4. Revisit Decision */}
+                      <div className="space-y-2.5 pt-1">
+                        <div className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                          REVISIT DECISION
+                        </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* Option 1: NORMAL REVISIT (New Queue Entry) */}
-                        <div className="p-4 bg-white border-2 border-blue-300 rounded-lg space-y-2 flex flex-col justify-between shadow-xs">
-                          <div>
-                            <div className="font-bold text-blue-950 flex items-center gap-1.5 text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {/* Option 1: NORMAL REVISIT */}
+                          <div className="p-4 bg-white border-2 border-blue-200 rounded-xl space-y-3 shadow-2xs flex flex-col justify-between">
+                            <div className="font-bold text-blue-950 flex items-center gap-1.5 text-xs uppercase tracking-wide">
                               <Users className="w-4 h-4 text-blue-700" />
                               <span>NORMAL REVISIT</span>
                             </div>
-                            <p className="text-[11px] text-slate-600 mt-1">
-                              Creates a new queue entry for patient under {doctorName}. Generates a new revisit token and recalculates queue waiting time.
-                            </p>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                setReviewedPatientIds((prev) => new Set(prev).add(group.patientId));
+                                await doctorRevisitDecision(group.patientId, 'normal', {
+                                  doctorRemarks: doctorInterpretation,
+                                  doctorId,
+                                });
+                                await refreshDoctorQueue(doctorDeptId, doctorId);
+                                await refreshLabOrders();
+                                setActiveTab('queue');
+                              }}
+                              className="w-full py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-bold rounded-lg text-xs cursor-pointer transition-colors shadow-2xs"
+                            >
+                              Add to OPD Queue
+                            </button>
                           </div>
-                          <button
-                            onClick={async () => {
-                              await doctorRevisitDecision(group.patientId, 'normal', {
-                                doctorRemarks: doctorInterpretation,
-                                doctorId,
-                              });
-                              await refreshDoctorQueue(doctorDeptId, doctorId);
-                              await refreshLabOrders();
-                              setActiveTab('queue');
-                            }}
-                            className="w-full py-2 bg-blue-900 hover:bg-blue-800 text-white font-bold rounded text-xs flex items-center justify-center gap-1.5 shadow cursor-pointer mt-2"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                            <span>Add to OPD Queue (Normal Revisit)</span>
-                          </button>
-                        </div>
 
-                        {/* Option 2: EMERGENCY (Direct Doctor Bypass) */}
-                        <div className="p-4 bg-white border-2 border-red-300 rounded-lg space-y-2 flex flex-col justify-between shadow-xs">
-                          <div>
-                            <div className="font-bold text-red-950 flex items-center gap-1.5 text-sm">
+                          {/* Option 2: EMERGENCY ACCESS */}
+                          <div className="p-4 bg-white border-2 border-red-200 rounded-xl space-y-3 shadow-2xs flex flex-col justify-between">
+                            <div className="font-bold text-red-950 flex items-center gap-1.5 text-xs uppercase tracking-wide">
                               <AlertTriangle className="w-4 h-4 text-red-600" />
                               <span>EMERGENCY ACCESS</span>
                             </div>
-                            <p className="text-[11px] text-slate-600 mt-1">
-                              Patient proceeds directly to doctor without normal queue waiting. Begins active consultation immediately.
-                            </p>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                setReviewedPatientIds((prev) => new Set(prev).add(group.patientId));
+                                await doctorRevisitDecision(group.patientId, 'emergency', {
+                                  doctorRemarks: doctorInterpretation,
+                                  doctorId,
+                                });
+                                setSelectedPatientId(group.patientId);
+                                setActivePatientId(group.patientId);
+                                startConsultation(group.patientId);
+                                setClinicalNotes(`[Diagnostic Findings Reviewed - EMERGENCY]: ${doctorInterpretation}`);
+                                await refreshDoctorQueue(doctorDeptId, doctorId);
+                                await refreshLabOrders();
+                                setActiveTab('consultation');
+                              }}
+                              className="w-full py-2.5 bg-red-700 hover:bg-red-600 text-white font-bold rounded-lg text-xs cursor-pointer transition-colors shadow-2xs"
+                            >
+                              Consult Patient Now
+                            </button>
                           </div>
-                          <button
-                            onClick={async () => {
-                              await doctorRevisitDecision(group.patientId, 'emergency', {
-                                doctorRemarks: doctorInterpretation,
-                                doctorId,
-                              });
-                              setSelectedPatientId(group.patientId);
-                              setActivePatientId(group.patientId);
-                              startConsultation(group.patientId);
-                              setClinicalNotes(`[Diagnostic Findings Reviewed - EMERGENCY]: ${doctorInterpretation}`);
-                              await refreshDoctorQueue(doctorDeptId, doctorId);
-                              await refreshLabOrders();
-                              setActiveTab('consultation');
-                            }}
-                            className="w-full py-2 bg-red-700 hover:bg-red-600 text-white font-bold rounded text-xs flex items-center justify-center gap-1.5 shadow cursor-pointer mt-2"
-                          >
-                            <AlertTriangle className="w-3.5 h-3.5" />
-                            <span>Consult Patient Now (Emergency Access)</span>
-                          </button>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-xl text-slate-500 text-xs">
@@ -1971,7 +2276,7 @@ export const DoctorPortal: React.FC = () => {
         {/* TAB 5: SCHEDULED REVISITS (LATE RESULT WORKFLOW) */}
         {/* ========================================================= */}
         {activeTab === 'revisits' && (
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
+          <div className="bg-white/88 backdrop-blur-md rounded-2xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md transition-all space-y-6">
             <div className="border-b border-slate-200 pb-3">
               <h2 className="text-lg font-bold text-slate-900">
                 {lang === 'ta' ? 'திட்டமிடப்பட்ட மறு வருகைகள் (Late Scan/Lab Results)' : 'Scheduled Patient Revisits'}

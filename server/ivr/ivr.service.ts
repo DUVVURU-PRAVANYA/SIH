@@ -61,6 +61,40 @@ export function formatDoctorNameForVoice(doctorInput?: string, lang: IVRLanguage
   return clean.startsWith('டாக்டர்') ? clean : `டாக்டர் ${clean}`;
 }
 
+export function formatTokenForVoice(token: string, lang: IVRLanguage = 'en'): string {
+  if (!token) return '';
+  const match = token.match(/^([A-Z-]+)-(\d+)$/i);
+  if (!match) return token;
+  const prefix = match[1].toUpperCase();
+  const num = parseInt(match[2], 10);
+
+  if (lang === 'ta') {
+    const deptTaMap: Record<string, string> = {
+      'GENMED': 'பொது மருத்துவம்',
+      'CARDIO': 'இதயவியல்',
+      'ORTHO': 'எலும்பியல்',
+      'DERMA': 'தோல் மருத்துவம்',
+      'X-RAY': 'எக்ஸ்-ரே',
+      'LAB': 'ஆய்வகம்',
+      'PHARM': 'மத்திய மருந்தகம்',
+    };
+    const deptTa = deptTaMap[prefix] || prefix;
+    return `${deptTa} ${num}`;
+  } else {
+    const deptEnMap: Record<string, string> = {
+      'GENMED': 'General Medicine',
+      'CARDIO': 'Cardiology',
+      'ORTHO': 'Orthopedics',
+      'DERMA': 'Dermatology',
+      'X-RAY': 'X-Ray',
+      'LAB': 'Laboratory',
+      'PHARM': 'Pharmacy',
+    };
+    const deptEn = deptEnMap[prefix] || prefix;
+    return `${deptEn}, ${num}`;
+  }
+}
+
 export class IVRService {
   /**
    * 1. Start a new IVR Call
@@ -326,8 +360,9 @@ export class IVRService {
     const lang = session.language;
     const prompts = getPrompt(lang);
     const spokenDoctor = formatDoctorNameForVoice(result.doctor?.fullName, lang);
+    const spokenToken = formatTokenForVoice(result.tokenNumber, lang);
     const spokenText = prompts.tokenGenerated(
-      result.tokenNumber,
+      spokenToken,
       result.metrics.peopleAhead,
       result.metrics.estimatedWaitMinutes,
       spokenDoctor
@@ -385,7 +420,8 @@ export class IVRService {
       const consultation = db.getConsultationByJourney(latestJourney.id);
       const diagnosis = consultation?.diagnosis || 'Medical consultation completed';
       const doctorName = consultation?.doctorName || 'Attending Doctor';
-      const message = prompts.consultationCompleted(latestJourney.currentToken, diagnosis);
+      const spokenToken = formatTokenForVoice(latestJourney.currentToken, lang);
+      const message = prompts.consultationCompleted(spokenToken, diagnosis);
 
       return {
         hasToken: true,
@@ -407,8 +443,9 @@ export class IVRService {
 
     // Sub-case: Routed to Pharmacy
     if (latestJourney.currentStage === 'pharmacy') {
+      const spokenToken = formatTokenForVoice(latestJourney.currentToken, lang);
       const message = prompts.routedToPharmacy(
-        latestJourney.currentToken,
+        spokenToken,
         metrics.peopleAhead,
         metrics.estimatedWaitMinutes
       );
@@ -427,8 +464,9 @@ export class IVRService {
 
     // Sub-case: Routed to Diagnostics (Lab / Scan)
     if (latestJourney.currentStage === 'diagnostic') {
+      const spokenToken = formatTokenForVoice(latestJourney.currentToken, lang);
       const message = prompts.routedToDiagnostics(
-        latestJourney.currentToken,
+        spokenToken,
         metrics.peopleAhead,
         metrics.estimatedWaitMinutes
       );
@@ -448,9 +486,10 @@ export class IVRService {
     // Sub-case: Doctor OPD - Called / In Consultation
     if (metrics.queueStatus === 'in_service' || metrics.queueStatus === 'called') {
       const spokenDoctor = formatDoctorNameForVoice(metrics.doctorName, lang);
+      const spokenToken = formatTokenForVoice(latestJourney.currentToken, lang);
       const message = lang === 'ta'
-        ? `உங்கள் டோக்கன் ${latestJourney.currentToken}-க்கான முறை வந்துவிட்டது. ${spokenDoctor} ஆலோசனைக்கு அழைக்கப்பட்டுள்ளீர்கள்.`
-        : `Your turn has arrived. You are currently called for consultation with ${spokenDoctor} for token ${latestJourney.currentToken}.`;
+        ? `உங்கள் டோக்கன் எண் ${spokenToken} முறை வந்துவிட்டது. ${spokenDoctor} ஆலோசனைக்கு அழைக்கப்பட்டுள்ளீர்கள்.`
+        : `Your turn has arrived. You are currently called for consultation with ${spokenDoctor} for token ${spokenToken}.`;
       return {
         hasToken: true,
         isCompleted: false,
@@ -468,8 +507,9 @@ export class IVRService {
 
     // Sub-case: Doctor OPD - Waiting in queue
     const spokenDoctor = formatDoctorNameForVoice(metrics.doctorName, lang);
+    const spokenToken = formatTokenForVoice(latestJourney.currentToken, lang);
     const message = prompts.tokenStatus(
-      latestJourney.currentToken,
+      spokenToken,
       metrics.peopleAhead,
       metrics.estimatedWaitMinutes,
       spokenDoctor

@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" fill="none">
+  <!-- CareNexus Government Healthcare Background Watermark Pattern -->
+  <!-- Ultra-subtle security watermark at ~0.04 opacity -->
+  <g stroke="#1B4F8C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.04">
+    <!-- 1. Medical Cross / Plus Symbol -->
+    <path d="M50 40 h20 v-20 h20 v20 h20 v20 h-20 v20 h-20 v-20 h-20 z" />
+    
+    <!-- 2. ECG Heartbeat Rhythm Wave -->
+    <path d="M160 50 h30 l8 -18 l14 36 l10 -24 l8 12 l6 -6 h34" stroke-width="1.8" />
+    
+    <!-- 3. Stethoscope Outline -->
+    <g transform="translate(300, 30)">
+      <path d="M15 10 C15 25 35 25 35 10" />
+      <path d="M25 25 v25 c0 15 20 15 20 0 v-8" />
+      <circle cx="45" cy="45" r="7" />
+      <circle cx="45" cy="45" r="3" fill="#0D7A6E" />
+      <circle cx="15" cy="8" r="2" />
+      <circle cx="35" cy="8" r="2" />
+    </g>
+
+    <!-- 4. Heart Health Symbol -->
+    <path d="M70 190 C45 160 20 190 70 240 C120 190 95 160 70 190 Z" stroke-width="1.6" />
+    <path d="M60 205 h20 M70 195 v20" stroke-width="1.2" />
+
+    <!-- 5. Hospital Building Outline -->
+    <g transform="translate(170, 160)">
+      <rect x="10" y="20" width="60" height="70" rx="3" />
+      <rect x="25" y="5" width="30" height="15" rx="2" />
+      <!-- Windows -->
+      <rect x="20" y="30" width="10" height="10" rx="1" />
+      <rect x="40" y="30" width="10" height="10" rx="1" />
+      <rect x="20" y="48" width="10" height="10" rx="1" />
+      <rect x="40" y="48" width="10" height="10" rx="1" />
+      <!-- Entrance Door -->
+      <path d="M34 90 v-18 h12 v18" />
+      <!-- Roof Cross -->
+      <path d="M40 8 v8 M36 12 h8" stroke="#0D7A6E" />
+    </g>
+
+    <!-- 6. Pharmacy Medicine Capsule -->
+    <g transform="translate(295, 175) rotate(45)">
+      <rect x="0" y="0" width="22" height="44" rx="11" />
+      <line x1="0" y1="22" x2="22" y2="22" />
+      <circle cx="11" cy="11" r="2" fill="#0D7A6E" />
+    </g>
+
+    <!-- 7. Connected Care Network Nodes -->
+    <g transform="translate(30, 310)">
+      <circle cx="30" cy="30" r="5" />
+      <circle cx="110" cy="15" r="4" />
+      <circle cx="80" cy="65" r="5" />
+      <circle cx="170" cy="45" r="4" />
+      <line x1="34" y1="28" x2="106" y2="17" stroke-dasharray="3,3" />
+      <line x1="33" y1="34" x2="76" y2="62" stroke-dasharray="3,3" />
+      <line x1="84" y1="63" x2="166" y2="47" stroke-dasharray="3,3" />
+      <line x1="113" y1="18" x2="167" y2="42" stroke-dasharray="3,3" />
+    </g>
+
+    <!-- 8. Doctor / Caregiver Outline -->
+    <g transform="translate(260, 290)">
+      <circle cx="40" cy="20" r="12" />
+      <path d="M18 60 C18 42 30 38 40 38 C50 38 62 42 62 60" />
+      <path d="M34 40 l6 10 l6 -10" stroke-width="1.2" />
+      <circle cx="40" cy="54" r="3" stroke="#0D7A6E" />
+    </g>
+  </g>
+</svg>

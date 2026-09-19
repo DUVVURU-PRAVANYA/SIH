@@ -1,0 +1,584 @@
+<USER_REQUEST>
+CARENEXUS – COMPLETE REAL WORKFLOW DEMO VIDEO
+
+Create a professional demo video of the EXISTING CareNexus hospital portal.
+
+IMPORTANT:
+This must demonstrate the REAL WORKING APPLICATION.
+Do not create fake screens, mock transitions, disconnected sample pages, or manually edited results.
+
+Use the existing frontend, backend, database, APIs, queue system, WebSocket/live updates, role-based portals, and patient journey functionality.
+
+The video should look like a real hospital information system being used.
+
+==================================================
+DEMO DATA
+==================================================
+
+Prepare exactly 3 patients for Dr. Ravi Kumar – Dermatology.
+
+MAIN DEMO PATIENT:
+Name: Arun Kumar
+Age: 32
+Gender: Male
+Blood Group: B+
+Problem: Skin rash and itching
+
+OTHER QUEUE PATIENTS:
+1. Priya Lakshmi
+   Age: 28
+   Gender: Female
+   Token: DERMA-002
+
+2. Karthik Raj
+   Age: 41
+   Gender: Male
+   Token: DERMA-003
+
+MAIN PATIENT:
+Arun Kumar
+Token: DERMA-001
+
+IMPORTANT:
+Arun Kumar must be a NEWLY REGISTERED patient.
+
+He must receive:
+- New Patient ID
+- New Journey ID
+- New visit
+- New queue token
+
+Do not reuse another patient's records.
+
+==================================================
+STARTING QUEUE
+==================================================
+
+Before starting the main demonstration, the doctor should have a realistic queue:
+
+#1 Arun Kumar      DERMA-001   Waiting
+#2 Priya Lakshmi   DERMA-002   Waiting
+#3 Karthik Raj     DERMA-003   Waiting
+
+Arun Kumar is the main demo patient and must be first.
+
+The other two patients exist only to demonstrate that the doctor has an active queue.
+
+Do NOT make the queue empty.
+
+==================================================
+SCENE 1 – PATIENT LOGIN
+==================================================
+
+Start at the CareNexus patient login page.
+
+Show the clean patient-facing login interface.
+
+Briefly demonstrate the language selector:
+
+English
+→ Tamil
+
+Show the Tamil translation of the main patient-facing login interface.
+
+Do not spend too much time here.
+
+Then continue in English for the main demonstration.
+
+Do not show:
+- Developer information
+- Backend information
+- Demo/debug labels
+- Technical OTP verification details
+
+==================================================
+SCENE 2 – NEW PATIENT REGISTRATION
+==================================================
+
+Register Arun Kumar as a completely new patient.
+
+Enter:
+
+Name: Arun Kumar
+Age: 32
+Gender: Male
+Blood Group: B+
+Problem:
+"Skin rash and itching"
+
+Complete registration through the actual UI.
+
+Generate the real Patient ID and Journey ID.
+
+The new patient must start with:
+
+No previous consultation
+No previous lab report
+No previous prescription
+No pharmacy history
+
+==================================================
+SCENE 3 – PROBLEM TO DOCTOR
+==================================================
+
+After Arun enters his problem:
+
+"Skin rash and itching"
+
+Show the system recommending:
+
+Dermatology
+Dr. Ravi Kumar
+
+The patient selects Dr. Ravi Kumar.
+
+Automatically create the visit and queue token:
+
+DERMA-001
+
+Show:
+
+Doctor: Dr. Ravi Kumar
+Department: Dermatology
+Token: DERMA-001
+Queue Position: #1
+Patients Ahead: 0
+
+==================================================
+SCENE 4 – SHOW LIVE QUEUE
+==================================================
+
+Open the Doctor Portal.
+
+Show:
+
+Dr. Ravi Kumar
+Dermatology
+
+Today's Queue:
+
+1. Arun Kumar       DERMA-001
+2. Priya Lakshmi    DERMA-002
+3. Karthik Raj      DERMA-003
+
+The queue must look populated and real.
+
+The doctor should be able to see all three patients.
+
+==================================================
+SCENE 5 – CALL ARUN
+==================================================
+
+The doctor clicks:
+
+Call Next Patient
+
+Arun Kumar should automatically open in:
+
+Active Consultation
+
+His status should change:
+
+WAITING
+→ IN CONSULTATION
+
+If the patient dashboard is visible, show that it updates accordingly.
+
+==================================================
+SCENE 6 – DOCTOR CONSULTATION
+==================================================
+
+Show the doctor reviewing:
+
+Arun Kumar
+Patient ID
+Age/Gender
+Blood Group
+Allergies
+Chief Complaint
+
+Show:
+
+Patient Vitals
+✓ Recorded at Triage
+
+Example demo vitals:
+
+Blood Pressure: 120/80 mmHg
+Pulse Rate: 76 bpm
+Temperature: 98.4 °F
+Weight: 65 kg
+
+Then enter:
+
+Chief Complaint:
+Skin rash and itching
+
+Diagnosis:
+Suspected allergic dermatitis
+
+Clinical Notes:
+Patient reports itching for several days.
+
+Keep the doctor dashboard clean and uncluttered.
+
+==================================================
+SCENE 7 – ORDER LAB TEST
+==================================================
+
+The doctor orders:
+
+Complete Blood Count (CBC)
+
+Submit the consultation/order.
+
+The lab order must be created through the actual application.
+
+Automatically route the order to the Laboratory portal.
+
+Patient journey becomes:
+
+Doctor Consultation
+✓
+Laboratory Test
+Pending
+
+==================================================
+SCENE 8 – LAB PORTAL
+==================================================
+
+Open the Laboratory portal.
+
+The newly created CBC order for Arun Kumar must appear automatically.
+
+Show:
+
+Patient: Arun Kumar
+Test: Complete Blood Count
+Status: Pending
+
+Open the order.
+
+Enter realistic synthetic results:
+
+Hemoglobin: 13.8 g/dL
+WBC: 7,200 /µL
+Platelets: 2.45 lakh/µL
+
+Submit the results.
+
+The result must be stored in the actual application.
+
+==================================================
+SCENE 9 – RESULT SENT TO DOCTOR
+==================================================
+
+After submitting the lab result:
+
+The doctor should receive the completed result.
+
+Show:
+
+Results Requiring Doctor Review
+
+Patient:
+Arun Kumar
+
+Test:
+Complete Blood Count
+
+Display the result in a clean structured format.
+
+Do NOT show results as one long paragraph.
+
+Use:
+
+Test | Result | Unit | Interpretation
+
+Keep it easy for the doctor to scan.
+
+==================================================
+SCENE 10 – EMERGENCY ACCESS
+==================================================
+
+The doctor reviews Arun's result.
+
+Enter a short:
+
+Doctor Review Note
+
+Then select:
+
+Emergency Access
+
+The system must automatically bring Arun Kumar into an active consultation.
+
+Do NOT create another patient.
+
+Do NOT create another unrelated journey.
+
+Continue using the SAME:
+
+Patient ID
+Journey ID
+Visit
+
+Show:
+
+Lab Result
+→ Doctor Review
+→ Emergency Consultation
+
+==================================================
+SCENE 11 – PRESCRIPTION
+==================================================
+
+During the emergency consultation, prescribe:
+
+Cetirizine 10 mg
+
+Timing:
+Night
+
+Food:
+After Food
+
+Duration:
+5 Days
+
+Quantity:
+5 tablets
+
+Submit the prescription.
+
+The prescription must automatically reach the Pharmacy portal.
+
+==================================================
+SCENE 12 – PHARMACY
+==================================================
+
+Open the Pharmacy portal.
+
+Show Arun Kumar's prescription automatically appearing.
+
+Display:
+
+Patient: Arun Kumar
+Doctor: Dr. Ravi Kumar
+Medicine: Cetirizine 10 mg
+Timing: Night
+Duration: 5 Days
+Quantity: 5 tablets
+
+Process the prescription:
+
+Pending
+→ Preparing
+→ Ready
+→ Dispensed
+
+Use the actual application actions.
+
+Do not fake the status changes.
+
+==================================================
+SCENE 13 – FINAL PATIENT DASHBOARD
+==================================================
+
+Return to Arun Kumar's Patient Dashboard.
+
+Show the completed journey.
+
+MY JOURNEY:
+
+✓ Doctor Consultation
+✓ Laboratory Test
+✓ Lab Report Available
+✓ Doctor Review
+✓ Emergency Consultation
+✓ Prescription
+✓ Medicines Dispensed
+
+Then open:
+
+LAB / SCAN REPORTS
+
+Show:
+Complete Blood Count
+Results
+
+Then:
+
+PRESCRIPTIONS / PHARMACY
+
+Show:
+Cetirizine 10 mg
+Dosage
+Timing
+Duration
+Dispensing Status
+
+Then:
+
+CONSULTATION HISTORY
+
+Show:
+Dr. Ravi Kumar
+Dermatology
+Consultation record
+
+The final screen must clearly demonstrate that the patient's complete journey is available from one patient dashboard.
+
+==================================================
+SCENE 14 – FINAL QUEUE STATE
+==================================================
+
+If useful, briefly return to the doctor queue.
+
+Show that Arun's status is now:
+
+COMPLETED
+
+and the remaining patients remain in the queue.
+
+This demonstrates that the queue was actually updated by the workflow.
+
+==================================================
+VOICEOVER
+==================================================
+
+Use ONE calm female voice.
+
+Voice style:
+
+- Female
+- Simple English
+- Slow
+- Clear
+- Professional
+- Natural
+- Easy for anyone to understand
+- No complicated technical terms
+- No exaggerated promotional tone
+
+Do not narrate every field.
+
+Only explain the important workflow.
+
+Use this narration:
+
+"Welcome to CareNexus, a connected digital patient journey system for hospitals."
+
+"First, a new patient registers through the patient portal and enters the reason for the visit."
+
+"Based on the patient's requirement, the system helps select the appropriate department and doctor."
+
+"Here, Arun Kumar is added to the Dermatology queue with token DERMA-001."
+
+"The doctor already has other patients in the queue, so the system clearly manages the order of consultation."
+
+"Arun is now called for consultation."
+
+"The doctor can review the patient's details, vitals, symptoms and clinical information."
+
+"During the consultation, the doctor can order the required laboratory investigation."
+
+"The laboratory receives the order directly through the system."
+
+"The lab staff enters the test results and submits the report."
+
+"The completed result is then made available to the doctor for review."
+
+"If the doctor needs immediate attention, the patient can be moved into an emergency consultation."
+
+"The doctor can then complete the consultation and prescribe medicines."
+
+"The prescription is automatically sent to the pharmacy."
+
+"The pharmacy prepares and dispenses the prescribed medicine."
+
+"Finally, the patient can return to the dashboard and view the complete journey, including consultation details, laboratory reports and prescriptions."
+
+"CareNexus connects the patient, doctor, laboratory and pharmacy through one continuous digital journey."
+
+==================================================
+VIDEO STYLE
+==================================================
+
+Make the recording look like a real product demonstration.
+
+Use:
+
+- Clean screen recording
+- Smooth cursor movement
+- Slow interactions
+- Short pauses after important actions
+- No unnecessary zooming
+- No rapid screen changes
+- No developer tools
+- No console
+- No code
+- No database
+- No localhost/debug information if it can be hidden
+- No fake loading screens
+- No unnecessary popups
+
+Do not rush the workflow.
+
+The viewer should have enough time to understand each step.
+
+==================================================
+MOST IMPORTANT REQUIREMENT
+==================================================
+
+This is NOT a slideshow.
+
+It must demonstrate the actual working CareNexus application.
+
+The same Arun Kumar record must travel through:
+
+REGISTRATION
+↓
+DOCTOR SELECTION
+↓
+DERMA-001 QUEUE
+↓
+DOCTOR CONSULTATION
+↓
+LAB ORDER
+↓
+LAB RESULT
+↓
+DOCTOR REVIEW
+↓
+EMERGENCY CONSULTATION
+↓
+PRESCRIPTION
+↓
+PHARMACY
+↓
+DISPENSED
+↓
+PATIENT DASHBOARD
+
+Use the existing backend and application state for every step.
+
+At the end, the patient dashboard must visibly prove that the complete journey was completed. is this flow correct and show the tamil featyre also inbetween may be on starting 
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-09-19T20:52:41+05:30.
+
+The user's current state is as follows:
+Other open documents:
+- c:\Users\HP\Documents\SIH\src\components\common\HospitalMapModal.tsx (LANGUAGE_TSX)
+- c:\Users\HP\Documents\SIH\src\components\common\HelpModal.tsx (LANGUAGE_TSX)
+- c:\Users\HP\Documents\SIH\test_transition.cjs (LANGUAGE_JAVASCRIPT)
+- c:\Users\HP\Documents\SIH\ivr-phone\src\components\PhoneChassis.tsx (LANGUAGE_TSX)
+- c:\Users\HP\Documents\SIH\server\ivr\ivr.service.ts (LANGUAGE_TYPESCRIPT)
+Browser State:
+  Page 6CB4D34F0E5D6CF7CBDAA64C823494B5 () - http://localhost:5173/#/patient/register [ACTIVE]
+    Viewport: 0x0, Page Height: 0
+Running terminal commands:
+- npm run server (in c:\Users\HP\Documents\SIH, running for 8h2m50s)
+- npm run dev (in c:\Users\HP\Documents\SIH, running for 7h57m57s)
+</ADDITIONAL_METADATA>

@@ -16,12 +16,28 @@ const MainAppContent: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8fafc] text-slate-900 selection:bg-teal-500 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-[#F6FAFD] text-slate-800 selection:bg-[#12B8A6] selection:text-white relative">
+      {/* CareNexus Security Watermark: Clearly visible, cute & elegant centered emblem with soft aura */}
+      <div className="fixed inset-0 pointer-events-none select-none z-0 flex items-center justify-center overflow-hidden" aria-hidden="true">
+        <div className="absolute w-[640px] h-[640px] rounded-full bg-radial from-teal-400/20 via-sky-400/10 to-transparent blur-3xl"></div>
+        <img
+          src={`${import.meta.env.BASE_URL}carenexus-emblem.png`}
+          onError={(e) => {
+            const target = e.currentTarget as HTMLImageElement;
+            if (!target.src.endsWith('/carenexus-emblem.png')) {
+              target.src = '/carenexus-emblem.png';
+            }
+          }}
+          alt=""
+          className="w-[540px] max-w-[88vw] object-contain opacity-[0.16] select-none filter contrast-110 drop-shadow-sm"
+        />
+      </div>
+
       {/* Universal Institutional Header with Role Identity & Secure Logout */}
       <Header />
 
       {/* Strict Role Guard: Only the Authenticated Role's Dashboard is Accessible */}
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col relative z-10">
         {role === 'patient' && <PatientHome />}
         {role === 'doctor' && <DoctorPortal />}
         {role === 'scan_lab' && <ScanLabPortal />}

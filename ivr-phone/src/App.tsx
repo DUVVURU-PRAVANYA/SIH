@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Phone } from 'lucide-react';
 import { PhoneChassis } from './components/PhoneChassis';
 import { IVRSession, IVRCallState } from './types';
 import { ivrClient } from './services/ivrClient';
@@ -18,9 +19,15 @@ export const App: React.FC = () => {
   const languageRepeatTimeoutRef = useRef<any>(null);
   const callStateRef = useRef<IVRCallState>(callState);
 
+  const sessionRef = useRef<IVRSession | null>(session);
+
   useEffect(() => {
     callStateRef.current = callState;
   }, [callState]);
+
+  useEffect(() => {
+    sessionRef.current = session;
+  }, [session]);
 
   const clearLanguageRepeat = () => {
     if (languageRepeatTimeoutRef.current) {
@@ -35,7 +42,7 @@ export const App: React.FC = () => {
       languageRepeatTimeoutRef.current = setTimeout(() => {
         if (callStateRef.current === 'LANGUAGE_MENU') {
           // Repeat asking in Tamil after 3 seconds
-          const tamilPrompt = 'அரசு தலைமை மருத்துவமனைக்கு நல்வரவு. தமிழுக்கு 2-ஐ அழுத்தவும்.';
+          const tamilPrompt = 'அரசு தலைமை மருத்துவமனைக்கு நல்வரவு. தமிழுக்கு எண் இரண்டை அழுத்தவும்.';
           audioEngine.speak(tamilPrompt, 'ta', () => {
             scheduleLanguageRepeat();
           });
@@ -46,7 +53,6 @@ export const App: React.FC = () => {
 
   // Connect WebSocket on mount for real-time consultation completion & stage updates
   useEffect(() => {
-
     const unsubSpeaking = audioEngine.onSpeakingChange((speaking) => {
       setIsSpeaking(speaking);
     });
@@ -69,7 +75,8 @@ export const App: React.FC = () => {
           ];
 
           if (data.event && relevantEvents.includes(data.event)) {
-            const statusInfo = await ivrClient.checkStatus(callerPhone, session?.language || 'en');
+            const currentLang = sessionRef.current?.language || 'en';
+            const statusInfo = await ivrClient.checkStatus(callerPhone, currentLang);
             if (statusInfo && statusInfo.hasToken) {
               setSession((prev) => {
                 if (!prev) return prev;
@@ -103,7 +110,7 @@ export const App: React.FC = () => {
       clearLanguageRepeat();
       audioEngine.stopSpeaking();
     };
-  }, [callerPhone, session?.language]);
+  }, [callerPhone]);
 
   // Handle call timer ticking
   useEffect(() => {
@@ -254,19 +261,49 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-100 flex flex-col justify-between selection:bg-teal-500 selection:text-white">
-      {/* Clean Minimal Top Header */}
-      <header className="pt-6 pb-2 px-6 flex flex-col items-center justify-center text-center">
-        <h1 className="text-xl font-bold tracking-tight text-white font-serif">
-          GH-QueueFlow
-        </h1>
-        <p className="text-xs text-teal-400 font-medium tracking-wide mt-0.5">
-          Telephone IVR Service
-        </p>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100/80 text-slate-800 flex flex-col justify-between selection:bg-[#12B8A6] selection:text-white relative overflow-x-hidden">
+      {/* Clean Institutional Header */}
+      <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 shadow-xs select-none">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+          {/* Logo & Service Title */}
+          <div className="flex items-center gap-3">
+            <img
+              src={`${import.meta.env.BASE_URL}carenexus-emblem.png`}
+              onError={(e) => {
+                const target = e.currentTarget as HTMLImageElement;
+                if (!target.src.endsWith('/carenexus-emblem.png')) {
+                  target.src = '/carenexus-emblem.png';
+                }
+              }}
+              alt="CareNexus Emblem"
+              className="h-10 w-10 object-contain shrink-0"
+            />
+            <img
+              src={`${import.meta.env.BASE_URL}carenexus-wordmark.png`}
+              onError={(e) => {
+                const target = e.currentTarget as HTMLImageElement;
+                if (!target.src.endsWith('/carenexus-wordmark.png')) {
+                  target.src = '/carenexus-wordmark.png';
+                }
+              }}
+              alt="CareNexus"
+              className="h-6 w-auto object-contain shrink-0"
+            />
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-[#00A272] border border-emerald-200/60 hidden sm:inline-block">
+              OPD IVR Telephony
+            </span>
+          </div>
+
+          {/* Contact Helpline */}
+          <div className="flex items-center gap-3 text-xs text-slate-600">
+            <span className="hidden sm:inline text-slate-500">Toll-Free Helpline:</span>
+            <strong className="font-mono text-[#00A272] font-bold text-sm">1800-425-4474</strong>
+          </div>
+        </div>
       </header>
 
       {/* Main Stage: Center Phone Device as Hero Element */}
-      <main className="flex-1 flex items-center justify-center px-4 py-2">
+      <main className="flex-1 flex items-center justify-center px-4 py-4 relative z-10">
         <PhoneChassis
           session={session}
           callState={callState}
@@ -284,9 +321,9 @@ export const App: React.FC = () => {
         />
       </main>
 
-      {/* Subtle Clean Minimal Footer */}
-      <footer className="pb-4 pt-1 text-center text-[11px] text-slate-600">
-        Government Hospital Queue Management System • Telephone IVR Service
+      {/* Institutional CareNexus Footer */}
+      <footer className="py-2.5 px-4 text-center text-xs text-slate-400 bg-white/80 border-t border-slate-200/60 select-none">
+        CareNexus™ • District Headquarters Government Hospital • OPD Telephony Service
       </footer>
     </div>
   );

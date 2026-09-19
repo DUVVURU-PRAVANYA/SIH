@@ -206,7 +206,15 @@ export class DatabaseEngine {
   }
 
   public getPatientById(id: string): Patient | undefined {
-    return this.data.patients.find((p) => p.id === id);
+    if (!id) return undefined;
+    const found = this.data.patients.find((p) => p.id === id);
+    if (found) return found;
+    // Fallback: check if id matches a phone number
+    const cleanPhone = this.normalizePhone(id);
+    if (cleanPhone && cleanPhone.length >= 10) {
+      return this.getPatientByPhone(cleanPhone);
+    }
+    return undefined;
   }
 
   public normalizePhone(raw: string): string {
@@ -856,14 +864,14 @@ export class DatabaseEngine {
     });
 
     // Mark all diagnostic orders for this patient/journey as reviewed
+    const patientJourneyIds = new Set(this.data.journeys.filter((j) => j.patientId === params.patientId).map((j) => j.id));
+    if (activeJourney) patientJourneyIds.add(activeJourney.id);
     const diagOrders = this.data.diagnosticOrders.filter(
-      (o) => o.journeyId === activeJourney.id || (o as any).patientId === params.patientId
+      (o) => patientJourneyIds.has(o.journeyId) || (o as any).patientId === params.patientId
     );
     for (const dOrd of diagOrders) {
-      if (dOrd.status === 'completed' || (dOrd as any).status === 'result_ready') {
-        dOrd.status = 'completed';
-        (dOrd as any).isReviewed = true;
-      }
+      dOrd.status = 'reviewed' as any;
+      (dOrd as any).isReviewed = true;
     }
     this.save();
 

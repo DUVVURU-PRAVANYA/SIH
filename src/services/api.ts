@@ -1,8 +1,8 @@
 export const API_BASE_URL = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api`
-  : (typeof window !== 'undefined' && window.location.hostname === 'localhost' && (window.location.port === '5173' || window.location.port === '5175')
-      ? 'http://localhost:4000/api'
-      : '/api');
+  : (typeof window !== 'undefined'
+      ? (window.location.port === '4000' ? '/api' : `http://${window.location.hostname || 'localhost'}:4000/api`)
+      : 'http://localhost:4000/api');
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -21,8 +21,19 @@ export async function fetchApi<T = any>(endpoint: string, options: RequestInit =
       ...options,
     });
 
-    const json = await res.json();
-    return json;
+    const text = await res.text();
+    if (!text || !text.trim()) {
+      return { success: res.ok, message: res.statusText };
+    }
+
+    try {
+      return JSON.parse(text);
+    } catch {
+      return {
+        success: false,
+        error: `Unexpected response format from server (${res.status})`,
+      };
+    }
   } catch (err: any) {
     console.warn(`[API] Request to ${endpoint} failed:`, err);
     return {
@@ -62,17 +73,32 @@ export const apiClient = {
   }) => fetchApi('/patients/register', { method: 'POST', body: JSON.stringify(data) }),
 
   createVisit: (data: {
-    patientId: string;
+    patientId?: string;
+    phone?: string;
+    name?: string;
+    age?: number;
+    gender?: string;
+    bloodGroup?: string;
+    allergies?: string[] | string;
+    chronicConditions?: string[] | string;
     doctorId?: string;
-    departmentId: string;
+    departmentId?: string;
     symptoms?: string;
     priority?: string;
     forceNew?: boolean;
-  }) => fetchApi('/visits/create', { method: 'POST', body: JSON.stringify(data) }),
+  }) => {
+    return fetchApi('/visits/create', { method: 'POST', body: JSON.stringify(data) });
+  },
 
-  getActiveVisit: (patientId: string) => fetchApi(`/patients/${patientId}/active-visit`),
+  getActiveVisit: (patientId: string): Promise<ApiResponse<any>> => {
+    if (!patientId) return Promise.resolve({ success: false, error: 'Patient ID is required' });
+    return fetchApi(`/patients/${patientId}/active-visit`);
+  },
 
-  getPatient: (patientId: string) => fetchApi(`/patients/${patientId}`),
+  getPatient: (patientId: string): Promise<ApiResponse<any>> => {
+    if (!patientId) return Promise.resolve({ success: false, error: 'Patient ID is required' });
+    return fetchApi(`/patients/${patientId}`);
+  },
 
   updatePatientProfile: (
     patientId: string,
@@ -85,11 +111,23 @@ export const apiClient = {
       allergies?: string[] | string;
       chronicConditions?: string[] | string;
     }
-  ) => fetchApi(`/patients/${patientId}/profile`, { method: 'PUT', body: JSON.stringify(data) }),
+  ): Promise<ApiResponse<any>> => {
+    if (!patientId) return Promise.resolve({ success: false, error: 'Patient ID is required' });
+    return fetchApi(`/patients/${patientId}/profile`, { method: 'PUT', body: JSON.stringify(data) });
+  },
 
-  getPatientHistory: (patientId: string) => fetchApi(`/patients/${patientId}/history`),
-  getPatientReports: (patientId: string) => fetchApi(`/patients/${patientId}/reports`),
-  getPatientPrescriptions: (patientId: string) => fetchApi(`/patients/${patientId}/prescriptions`),
+  getPatientHistory: (patientId: string): Promise<ApiResponse<any>> => {
+    if (!patientId) return Promise.resolve({ success: false, data: [] });
+    return fetchApi(`/patients/${patientId}/history`);
+  },
+  getPatientReports: (patientId: string): Promise<ApiResponse<any>> => {
+    if (!patientId) return Promise.resolve({ success: false, data: [] });
+    return fetchApi(`/patients/${patientId}/reports`);
+  },
+  getPatientPrescriptions: (patientId: string): Promise<ApiResponse<any>> => {
+    if (!patientId) return Promise.resolve({ success: false, data: [] });
+    return fetchApi(`/patients/${patientId}/prescriptions`);
+  },
 
   getJourney: (journeyId: string) => fetchApi(`/journey/${journeyId}`),
 
@@ -112,6 +150,8 @@ export const apiClient = {
     fetchApi('/diagnostics/start', { method: 'POST', body: JSON.stringify({ orderId }) }),
   completeDiagnostic: (orderId: string, findingsSummary?: string) =>
     fetchApi('/diagnostics/complete', { method: 'POST', body: JSON.stringify({ orderId, findingsSummary }) }),
+  reviewDiagnostics: (patientId?: string, orderId?: string) =>
+    fetchApi('/diagnostics/review', { method: 'POST', body: JSON.stringify({ patientId, orderId }) }),
 
   // Pharmacy
   getPharmacyOrders: () => fetchApi('/pharmacy'),
