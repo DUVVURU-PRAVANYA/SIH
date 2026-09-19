@@ -21,7 +21,7 @@ import {
 
 export const BRAND = {
   name: 'CareNexus',
-  tagline: 'Connected Care. Healthier Tomorrow.',
+  tagline: '',
   fullName: 'CareNexus',
   subtitle: 'Government Hospital Patient Flow & Queue Management',
   govLabel: 'Dept. of Health & Family Welfare',
@@ -635,7 +635,7 @@ export const GovernmentFooter: React.FC<GovernmentFooterProps> = ({
               <span className="font-bold text-base text-white tracking-tight">{BRAND.name}</span>
             </div>
           </div>
-          <p className="text-xs text-white/60 leading-relaxed mb-4">{BRAND.tagline}</p>
+          {BRAND.tagline ? <p className="text-xs text-white/60 leading-relaxed mb-4">{BRAND.tagline}</p> : null}
           <p className="text-xs text-white/50">{BRAND.subtitle}</p>
         </div>
 
