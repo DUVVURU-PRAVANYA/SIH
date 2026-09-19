@@ -378,6 +378,8 @@ class AudioEngine {
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         candidates.push(`/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
         candidates.push(`/api/ivr/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
+        candidates.push(`https://sih-tisd.onrender.com/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
+        candidates.push(`https://sih-tisd.onrender.com/api/ivr/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
         if (isLocal) {
           const host = window.location.hostname || 'localhost';
           candidates.push(`http://${host}:4000/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
@@ -385,6 +387,7 @@ class AudioEngine {
           candidates.push(`http://localhost:4000/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
         }
       } else {
+        candidates.push(`https://sih-tisd.onrender.com/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
         candidates.push(`http://localhost:4000/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
       }
 

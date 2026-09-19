@@ -8,14 +8,17 @@ async function safeIvrFetch<T = any>(endpoint: string, options: RequestInit = {}
 
   if (typeof window !== 'undefined') {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    // Always include relative path first (works seamlessly on Render, production reverse proxies, and Vite dev server)
+    // 1. Same-origin relative path (works on Render single service at /phone, or Vite dev proxy)
     candidates.push('/api/ivr');
+    // 2. Production Render backend (allows standalone frontend like sih-ivr.onrender.com to reach backend)
+    candidates.push('https://sih-tisd.onrender.com/api/ivr');
     if (isLocal) {
       candidates.push(`http://${window.location.hostname}:4000/api/ivr`);
       candidates.push('http://localhost:4000/api/ivr');
       candidates.push('http://127.0.0.1:4000/api/ivr');
     }
   } else {
+    candidates.push('https://sih-tisd.onrender.com/api/ivr');
     candidates.push('http://localhost:4000/api/ivr');
   }
 
@@ -56,7 +59,7 @@ async function safeIvrFetch<T = any>(endpoint: string, options: RequestInit = {}
     }
   }
 
-  throw lastError || new Error('Could not connect to IVR server on port 4000');
+  throw lastError || new Error('Could not connect to IVR server');
 }
 
 export class IVRClient {

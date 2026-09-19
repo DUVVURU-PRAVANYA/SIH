@@ -161,6 +161,14 @@ export const App: React.FC = () => {
 
         clearLanguageRepeat();
 
+        if (res.notRegistered) {
+          // If caller is not registered in hospital database, announce notice and disconnect
+          audioEngine.speak(res.spokenText, res.language, () => {
+            audioEngine.playBeep('low');
+          });
+          return;
+        }
+
         // Speak aloud: English prompt -> [3-second pause] -> Tamil prompt
         // Once completed, if user has not pressed a key, repeat asking in Tamil after 3 seconds
         audioEngine.speak(res.spokenText, res.language, () => {
@@ -172,7 +180,7 @@ export const App: React.FC = () => {
       if (ringbackCancelRef.current) ringbackCancelRef.current();
       setCallState('IDLE');
       callStateRef.current = 'IDLE';
-      alert(`Could not connect to IVR server on port 4000: ${err.message}`);
+      alert(`Could not connect to IVR telephony server: ${err.message || 'Server unreachable'}`);
     }
   };
 

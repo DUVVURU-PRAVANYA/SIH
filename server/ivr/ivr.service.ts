@@ -100,13 +100,36 @@ export class IVRService {
    * 1. Start a new IVR Call
    */
   public startCall(callerPhone: string, initialLang: IVRLanguage = 'en'): IVRActionResponse {
-    const session = ivrSessionManager.createSession(callerPhone, initialLang);
+    const cleanPhone = callerPhone.replace(/[^0-9]/g, '').slice(-10);
+    const existingPatient = db.getPatientByPhone(cleanPhone);
 
-    // Look up caller if existing patient
-    const existingPatient = db.getPatientByPhone(session.callerPhone);
-    if (existingPatient) {
-      session.callerName = existingPatient.name;
+    // If caller is NOT registered in hospital records, reject with clear voice notification
+    if (!existingPatient) {
+      const session = ivrSessionManager.createSession(cleanPhone, initialLang);
+      session.state = 'CALL_ENDED';
+      session.notRegistered = true;
+
+      const unregPromptEn = `Welcome to CareNexus hospital. Your mobile number is not registered in our records. Please visit the registration counter or register on our web portal before calling. Call disconnected.`;
+      const unregPromptTa = `வணக்கம். உங்கள் கைபேசி எண் மருத்துவமனை பதிவேட்டில் பதிவு செய்யப்படவில்லை. மருத்துவமனை கவுண்டர் அல்லது இணையதளத்தில் பதிவு செய்துவிட்டு அழைக்கவும். நன்றி.`;
+      const spoken = initialLang === 'ta' ? unregPromptTa : `${unregPromptEn} [PAUSE_2S] ${unregPromptTa}`;
+
+      session.lastPromptTextEn = unregPromptEn;
+      session.lastPromptTextTa = unregPromptTa;
+      session.lastSpokenText = spoken;
+      ivrSessionManager.updateSession(session.sessionId, session);
+
+      return {
+        success: false,
+        notRegistered: true,
+        session,
+        spokenText: spoken,
+        language: session.language,
+        state: 'CALL_ENDED',
+      };
     }
+
+    const session = ivrSessionManager.createSession(cleanPhone, initialLang);
+    session.callerName = existingPatient.name;
 
     const promptTextEn = PROMPTS_EN.languageSelect;
     const promptTextTa = PROMPTS_TA.languageSelect;
@@ -403,7 +426,10 @@ export class IVRService {
     const prompts = getPrompt(lang);
 
     if (!patient) {
-      return { hasToken: false, message: prompts.noActiveToken };
+      const msg = lang === 'ta'
+        ? 'இந்த கைபேசி எண் மருத்துவமனை பதிவேட்டில் பதிவு செய்யப்படவில்லை.'
+        : 'This mobile number is not registered in our hospital system. Please register first.';
+      return { hasToken: false, message: msg, notRegistered: true };
     }
 
     // Check active journey first; if none, check latest journey for patient
@@ -541,18 +567,10 @@ export class IVRService {
    */
   private ensurePatientRecord(phone: string) {
     const cleanPhone = phone.replace(/[^0-9]/g, '').slice(-10);
-    let patient = db.getPatientByPhone(cleanPhone);
+    const patient = db.getPatientByPhone(cleanPhone);
 
     if (!patient) {
-      patient = db.createPatient({
-        phone: cleanPhone,
-        name: `Patient (+91 ${cleanPhone})`,
-        age: 0,
-        gender: 'Not Specified',
-        bloodGroup: 'Not Specified',
-        allergies: [],
-        chronicConditions: [],
-      });
+      throw new Error('Caller mobile number is not registered in the hospital database. Please register first.');
     }
 
     return patient;

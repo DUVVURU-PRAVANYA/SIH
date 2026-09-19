@@ -527,15 +527,31 @@ export const PhoneScreen: React.FC<PhoneScreenProps> = ({
             <div className="w-12 h-12 rounded-full bg-rose-950/60 border border-rose-600/40 flex items-center justify-center text-rose-300">
               <PhoneCall className="w-5 h-5 rotate-[135deg]" />
             </div>
-            <div>
-              <h3 className="text-sm font-bold text-white">Call Ended</h3>
-              <p className="text-xs text-slate-400 font-mono">Duration: {formatTimer(callDuration)}</p>
-            </div>
-            {session?.generatedToken && (
-              <div className="bg-teal-950/60 border border-teal-500/30 rounded-lg p-2 w-full text-xs text-teal-200">
-                <span>Active Token: </span>
-                <strong className="font-mono text-white">{session.generatedToken}</strong>
+            {session?.notRegistered ? (
+              <div className="bg-rose-950/70 border border-rose-500/50 rounded-xl p-3 w-full space-y-1.5 text-center">
+                <div className="text-xs font-bold text-rose-300 uppercase tracking-wide">
+                  Number Not Registered
+                </div>
+                <p className="text-[11px] text-slate-200 leading-tight">
+                  +91 {callerPhone} is not registered in CareNexus hospital records.
+                </p>
+                <p className="text-[10px] text-amber-300 font-medium">
+                  Please register at the registration desk or online portal first.
+                </p>
               </div>
+            ) : (
+              <>
+                <div>
+                  <h3 className="text-sm font-bold text-white">Call Ended</h3>
+                  <p className="text-xs text-slate-400 font-mono">Duration: {formatTimer(callDuration)}</p>
+                </div>
+                {session?.generatedToken && (
+                  <div className="bg-teal-950/60 border border-teal-500/30 rounded-lg p-2 w-full text-xs text-teal-200">
+                    <span>Active Token: </span>
+                    <strong className="font-mono text-white">{session.generatedToken}</strong>
+                  </div>
+                )}
+              </>
             )}
             <p className="text-[11px] text-slate-400">
               Press <strong className="text-emerald-400 font-semibold">START CALL</strong> to dial again

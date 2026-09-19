@@ -51,15 +51,10 @@ apiRouter.post('/auth/identify', (req: Request, res: Response) => {
       let patient = db.getPatientByPhone(phone);
 
       if (!patient) {
-        patient = db.createPatient({
-          name: `Patient (${phone.slice(-4)})`,
-          phone,
-          age: 35,
-          gender: 'Female',
-          bloodGroup: 'O+ve',
-          allergies: [],
-          chronicConditions: [],
-          preferredLanguage: 'en',
+        return res.status(404).json({
+          success: false,
+          notRegistered: true,
+          error: 'This mobile number is not registered. Please register as a new patient first.',
         });
       }
 
