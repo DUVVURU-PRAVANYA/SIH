@@ -1,7 +1,9 @@
 export const API_BASE_URL = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api`
   : (typeof window !== 'undefined'
-      ? (window.location.port === '4000' ? '/api' : `http://${window.location.hostname || 'localhost'}:4000/api`)
+      ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+          ? (window.location.port === '4000' ? '/api' : `http://${window.location.hostname}:4000/api`)
+          : '/api')
       : 'http://localhost:4000/api');
 
 export interface ApiResponse<T = any> {

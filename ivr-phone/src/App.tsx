@@ -60,7 +60,10 @@ export const App: React.FC = () => {
     // Realtime WebSocket listener for doctor consultation completion & stage updates
     let ws: WebSocket | null = null;
     try {
-      ws = new WebSocket('ws://localhost:4000/ws');
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const wsUrl = isLocal ? `${protocol}//${window.location.hostname}:4000/ws` : `${protocol}//${window.location.host}/ws`;
+      ws = new WebSocket(wsUrl);
       ws.onmessage = async (event) => {
         try {
           const data = JSON.parse(event.data);

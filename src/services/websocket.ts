@@ -21,8 +21,16 @@ class RealtimeClient {
 
     try {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const host = window.location.hostname || 'localhost';
-      const wsUrl = `${protocol}//${host}:4000/ws`;
+      let wsUrl: string;
+
+      if (import.meta.env.VITE_WS_URL) {
+        wsUrl = import.meta.env.VITE_WS_URL;
+      } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        wsUrl = `${protocol}//${window.location.hostname}:4000/ws`;
+      } else {
+        // Production (Render, cloud domains): connect directly to the active host
+        wsUrl = `${protocol}//${window.location.host}/ws`;
+      }
 
       this.ws = new WebSocket(wsUrl);
 

@@ -375,11 +375,15 @@ class AudioEngine {
 
       const candidates: string[] = [];
       if (typeof window !== 'undefined') {
-        const host = window.location.hostname || 'localhost';
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         candidates.push(`/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
-        candidates.push(`http://${host}:4000/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
-        candidates.push(`http://${host}:4000/api/ivr/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
-        candidates.push(`http://localhost:4000/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
+        candidates.push(`/api/ivr/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
+        if (isLocal) {
+          const host = window.location.hostname || 'localhost';
+          candidates.push(`http://${host}:4000/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
+          candidates.push(`http://${host}:4000/api/ivr/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
+          candidates.push(`http://localhost:4000/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
+        }
       } else {
         candidates.push(`http://localhost:4000/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
       }

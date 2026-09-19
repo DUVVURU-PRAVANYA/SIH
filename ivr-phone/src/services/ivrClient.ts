@@ -7,13 +7,14 @@ async function safeIvrFetch<T = any>(endpoint: string, options: RequestInit = {}
   }
 
   if (typeof window !== 'undefined') {
-    const host = window.location.hostname || 'localhost';
-    // Prioritize direct backend on port 4000
-    candidates.push(`http://${host}:4000/api/ivr`);
-    candidates.push('http://localhost:4000/api/ivr');
-    candidates.push('http://127.0.0.1:4000/api/ivr');
-    // Also include relative proxy path
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    // Always include relative path first (works seamlessly on Render, production reverse proxies, and Vite dev server)
     candidates.push('/api/ivr');
+    if (isLocal) {
+      candidates.push(`http://${window.location.hostname}:4000/api/ivr`);
+      candidates.push('http://localhost:4000/api/ivr');
+      candidates.push('http://127.0.0.1:4000/api/ivr');
+    }
   } else {
     candidates.push('http://localhost:4000/api/ivr');
   }
