@@ -374,21 +374,39 @@ class AudioEngine {
       }
 
       const candidates: string[] = [];
-      if (typeof window !== 'undefined') {
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        candidates.push(`/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
-        candidates.push(`/api/ivr/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
-        if (isLocal) {
-          const host = window.location.hostname || 'localhost';
-          candidates.push(`http://${host}:4000/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
-          candidates.push(`http://${host}:4000/api/ivr/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
-          candidates.push(`http://localhost:4000/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
-        }
-      } else {
-        candidates.push(`http://localhost:4000/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`);
+      const query = `text=${encodeURIComponent(sanitizedText)}&lang=${lang}`;
+
+      if ((import.meta as any).env?.VITE_API_URL) {
+        const base = (import.meta as any).env.VITE_API_URL.replace(/\/$/, '');
+        candidates.push(`${base}/api/ivr/tts?${query}`);
+        candidates.push(`${base}/api/tts?${query}`);
       }
 
-      for (const url of candidates) {
+      if (typeof window !== 'undefined') {
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        // Always try relative paths first for same-origin deployments
+        candidates.push(`/api/ivr/tts?${query}`);
+        candidates.push(`/api/tts?${query}`);
+
+        if (!isLocal) {
+          // Cross-origin for standalone Render frontend (e.g. sih-ivr.onrender.com)
+          candidates.push(`https://sih-tisd.onrender.com/api/ivr/tts?${query}`);
+          candidates.push(`https://sih-tisd.onrender.com/api/tts?${query}`);
+        } else {
+          const host = window.location.hostname || 'localhost';
+          candidates.push(`http://${host}:4000/api/ivr/tts?${query}`);
+          candidates.push(`http://${host}:4000/api/tts?${query}`);
+          candidates.push(`http://localhost:4000/api/ivr/tts?${query}`);
+          candidates.push(`http://localhost:4000/api/tts?${query}`);
+        }
+      } else {
+        candidates.push(`https://sih-tisd.onrender.com/api/ivr/tts?${query}`);
+        candidates.push(`http://localhost:4000/api/ivr/tts?${query}`);
+      }
+
+      const uniqueCandidates = Array.from(new Set(candidates));
+
+      for (const url of uniqueCandidates) {
         try {
           const res = await fetch(url);
           if (res.ok) {
@@ -433,26 +451,39 @@ class AudioEngine {
       return;
     }
 
-    // 2. Secondary: Fallback to HTMLAudio element
-    try {
-      const audioUrl = `/api/tts?text=${encodeURIComponent(sanitizedText)}&lang=${lang}`;
-      const audio = new Audio(audioUrl);
-      this.currentAudio = audio;
+    // 2. Secondary: Fallback to HTMLAudio element with candidate URLs
+    const query = `text=${encodeURIComponent(sanitizedText)}&lang=${lang}`;
+    const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const fallbackUrls = isLocal
+      ? [`/api/ivr/tts?${query}`, `/api/tts?${query}`, `http://localhost:4000/api/ivr/tts?${query}`]
+      : [`https://sih-tisd.onrender.com/api/ivr/tts?${query}`, `https://sih-tisd.onrender.com/api/tts?${query}`, `/api/ivr/tts?${query}`];
 
-      audio.onended = () => {
-        this.currentAudio = null;
-        safeEnd();
-      };
-      audio.onerror = () => {
-        this.currentAudio = null;
-        this.fallbackSpeechSynthesis(sanitizedText, lang, safeEnd);
-      };
+    for (const audioUrl of fallbackUrls) {
+      try {
+        const audio = new Audio(audioUrl);
+        this.currentAudio = audio;
 
-      await audio.play();
-    } catch {
-      this.currentAudio = null;
-      this.fallbackSpeechSynthesis(sanitizedText, lang, safeEnd);
+        const played = await new Promise<boolean>((resolve) => {
+          audio.onended = () => {
+            this.currentAudio = null;
+            safeEnd();
+            resolve(true);
+          };
+          audio.onerror = () => {
+            this.currentAudio = null;
+            resolve(false);
+          };
+          audio.play().catch(() => resolve(false));
+        });
+
+        if (played) return;
+      } catch {
+        this.currentAudio = null;
+      }
     }
+
+    // 3. Last-resort fallback: SpeechSynthesis if all network streams fail
+    this.fallbackSpeechSynthesis(sanitizedText, lang, safeEnd);
   }
 
   private fallbackSpeechSynthesis(text: string, lang: 'en' | 'ta', onEnded: () => void) {

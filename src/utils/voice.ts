@@ -82,8 +82,9 @@ class VoiceSynthesizer {
       const taVoice = voices.find(v => v.lang.toLowerCase().startsWith('ta') || v.name.toLowerCase().includes('tamil') || v.name.toLowerCase().includes('valluvar'));
 
       if (lang === 'ta' && !taVoice) {
-        // Stream natural Tamil voice directly via our proxy so announcement plays aloud without Referer/CORS blocks
-        const ttsUrl = `/api/tts?text=${encodeURIComponent(text.slice(0, 150))}&lang=ta`;
+        const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+        const base = isLocal ? '' : 'https://sih-tisd.onrender.com';
+        const ttsUrl = `${base}/api/tts?text=${encodeURIComponent(text.slice(0, 150))}&lang=ta`;
         const audio = new Audio(ttsUrl);
         audio.onended = () => { if (onEnd) onEnd(); };
         audio.onerror = () => {
