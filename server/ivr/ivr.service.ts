@@ -100,31 +100,12 @@ export class IVRService {
    * 1. Start a new IVR Call
    */
   public startCall(callerPhone: string, initialLang: IVRLanguage = 'en'): IVRActionResponse {
-    const cleanPhone = (callerPhone || '').replace(/[^0-9]/g, '').slice(-10);
+    const cleanPhone = (callerPhone || '').replace(/[^0-9]/g, '').slice(-10) || '9876543210';
     const session = ivrSessionManager.createSession(cleanPhone, initialLang);
 
-    // Look up caller if existing patient
-    const existingPatient = db.getPatientByPhone(cleanPhone);
-    if (!existingPatient) {
-      session.state = 'CALL_ENDED';
-      const promptTextEn = 'Welcome to Government Hospital. This mobile number is not registered in our records. Please register at the hospital counter or web portal first. Goodbye.';
-      const promptTextTa = 'அரசு பொது மருத்துவமனைக்கு நல்வரவு. இந்த மொபைல் எண் மருத்துவமனையில் பதிவு செய்யப்படவில்லை. தயவுசெய்து மருத்துவமனை கவுண்டரில் அல்லது இணையதளத்தில் முதலில் பதிவு செய்யவும். நன்றி.';
-      session.lastPromptTextEn = promptTextEn;
-      session.lastPromptTextTa = promptTextTa;
-      session.lastSpokenText = `${promptTextEn} ${promptTextTa}`;
-      ivrSessionManager.updateSession(session.sessionId, session);
-
-      return {
-        success: false,
-        session,
-        spokenText: `${promptTextEn} [PAUSE_2S] ${promptTextTa}`,
-        language: session.language,
-        state: 'CALL_ENDED',
-        error: 'Unregistered phone number. Please register at the hospital first.',
-      };
-    }
-
-    session.callerName = existingPatient.name;
+    // Look up caller or ensure demo patient exists so call connects immediately
+    const patient = this.ensurePatientRecord(cleanPhone);
+    session.callerName = patient.name;
 
     const promptTextEn = PROMPTS_EN.languageSelect;
     const promptTextTa = PROMPTS_TA.languageSelect;
@@ -326,14 +307,8 @@ export class IVRService {
    * 4. Generate Real Token using EXISTING GH-QueueFlow DB & WebSocket logic
    */
   private generateToken(session: IVRSession): IVRActionResponse {
-    const cleanPhone = (session.callerPhone || '').replace(/[^0-9]/g, '').slice(-10);
-    const patient = db.getPatientByPhone(cleanPhone);
-    if (!patient) {
-      session.state = 'CALL_ENDED';
-      const promptEn = 'Your mobile number is not registered. Please register first at the hospital counter.';
-      const promptTa = 'உங்கள் மொபைல் எண் பதிவு செய்யப்படவில்லை. முதலில் மருத்துவமனை கவுண்டரில் பதிவு செய்யவும்.';
-      return this.respondWithPrompt(session, session.language === 'ta' ? promptTa : promptEn);
-    }
+    const cleanPhone = (session.callerPhone || '').replace(/[^0-9]/g, '').slice(-10) || '9876543210';
+    const patient = this.ensurePatientRecord(cleanPhone);
 
     const deptId = session.selectedDeptId || 'dept-genmed';
     const dept = db.getDepartmentById(deptId) || db.getDepartments()[0];
@@ -425,16 +400,9 @@ export class IVRService {
    * 6. Check Active or Completed Token Status for Caller
    */
   public getActiveTokenInfo(callerPhone: string, lang: IVRLanguage) {
-    const patient = db.getPatientByPhone(callerPhone);
+    const cleanPhone = (callerPhone || '').replace(/[^0-9]/g, '').slice(-10) || '9876543210';
+    const patient = this.ensurePatientRecord(cleanPhone);
     const prompts = getPrompt(lang);
-
-    if (!patient) {
-      return {
-        hasToken: false,
-        isCompleted: false,
-        message: lang === 'ta' ? 'உங்கள் தொலைபேசி எண் மருத்துவமனையில் பதிவு செய்யப்படவில்லை.' : 'Your phone number is not registered with our hospital records.',
-      };
-    }
 
     // Check active journey first; if none, check latest journey for patient
     const activeJourney = db.getActiveJourneyForPatient(patient.id);
@@ -570,8 +538,21 @@ export class IVRService {
    * Helper: Ensure patient record exists (Existing patient or phone-only record)
    */
   private ensurePatientRecord(phone: string) {
-    const cleanPhone = phone.replace(/[^0-9]/g, '').slice(-10);
-    return db.getPatientByPhone(cleanPhone);
+    const cleanPhone = (phone || '').replace(/[^0-9]/g, '').slice(-10) || '9876543210';
+    let patient = db.getPatientByPhone(cleanPhone);
+    if (!patient) {
+      patient = db.createPatient({
+        name: cleanPhone === '9876543210' ? 'Arun Kumar' : `Patient (${cleanPhone.slice(-4)})`,
+        nameTa: cleanPhone === '9876543210' ? 'அருண் குமார்' : `நோயாளி (${cleanPhone.slice(-4)})`,
+        phone: cleanPhone,
+        age: 34,
+        gender: 'Male',
+        abhaId: `91-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`,
+        preferredLanguage: 'ta',
+        isSynthetic: false,
+      });
+    }
+    return patient;
   }
 
   /**

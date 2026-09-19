@@ -6,6 +6,7 @@ import {
   Room,
   Department,
   User,
+  Patient,
 } from './types';
 
 export function seedDatabase() {
@@ -227,7 +228,22 @@ export function seedDatabase() {
     { id: 'usr-admin-1', username: 'admin_dean', password: 'password123', role: 'admin', fullName: 'Medical Superintendent / Dean Console', hospitalId, isActive: true },
   ];
 
-  // Initialize clean state: 0 patients, 0 queues, 0 orders
+  const defaultPatient: Patient = {
+    id: 'pat-demo-01',
+    name: 'Arun Kumar',
+    nameTa: 'அருண் குமார்',
+    age: 34,
+    gender: 'Male',
+    phone: '9876543210',
+    abhaId: '91-1234-5678-9012',
+    bloodGroup: 'O+ve',
+    allergies: ['Penicillin'],
+    chronicConditions: ['Hypertension'],
+    preferredLanguage: 'ta',
+    isSynthetic: false,
+  };
+
+  // Initialize fresh demo state: 1 default demo patient, 0 journeys, 0 queues, 0 orders
   db.setRawData({
     hospitals: [hospital],
     blocks,
@@ -235,7 +251,7 @@ export function seedDatabase() {
     rooms,
     departments,
     users,
-    patients: [],
+    patients: [defaultPatient],
     journeys: [],
     journeyStages: [],
     queueEntries: [],
@@ -252,5 +268,5 @@ export function seedDatabase() {
     },
   });
 
-  console.log('✅ Clean database seeded successfully with 0 patient entries.');
+  console.log('✅ Clean database seeded successfully with default demo patient (9876543210).');
 }
