@@ -47,6 +47,7 @@ apiRouter.post('/auth/identify', (req: Request, res: Response) => {
 
     // If identifier is a 10-digit mobile number or starts with +91/91/digits
     if (cleanDigits.length >= 10) {
+      const phone = cleanDigits.slice(-10);
       let patient = db.getPatientByPhone(phone);
 
       if (!patient) {
